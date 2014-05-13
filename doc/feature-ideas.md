@@ -5,7 +5,7 @@
     - allows a track to have several tags with the same key
     - allows a track to have non-standard tags (eg., "CONDUCTOR")
 - music can be filtered by tag (eg: display all COMPOSERs with GENRE=foo)
-    - Example: ![example of filters](filters-example.png)
+    - Example: ![example of filters in Quod Libet](filters-example.png)
     - filters are persistent
     - filters can be skipped
     - tags available to filter against can be a pre-populated list, but allows
@@ -17,7 +17,7 @@
       libraries
 - info displayed about the playing track can be customized according to any
   tags
-    - Example: ![example of custom display text](display-example.png)
+    - Example: ![example of custom display text in Quod Libet](display-example.png)
     - display for next/previous track can be customized
     - display for tracks in queue & playlists(?) can be customized
     - album artwork can be displayed if available
