@@ -1,9 +1,13 @@
+Features
+========
+
 - plays music (Vorbis, MP3, & MP4, at least)
 - scans user's music folder for tracks
 - allows multiple music folders
 - stores music's tags
     - allows a track to have several tags with the same key
     - allows a track to have non-standard tags (eg., "CONDUCTOR")
+    - library is automatically updated periodically
 - music can be filtered by tag (eg: display all COMPOSERs with GENRE=foo)
     - Example: ![example of filters in Quod Libet](filters-example.png)
     - filters are persistent
