@@ -1,4 +1,4 @@
-package pconley.prototype.player;
+package pconley.vamp;
 
 import android.app.Activity;
 import android.os.Bundle;
