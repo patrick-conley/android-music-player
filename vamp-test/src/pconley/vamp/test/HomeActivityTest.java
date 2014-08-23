@@ -1,7 +1,6 @@
-package pconley.prototype.database.test;
+package pconley.vamp.test;
 
-import pconley.prototype.database.HomeActivity;
-
+import pconley.vamp.HomeActivity;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.TextView;
 
@@ -22,10 +21,9 @@ public class HomeActivityTest extends
 
 	public void testDefaultMessage() {
 		TextView text = (TextView) activity
-				.findViewById(pconley.prototype.database.R.id.home_text_hello);
+				.findViewById(pconley.vamp.R.id.home_text_hello);
 		assertEquals("Activity holds the right text",
-				activity.getText(pconley.prototype.database.R.string.hello),
-				text.getText());
+				activity.getText(pconley.vamp.R.string.hello), text.getText());
 	}
 
 }

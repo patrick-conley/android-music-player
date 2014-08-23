@@ -1,7 +1,7 @@
-package pconley.prototype.database.db;
+package pconley.vamp.db;
 
-import pconley.prototype.database.db.LibraryContract.TagEntry;
-import pconley.prototype.database.db.LibraryContract.TrackEntry;
+import pconley.vamp.db.LibraryContract.TagEntry;
+import pconley.vamp.db.LibraryContract.TrackEntry;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;

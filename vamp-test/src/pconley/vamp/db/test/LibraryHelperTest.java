@@ -1,7 +1,7 @@
-package pconley.prototype.database.db.test;
+package pconley.vamp.db.test;
 
-import pconley.prototype.database.db.LibraryHelper;
-import pconley.prototype.database.db.LibraryContract.TrackEntry;
+import pconley.vamp.db.LibraryHelper;
+import pconley.vamp.db.LibraryContract.TrackEntry;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -30,8 +30,8 @@ public class LibraryHelperTest extends AndroidTestCase {
 		SQLiteDatabase library = libraryHelper.getWritableDatabase();
 
 		// Get everything in Tracks; check empty
-		Cursor contents = library.rawQuery("SELECT * FROM " + TrackEntry.TABLE_NAME,
-				null);
+		Cursor contents = library.rawQuery("SELECT * FROM "
+				+ TrackEntry.TABLE_NAME, null);
 		assertEquals("Database is created empty", 0, contents.getCount());
 
 		// Add a track
@@ -40,7 +40,8 @@ public class LibraryHelperTest extends AndroidTestCase {
 		library.insertOrThrow(TrackEntry.TABLE_NAME, null, rowContents);
 
 		// Check Tracks is correct
-		contents = library.rawQuery("SELECT * FROM " + TrackEntry.TABLE_NAME, null);
+		contents = library.rawQuery("SELECT * FROM " + TrackEntry.TABLE_NAME,
+				null);
 		assertEquals("Database has data after insert", 1, contents.getCount());
 		contents.moveToFirst();
 		assertEquals("Inserted data is correct", uri,
@@ -49,7 +50,8 @@ public class LibraryHelperTest extends AndroidTestCase {
 
 		// Delete the DB
 		library.close();
-		getContext().deleteDatabase(namePrefix + libraryHelper.getDatabaseName());
+		getContext().deleteDatabase(
+				namePrefix + libraryHelper.getDatabaseName());
 	}
 
 }

@@ -1,4 +1,4 @@
-package pconley.prototype.database;
+package pconley.vamp;
 
 import android.app.Activity;
 import android.os.Bundle;

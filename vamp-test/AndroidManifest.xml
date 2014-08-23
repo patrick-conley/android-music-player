@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="pconley.prototype.database.test"
+    package="pconley.vamp.test"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -10,7 +10,7 @@
 
     <instrumentation
         android:name="android.test.InstrumentationTestRunner"
-        android:targetPackage="pconley.prototype.database" />
+        android:targetPackage="pconley.vamp" />
 
     <application
         android:allowBackup="true"

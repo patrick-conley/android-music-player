@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>database-prototype-test</name>
+	<name>vamp</name>
 	<comment></comment>
 	<projects>
-		<project>database-prototype-app</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
