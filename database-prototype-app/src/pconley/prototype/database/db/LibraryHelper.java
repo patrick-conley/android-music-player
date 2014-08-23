@@ -1,13 +1,12 @@
-package pconley.prototype.database.library;
+package pconley.prototype.database.db;
 
-import pconley.prototype.database.library.LibraryContract.TagEntry;
-import pconley.prototype.database.library.LibraryContract.TrackEntry;
-
+import pconley.prototype.database.db.LibraryContract.TagEntry;
+import pconley.prototype.database.db.LibraryContract.TrackEntry;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-public class LibraryDatabaseHelper extends SQLiteOpenHelper {
+public class LibraryHelper extends SQLiteOpenHelper {
 
 	private static final String DATABASE_NAME = "library.db";
 	private static final int DATABASE_VERSION = 1;
@@ -18,12 +17,14 @@ public class LibraryDatabaseHelper extends SQLiteOpenHelper {
 					TrackEntry.COLUMN_NAME_URI);
 
 	private static final String SQL_CREATE_TAGS = String
-			.format("CREATE TABLE %s (%s INTEGER REFERENCES %s(%s), %s TEXT NOT NULL, %s TEXT NOT NULL);",
+			.format("CREATE TABLE %s (%s INTEGER REFERENCES %s(%s), %s TEXT NOT NULL, %s TEXT NOT NULL, CONSTRAINT no_dup_tags UNIQUE (%s, %s, %s) ON CONFLICT IGNORE);",
 					TagEntry.TABLE_NAME, TrackEntry.COLUMN_NAME_ID,
 					TrackEntry.TABLE_NAME, TrackEntry.COLUMN_NAME_ID,
-					TagEntry.COLUMN_NAME_TAG, TagEntry.COLUMN_NAME_VAL);
+					TagEntry.COLUMN_NAME_TAG, TagEntry.COLUMN_NAME_VAL,
+					TrackEntry.COLUMN_NAME_ID, TagEntry.COLUMN_NAME_TAG,
+					TagEntry.COLUMN_NAME_VAL);
 
-	public LibraryDatabaseHelper(Context context) {
+	public LibraryHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
 
@@ -35,6 +36,13 @@ public class LibraryDatabaseHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+	}
+
+	@Override
+	public void onConfigure(SQLiteDatabase db) {
+		super.onConfigure(db);
+
+		db.setForeignKeyConstraintsEnabled(true);
 	}
 
 }

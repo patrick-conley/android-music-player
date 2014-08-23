@@ -1,4 +1,4 @@
-package pconley.prototype.database.library;
+package pconley.prototype.database.db;
 
 import android.provider.BaseColumns;
 
