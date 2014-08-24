@@ -4,16 +4,26 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * An element of metadata, associated with a track or collection of music.
+ * An element of musical metadata.
  */
 public class Tag {
 
+	private int id;
 	private String name;
 	private Set<String> values;
 
 	public Tag(String name) {
 		this.name = name;
 		values = new HashSet<String>();
+	}
+
+	public Tag(int id, String name) {
+		this(name);
+		this.id = id;
+	}
+
+	public int getId() {
+		return id;
 	}
 
 	public String getName() {

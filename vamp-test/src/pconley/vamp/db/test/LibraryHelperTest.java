@@ -30,23 +30,22 @@ public class LibraryHelperTest extends AndroidTestCase {
 		SQLiteDatabase library = libraryHelper.getWritableDatabase();
 
 		// Get everything in Tracks; check empty
-		Cursor contents = library.rawQuery("SELECT * FROM "
-				+ TrackEntry.TABLE_NAME, null);
+		Cursor contents = library.rawQuery("SELECT * FROM " + TrackEntry.NAME,
+				null);
 		assertEquals("Database is created empty", 0, contents.getCount());
 
 		// Add a track
 		ContentValues rowContents = new ContentValues();
-		rowContents.put(TrackEntry.COLUMN_NAME_URI, uri);
-		library.insertOrThrow(TrackEntry.TABLE_NAME, null, rowContents);
+		rowContents.put(TrackEntry.COLUMN_URI, uri);
+		library.insertOrThrow(TrackEntry.NAME, null, rowContents);
 
 		// Check Tracks is correct
-		contents = library.rawQuery("SELECT * FROM " + TrackEntry.TABLE_NAME,
-				null);
+		contents = library.rawQuery("SELECT * FROM " + TrackEntry.NAME, null);
 		assertEquals("Database has data after insert", 1, contents.getCount());
 		contents.moveToFirst();
 		assertEquals("Inserted data is correct", uri,
 				contents.getString(contents
-						.getColumnIndexOrThrow(TrackEntry.COLUMN_NAME_URI)));
+						.getColumnIndexOrThrow(TrackEntry.COLUMN_URI)));
 
 		// Delete the DB
 		library.close();
