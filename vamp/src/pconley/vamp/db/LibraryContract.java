@@ -28,7 +28,7 @@ public class LibraryContract {
 	public static abstract class TagEntry implements BaseColumns {
 
 		public static final String TABLE_NAME = "Tags";
-		public static final String COLUMN_NAME_TAG = "tag";
+		public static final String COLUMN_NAME_TAG = "name";
 		public static final String COLUMN_NAME_VAL = "value";
 	}
 
