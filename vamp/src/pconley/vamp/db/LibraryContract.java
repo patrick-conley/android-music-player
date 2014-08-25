@@ -30,8 +30,8 @@ public class LibraryContract {
 	public static abstract class TrackTagRelation {
 
 		public static final String NAME = "TrackHasTags";
-		public static final String TRACK_ID = "trackId";
-		public static final String TAG_ID = "tagId";
+		public static final String TRACK_ID = "trackID";
+		public static final String TAG_ID = "tagID";
 
 		public static final String SQL_CREATE = String
 				.format("CREATE TABLE %s (%s INTEGER REFERENCES %s(%s) NOT NULL, %s INTEGER REFERENCES %s(%s) NOT NULL);",

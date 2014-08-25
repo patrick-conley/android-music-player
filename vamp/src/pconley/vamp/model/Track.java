@@ -40,8 +40,14 @@ public class Track {
 		return tags;
 	}
 
-	public void addTag(Tag tag) {
-		tags.put(tag.getName(), tag);
+	/**
+	 * Add a tag to the track. The track should not have already loaded a tag
+	 * with the same name.
+	 *
+	 * @return Whether the tag was added
+	 */
+	public boolean addTag(Tag tag) {
+		return tags.put(tag.getName(), tag) == null;
 	}
 
 	@Override

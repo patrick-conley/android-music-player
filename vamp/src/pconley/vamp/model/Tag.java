@@ -8,42 +8,26 @@ import java.util.Set;
  */
 public class Tag {
 
-	private int id;
 	private String name;
-	private Set<String> values;
+	private Set<TagValue> values;
 
-	public Tag(String name) {
-		this.name = name;
-		values = new HashSet<String>();
-	}
-
-	public Tag(int id, String name) {
-		this(name);
-		this.id = id;
-	}
-
-	public int getId() {
-		return id;
-	}
+	/* Private constructor. Use the buildere. */
+	private Tag() {}
 
 	public String getName() {
 		return name;
 	}
 
-	public Set<String> getValues() {
+	public Set<TagValue> getValues() {
 		return values;
-	}
-
-	public boolean addValue(String value) {
-		return this.values.add(value);
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("tag ").append(name).append(": ");
-		for (String value : values) {
-			sb.append(value).append("   ").append("\n");
+		sb.append("tag ").append(name).append(":\n");
+		for (TagValue value : values) {
+			sb.append("   ").append(value).append("\n");
 		}
 
 		return sb.toString();
@@ -76,6 +60,32 @@ public class Tag {
 			return false;
 		}
 		return true;
+	}
+
+	public static class Builder {
+
+		private String name;
+		private Set<TagValue> values;
+
+		public Builder() {
+			values = new HashSet<TagValue>();
+		}
+
+		public void name(String name) {
+			this.name = name;
+		}
+
+		public void addValue(int id, String value) {
+			this.values.add(new TagValue(id, value));
+		}
+
+		public Tag build() {
+			Tag tag = new Tag();
+			tag.name = name;
+			tag.values = values;
+
+			return tag;
+		}
 	}
 
 }

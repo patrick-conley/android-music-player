@@ -33,6 +33,7 @@ public class LibraryHelperTest extends AndroidTestCase {
 		Cursor contents = library.rawQuery("SELECT * FROM " + TrackEntry.NAME,
 				null);
 		assertEquals("Database is created empty", 0, contents.getCount());
+		contents.close();
 
 		// Add a track
 		ContentValues rowContents = new ContentValues();
@@ -46,6 +47,7 @@ public class LibraryHelperTest extends AndroidTestCase {
 		assertEquals("Inserted data is correct", uri,
 				contents.getString(contents
 						.getColumnIndexOrThrow(TrackEntry.COLUMN_URI)));
+		contents.close();
 
 		// Delete the DB
 		library.close();
