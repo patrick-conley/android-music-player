@@ -21,8 +21,11 @@ public class TrackDAO {
 	 *            Activity context
 	 */
 	public TrackDAO(Context context) {
-		LibraryHelper dbHelper = new LibraryHelper(context);
-		library = dbHelper.getWritableDatabase();
+		library = new LibraryHelper(context).getReadableDatabase();
+	}
+
+	public void close() {
+		library.close();
 	}
 
 	/**
@@ -32,15 +35,15 @@ public class TrackDAO {
 	 */
 	public List<Track> getTracks() {
 		Cursor results = library.query(TrackEntry.NAME,
-				new String[] { TrackEntry.COLUMN_ID }, null, null, null, null,
+				new String[] { TrackEntry.COLUMN_URI }, null, null, null, null,
 				null);
 
 		List<Track> tracks = new LinkedList<Track>();
-		int idColumn = results.getColumnIndexOrThrow(TrackEntry.COLUMN_ID);
+		int uriColumn = results.getColumnIndexOrThrow(TrackEntry.COLUMN_URI);
 
 		for (results.moveToFirst(); !results.isAfterLast(); results
 				.moveToNext()) {
-			tracks.add(new Track(results.getInt(idColumn)));
+			tracks.add(new Track(results.getString(uriColumn)));
 		}
 
 		return tracks;

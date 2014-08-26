@@ -12,25 +12,21 @@ public class Track {
 	private String uri;
 	private Map<String, Tag> tags;
 
-	public Track() {
+	public Track(String uri) {
+		this.uri = uri;
 		tags = new HashMap<String, Tag>();
-	}
-
-	public Track(int id) {
-		this();
-		this.id = id;
 	}
 
 	public int getId() {
 		return id;
 	}
 
-	public String getUri() {
-		return uri;
+	public void setId(int id) {
+		this.id = id;
 	}
 
-	public void setUri(String uri) {
-		this.uri = uri;
+	public String getUri() {
+		return uri;
 	}
 
 	/**
@@ -71,13 +67,12 @@ public class Track {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-
 		Track other = (Track) obj;
-		if (uri == null && other.uri != null) {
+		if (uri == null) {
+			if (other.uri != null)
+				return false;
+		} else if (!uri.equals(other.uri))
 			return false;
-		} else if (!uri.equals(other.uri)) {
-			return false;
-		}
 		return true;
 	}
 

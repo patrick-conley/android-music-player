@@ -18,16 +18,26 @@ public class LibraryHelperTest extends AndroidTestCase {
 
 	private static final String namePrefix = "test_";
 
+	private SQLiteDatabase library;
+
+	// Get a reference to the database
+	public void setUp() throws Exception {
+		super.setUp();
+
+		library = new LibraryHelper(new RenamingDelegatingContext(getContext(),
+					namePrefix)).getWritableDatabase();
+	}
+
+	public void tearDown() throws Exception {
+		library.execSQL("DELETE FROM " + TrackEntry.NAME);
+		library.close();
+
+		super.tearDown();
+	}
+
 	public void testDatabaseExists() {
 
 		String uri = "Sample URI";
-
-		// Create the database (RenamingDelegatingContext ensures
-		// production databases aren't overwritten)
-		RenamingDelegatingContext context = new RenamingDelegatingContext(
-				getContext(), namePrefix);
-		LibraryHelper libraryHelper = new LibraryHelper(context);
-		SQLiteDatabase library = libraryHelper.getWritableDatabase();
 
 		// Get everything in Tracks; check empty
 		Cursor contents = library.rawQuery("SELECT * FROM " + TrackEntry.NAME,
@@ -48,11 +58,7 @@ public class LibraryHelperTest extends AndroidTestCase {
 				contents.getString(contents
 						.getColumnIndexOrThrow(TrackEntry.COLUMN_URI)));
 		contents.close();
-
-		// Delete the DB
-		library.close();
-		getContext().deleteDatabase(
-				namePrefix + libraryHelper.getDatabaseName());
 	}
+
 
 }
