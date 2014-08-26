@@ -1,15 +1,14 @@
-package pconley.vamp.dao.test;
+package pconley.vamp.db.test;
 
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import pconley.vamp.dao.TrackDAO;
 import pconley.vamp.db.LibraryContract.TrackEntry;
 import pconley.vamp.db.LibraryHelper;
+import pconley.vamp.db.TrackDAO;
 import pconley.vamp.model.Track;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -33,16 +32,13 @@ public class TrackDAOTest extends AndroidTestCase {
 	}
 
 	public void tearDown() throws Exception {
-		dao.close();
-
 		library.execSQL("DELETE FROM " + TrackEntry.NAME);
-		library.close();
 
 		super.tearDown();
 	}
 
 	public void testGetTracksOnEmptyDatabase() {
-		List<Track> tracks = dao.getTracks();
+		List<Track> tracks = dao.getAll();
 
 		assertEquals("DAO retrieves nothing from an empty database", 0,
 				tracks.size());
@@ -63,7 +59,7 @@ public class TrackDAOTest extends AndroidTestCase {
 			expected.add(track);
 		}
 
-		Set<Track> actual = new HashSet<Track>(dao.getTracks());
+		Set<Track> actual = new HashSet<Track>(dao.getAll());
 
 		assertEquals("DAO can retrieve items", expected, actual);
 	}
@@ -83,7 +79,7 @@ public class TrackDAOTest extends AndroidTestCase {
 			expected.add(track);
 		}
 
-		List<Track> actual = new LinkedList<Track>(dao.getTracks());
+		List<Track> actual = new LinkedList<Track>(dao.getAll());
 
 		assertEquals("DAO does not return extra tracks", expected.size(),
 				actual.size());

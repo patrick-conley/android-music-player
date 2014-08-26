@@ -13,16 +13,18 @@ public class Track {
 	private Map<String, Tag> tags;
 
 	public Track(String uri) {
+		this(-1, uri);
+	}
+
+	public Track(int id, String uri) {
+		this.id = id;
 		this.uri = uri;
 		tags = new HashMap<String, Tag>();
 	}
 
+
 	public int getId() {
 		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
 	}
 
 	public String getUri() {
