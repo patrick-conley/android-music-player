@@ -9,10 +9,8 @@ import android.test.AndroidTestCase;
 import android.test.RenamingDelegatingContext;
 
 /**
- * Test that the database helper class works correctly. This test case is
- * deliberately simple (and rather stupid): it's only meant to test that the
- * LibraryDatabaseHelper provides a database with approximately the write
- * schema, not that the database works correctly.
+ * Test that the database helper class works correctly. Detailed tests are to
+ * be reserved for DAOs.
  */
 public class LibraryHelperTest extends AndroidTestCase {
 

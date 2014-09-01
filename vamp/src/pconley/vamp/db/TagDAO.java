@@ -1,4 +1,4 @@
-package pconley.vamp.dao;
+package pconley.vamp.db;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -6,11 +6,11 @@ import android.database.sqlite.SQLiteDatabase;
 
 import pconley.vamp.db.LibraryContract.TagEntry;
 import pconley.vamp.db.LibraryContract.TrackTagRelation;
-import pconley.vamp.db.LibraryHelper;
 import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
+import pconley.vamp.source.TagSource;
 
-public class TagDAO {
+public class TagDAO implements TagSource {
 
 	private SQLiteDatabase library;
 
