@@ -1,36 +1,35 @@
 package pconley.vamp.model;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * An element of musical metadata.
  */
 public class Tag {
 
+	private long id;
 	private String name;
-	private Set<TagValue> values;
+	private String value;
 
-	/* Private constructor. Use the buildere. */
-	private Tag() {}
+	public Tag(long id, String name, String value) {
+		this.id = id;
+		this.name = name;
+		this.value = value;
+	}
+
+	public long getId() {
+		return id;
+	}
 
 	public String getName() {
 		return name;
 	}
 
-	public Set<TagValue> getValues() {
-		return values;
+	public String getValue() {
+		return value;
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("tag ").append(name).append(":\n");
-		for (TagValue value : values) {
-			sb.append("   ").append(value).append("\n");
-		}
-
-		return sb.toString();
+		return name + " = " + value;
 	}
 
 	@Override
@@ -38,7 +37,7 @@ public class Tag {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((values == null) ? 0 : values.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
 
@@ -50,42 +49,18 @@ public class Tag {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-
 		Tag other = (Tag) obj;
-		if (name == null && other.name != null) {
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
 			return false;
-		} else if (!name.equals(other.name)) {
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
 			return false;
-		} else if (!values.equals(other.values)) {
-			return false;
-		}
 		return true;
-	}
-
-	public static class Builder {
-
-		private String name;
-		private Set<TagValue> values;
-
-		public Builder() {
-			values = new HashSet<TagValue>();
-		}
-
-		public void name(String name) {
-			this.name = name;
-		}
-
-		public void addValue(int id, String value) {
-			this.values.add(new TagValue(id, value));
-		}
-
-		public Tag build() {
-			Tag tag = new Tag();
-			tag.name = name;
-			tag.values = values;
-
-			return tag;
-		}
 	}
 
 }

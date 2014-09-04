@@ -34,9 +34,10 @@ public class LibraryContract {
 		public static final String TAG_ID = "tagID";
 
 		public static final String SQL_CREATE = String
-				.format("CREATE TABLE %s (%s INTEGER REFERENCES %s(%s) NOT NULL, %s INTEGER REFERENCES %s(%s) NOT NULL);",
+				.format("CREATE TABLE %s (%s INTEGER REFERENCES %s(%s) NOT NULL, %s INTEGER REFERENCES %s(%s) NOT NULL, CONSTRAINT no_dup_tracktags UNIQUE (%s, %s) ON CONFLICT FAIL);",
 						NAME, TRACK_ID, TrackEntry.NAME, TrackEntry.COLUMN_ID,
-						TAG_ID, TagEntry.NAME, TagEntry.COLUMN_ID);
+						TAG_ID, TagEntry.NAME, TagEntry.COLUMN_ID, TRACK_ID,
+						TAG_ID);
 
 	}
 
