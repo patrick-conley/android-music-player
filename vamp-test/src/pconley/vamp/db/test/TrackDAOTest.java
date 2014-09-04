@@ -110,7 +110,7 @@ public class TrackDAOTest extends AndroidTestCase {
 
 		assertEquals("DAO returns the correct track", expected, actual);
 		assertEquals("DAO returns no tags for an empty track", 0, actual
-				.getTags().size());
+				.getTagNames().size());
 	}
 
 	/**
@@ -127,7 +127,7 @@ public class TrackDAOTest extends AndroidTestCase {
 		Track actual = dao.getTrack(expected.getId());
 
 		assertEquals("DAO returns the correct tags: one track exists",
-				expected.getTags(), actual.getTags());
+				expected, actual);
 	}
 
 	/**
@@ -142,7 +142,7 @@ public class TrackDAOTest extends AndroidTestCase {
 		Track actual = dao.getTrack(expected.getId());
 
 		assertEquals("DAO returns the correct tags: one has multiple values",
-				expected.getTags(), actual.getTags());
+				expected, actual);
 	}
 
 	/**
@@ -160,7 +160,7 @@ public class TrackDAOTest extends AndroidTestCase {
 
 		assertEquals(
 				"DAO returns the correct tags: tracks have the same tag names",
-				expected.getTags(), actual.getTags());
+				expected, actual);
 	}
 
 	/**
@@ -173,22 +173,28 @@ public class TrackDAOTest extends AndroidTestCase {
 		Track actual = dao.getTrack(expected.getId());
 
 		assertEquals("DAO returns the correct tags: identical tracks",
-				expected.getTags(), actual.getTags());
+				expected, actual);
 
 		// Verify the tags have the expected IDs
 		Set<Long> sampleIds = new HashSet<Long>();
-		for (Tag tag : sample.getTags()) {
-			sampleIds.add(tag.getId());
+		for (String name : sample.getTagNames()) {
+			for (Tag tag : sample.getTags(name)) {
+				sampleIds.add(tag.getId());
+			}
 		}
 
 		Set<Long> expectedIds = new HashSet<Long>();
-		for (Tag tag : expected.getTags()) {
-			expectedIds.add(tag.getId());
+		for (String name : expected.getTagNames()) {
+			for (Tag tag : expected.getTags(name)) {
+				expectedIds.add(tag.getId());
+			}
 		}
 
 		Set<Long> actualIds = new HashSet<Long>();
-		for (Tag tag : actual.getTags()) {
-			actualIds.add(tag.getId());
+		for (String name : actual.getTagNames()) {
+			for (Tag tag : actual.getTags(name)) {
+				actualIds.add(tag.getId());
+			}
 		}
 
 		assertEquals("Tags have the same ID in both tracks", sampleIds,
@@ -212,19 +218,29 @@ public class TrackDAOTest extends AndroidTestCase {
 
 		// TODO: check that the duplicated tag has the same ID in sample and
 		// expected (easiest if tags are in a map)
+		assertEquals("Tags are not duplicated in the database",
+				sample.getTags(sampleTagNames[1]).iterator().next().getId(),
+				expected.getTags(sampleTagNames[1]).iterator().next().getId());
 
-		assertEquals("DAO returns the correct tags: some duplicated",
-				expected.getTags(), actual.getTags());
+		assertEquals("DAO returns the correct tags: some duplicated", expected,
+				actual);
 
 		actual = dao.getTrack(sample.getId());
 		assertEquals("DAO returns the correct tags: some duplicated (reprise)",
-				sample.getTags(), actual.getTags());
+				sample, actual);
 	}
 
+	/*
+	 * Add a track to the database to ensure there are unrelated tags floating
+	 * around
+	 */
 	private Track insertSampleTrack() {
 		return insertTrack(sampleUri, sampleTagNames, sampleTagValues);
 	}
 
+	/*
+	 * Add a track to the database. Duplicate tracks will be updated.
+	 */
 	private Track insertTrack(String uri, String[] tagNames, String[] tagValues) {
 		long trackId;
 
@@ -248,7 +264,7 @@ public class TrackDAOTest extends AndroidTestCase {
 		Track.Builder builder = new Track.Builder(trackId, uri);
 
 		for (int i = 0; i < tagNames.length; i++) {
-			builder.addTag(new Tag(
+			builder.add(new Tag(
 					insertTag(tagNames[i], tagValues[i], trackId), tagNames[i],
 					tagValues[i]));
 		}
@@ -256,6 +272,10 @@ public class TrackDAOTest extends AndroidTestCase {
 		return builder.build();
 	}
 
+	/*
+	 * Add a tag to the database. Duplicate tags (including for a single track)
+	 * will be ignored.
+	 */
 	private long insertTag(String name, String value, long relatedTrackId) {
 		long tagId;
 

@@ -1,7 +1,9 @@
 package pconley.vamp.model;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -11,10 +13,10 @@ public class Track {
 
 	private long id;
 	private String uri;
-	private Set<Tag> tags;
+	private Map<String, Set<Tag>> tags;
 
 	/* Private constructor. Use the builder. */
-	private Track(long id, String uri, Set<Tag> tags) {
+	private Track(long id, String uri, Map<String, Set<Tag>> tags) {
 		this.id = id;
 		this.uri = uri;
 		this.tags = tags;
@@ -28,13 +30,30 @@ public class Track {
 		return uri;
 	}
 
-	public Set<Tag> getTags() {
-		return Collections.unmodifiableSet(tags);
+	/**
+	 * @return The names of tags used by this track.
+	 */
+	public Set<String> getTagNames() {
+		return Collections.unmodifiableSet(tags.keySet());
+	}
+
+	/**
+	 * @param name
+	 *            The name of a tag
+	 * @return The tags corresponding to this tag name. Their ordering is in no
+	 *         way guaranteed.
+	 */
+	public Set<Tag> getTags(String name) {
+		if (!tags.containsKey(name)) {
+			return null;
+		}
+
+		return Collections.unmodifiableSet(tags.get(name));
 	}
 
 	@Override
 	public String toString() {
-		return uri + ": " + tags;
+		return uri + ": " + tags.values();
 	}
 
 	@Override
@@ -68,21 +87,31 @@ public class Track {
 		return true;
 	}
 
+	/**
+	 * Builder class for a track. Gives a simple means of adding tags from a
+	 * Cursor without making the track mutable.
+	 */
 	public static class Builder {
 
 		private long id;
 		private String uri;
-		private Set<Tag> tags;
+		private Map<String, Set<Tag>> tags;
 
 		public Builder(long id, String uri) {
 			this.id = id;
 			this.uri = uri;
 
-			tags = new HashSet<Tag>();
+			tags = new HashMap<String, Set<Tag>>();
 		}
 
-		public void addTag(Tag tag) {
-			this.tags.add(tag);
+		public void add(Tag tag) {
+			String name = tag.getName();
+
+			if (!tags.containsKey(name)) {
+				tags.put(name, new HashSet<Tag>());
+			}
+
+			tags.get(name).add(tag);
 		}
 
 		public Track build() {

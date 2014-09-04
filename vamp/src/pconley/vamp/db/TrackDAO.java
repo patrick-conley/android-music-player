@@ -27,9 +27,6 @@ public class TrackDAO {
 		library = new LibraryHelper(context).getReadableDatabase();
 	}
 
-	/* FIXME: use getUris() and getTrack(uri) instead of IDs */
-	/* FIXME: in Track, use a multimap (by tag name) */
-
 	public List<Long> getIds() {
 		Cursor results = library.query(TrackEntry.NAME,
 				new String[] { TrackEntry.COLUMN_ID }, null, null, null, null,
@@ -97,7 +94,7 @@ public class TrackDAO {
 
 		for (results.moveToFirst(); !results.isAfterLast(); results
 				.moveToNext()) {
-			builder.addTag(new Tag(results.getLong(tagIdColumn), results
+			builder.add(new Tag(results.getLong(tagIdColumn), results
 					.getString(nameColumn), results.getString(valueColumn)));
 		}
 
