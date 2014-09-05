@@ -216,8 +216,6 @@ public class TrackDAOTest extends AndroidTestCase {
 				sampleTagValues[1], "cValue" });
 		Track actual = dao.getTrack(expected.getId());
 
-		// TODO: check that the duplicated tag has the same ID in sample and
-		// expected (easiest if tags are in a map)
 		assertEquals("Tags are not duplicated in the database",
 				sample.getTags(sampleTagNames[1]).iterator().next().getId(),
 				expected.getTags(sampleTagNames[1]).iterator().next().getId());

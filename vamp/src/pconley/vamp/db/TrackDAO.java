@@ -17,6 +17,13 @@ public class TrackDAO {
 
 	private SQLiteDatabase library;
 
+	private static final String GET_TRACK_QUERY = String
+			.format("SELECT * FROM (SELECT %s AS %s FROM %s WHERE %s = ?) INNER JOIN %s USING (%s) ORDER BY %s,%s",
+					TrackTagRelation.TAG_ID, TagEntry.COLUMN_ID,
+					TrackTagRelation.NAME, TrackTagRelation.TRACK_ID,
+					TagEntry.NAME, TagEntry.COLUMN_ID, TagEntry.COLUMN_ID,
+					TagEntry.COLUMN_TAG);
+
 	/**
 	 * Open a database connection. Should not be called from the UI thread.
 	 *
@@ -79,14 +86,7 @@ public class TrackDAO {
 
 		results.close();
 
-		final String query = String
-				.format("SELECT * FROM (SELECT %s AS %s FROM %s WHERE %s = ?) INNER JOIN %s USING (%s) ORDER BY %s,%s",
-						TrackTagRelation.TAG_ID, TagEntry.COLUMN_ID,
-						TrackTagRelation.NAME, TrackTagRelation.TRACK_ID,
-						TagEntry.NAME, TagEntry.COLUMN_ID, TagEntry.COLUMN_ID,
-						TagEntry.COLUMN_TAG);
-
-		results = library.rawQuery(query,
+		results = library.rawQuery(GET_TRACK_QUERY,
 				new String[] { String.valueOf(trackId) });
 		int tagIdColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_ID);
 		int nameColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_TAG);

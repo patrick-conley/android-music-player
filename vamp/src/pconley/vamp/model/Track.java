@@ -40,10 +40,11 @@ public class Track {
 	/**
 	 * @param name
 	 *            The name of a tag
-	 * @return The tags corresponding to this tag name. Their ordering is in no
-	 *         way guaranteed.
+	 * @return The tags corresponding to this tag name, or null if the tag isn't
+	 *         in the this track. The values' ordering is in no way guaranteed.
 	 */
 	public Set<Tag> getTags(String name) {
+		// Check if the key exists, as unmodifiableSet doesn't accept null input
 		if (!tags.containsKey(name)) {
 			return null;
 		}
