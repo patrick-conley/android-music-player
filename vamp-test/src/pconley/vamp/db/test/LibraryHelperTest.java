@@ -9,49 +9,54 @@ import android.test.AndroidTestCase;
 import android.test.RenamingDelegatingContext;
 
 /**
- * Test that the database helper class works correctly. This test case is
- * deliberately simple (and rather stupid): it's only meant to test that the
- * LibraryDatabaseHelper provides a database with approximately the write
- * schema, not that the database works correctly.
+ * Test that the database helper class works correctly. Detailed tests are to
+ * be reserved for DAOs.
  */
 public class LibraryHelperTest extends AndroidTestCase {
 
 	private static final String namePrefix = "test_";
 
+	private SQLiteDatabase library;
+
+	// Get a reference to the database
+	public void setUp() throws Exception {
+		super.setUp();
+
+		library = new LibraryHelper(new RenamingDelegatingContext(getContext(),
+					namePrefix)).getWritableDatabase();
+	}
+
+	public void tearDown() throws Exception {
+		library.execSQL("DELETE FROM " + TrackEntry.NAME);
+		library.close();
+
+		super.tearDown();
+	}
+
 	public void testDatabaseExists() {
 
 		String uri = "Sample URI";
 
-		// Create the database (RenamingDelegatingContext ensures
-		// production databases aren't overwritten)
-		RenamingDelegatingContext context = new RenamingDelegatingContext(
-				getContext(), namePrefix);
-		LibraryHelper libraryHelper = new LibraryHelper(context);
-		SQLiteDatabase library = libraryHelper.getWritableDatabase();
-
 		// Get everything in Tracks; check empty
-		Cursor contents = library.rawQuery("SELECT * FROM "
-				+ TrackEntry.TABLE_NAME, null);
+		Cursor contents = library.rawQuery("SELECT * FROM " + TrackEntry.NAME,
+				null);
 		assertEquals("Database is created empty", 0, contents.getCount());
+		contents.close();
 
 		// Add a track
 		ContentValues rowContents = new ContentValues();
-		rowContents.put(TrackEntry.COLUMN_NAME_URI, uri);
-		library.insertOrThrow(TrackEntry.TABLE_NAME, null, rowContents);
+		rowContents.put(TrackEntry.COLUMN_URI, uri);
+		library.insertOrThrow(TrackEntry.NAME, null, rowContents);
 
 		// Check Tracks is correct
-		contents = library.rawQuery("SELECT * FROM " + TrackEntry.TABLE_NAME,
-				null);
+		contents = library.rawQuery("SELECT * FROM " + TrackEntry.NAME, null);
 		assertEquals("Database has data after insert", 1, contents.getCount());
 		contents.moveToFirst();
 		assertEquals("Inserted data is correct", uri,
 				contents.getString(contents
-						.getColumnIndexOrThrow(TrackEntry.COLUMN_NAME_URI)));
-
-		// Delete the DB
-		library.close();
-		getContext().deleteDatabase(
-				namePrefix + libraryHelper.getDatabaseName());
+						.getColumnIndexOrThrow(TrackEntry.COLUMN_URI)));
+		contents.close();
 	}
+
 
 }
