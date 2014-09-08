@@ -5,7 +5,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="15"
+        android:minSdkVersion="16"
         android:targetSdkVersion="20" />
 
     <application
@@ -20,6 +20,14 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".TrackViewActivity"
+            android:label="@string/title_activity_track_view" >
+            android:parentActivityName="pconley.vamp.LibraryActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="pconley.vamp.LibraryActivity" />
         </activity>
     </application>
 

@@ -3,13 +3,16 @@ package pconley.vamp;
 import java.util.List;
 
 import pconley.vamp.db.TrackDAO;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -17,6 +20,8 @@ import android.widget.ListView;
  * Main activity, showing the contents of the library.
  */
 public class LibraryActivity extends Activity {
+
+	public static final String ID_NAME = "pconley.vamp.track_id";
 
 	private ListView trackListView;
 
@@ -28,6 +33,20 @@ public class LibraryActivity extends Activity {
 		trackListView = (ListView) findViewById(R.id.track_list);
 
 		new LoadTrackListTask().execute();
+
+		trackListView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+
+				Intent intent = new Intent(LibraryActivity.this,
+						TrackViewActivity.class);
+				intent.putExtra(ID_NAME,
+						(long) parent.getItemAtPosition(position));
+				startActivity(intent);
+			}
+		});
 	}
 
 	@Override
@@ -54,8 +73,7 @@ public class LibraryActivity extends Activity {
 	 * done in a background thread; the task displays a progress bar wihle
 	 * working.
 	 */
-	private class LoadTrackListTask extends
-			AsyncTask<Void, Void, List<Long>> {
+	private class LoadTrackListTask extends AsyncTask<Void, Void, List<Long>> {
 
 		private ProgressDialog progress;
 
@@ -70,7 +88,6 @@ public class LibraryActivity extends Activity {
 
 		@Override
 		protected void onPreExecute() {
-			super.onPreExecute();
 			progress.setMessage("Loading library");
 			progress.show();
 		}
