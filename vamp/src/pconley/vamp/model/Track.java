@@ -3,6 +3,8 @@ package pconley.vamp.model;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -52,9 +54,29 @@ public class Track {
 		return Collections.unmodifiableSet(tags.get(name));
 	}
 
+	public String tagsToString() {
+		StringBuilder sb = new StringBuilder();
+
+		List<String> tagNames = new LinkedList<String>(tags.keySet());
+		Collections.sort(tagNames);
+
+		for (String name : tagNames) {
+			sb.append("\t").append(name).append(":\n");
+
+			for (Tag tag : tags.get(name)) {
+				sb.append("\t\t").append(tag.getValue()).append("\n");
+			}
+		}
+
+		return sb.toString();
+	}
+
 	@Override
 	public String toString() {
-		return uri + ": " + tags.values();
+		StringBuilder sb = new StringBuilder();
+		sb.append(uri).append("\n").append(tagsToString());
+
+		return sb.toString();
 	}
 
 	@Override
