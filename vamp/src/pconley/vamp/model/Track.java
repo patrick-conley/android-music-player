@@ -54,10 +54,8 @@ public class Track {
 		return Collections.unmodifiableSet(tags.get(name));
 	}
 
-	@Override
-	public String toString() {
+	public String tagsToString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(uri).append("\n");
 
 		List<String> tagNames = new LinkedList<String>(tags.keySet());
 		Collections.sort(tagNames);
@@ -69,6 +67,14 @@ public class Track {
 				sb.append("\t\t").append(tag.getValue()).append("\n");
 			}
 		}
+
+		return sb.toString();
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(uri).append("\n").append(tagsToString());
 
 		return sb.toString();
 	}

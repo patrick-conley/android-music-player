@@ -4,7 +4,6 @@ import java.util.List;
 
 import pconley.vamp.db.TrackDAO;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -61,11 +60,10 @@ public class LibraryActivity extends Activity {
 		// Handle action bar item clicks here. The action bar will
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
+		switch (item.getItemId()) {
+		default:
+			return super.onOptionsItemSelected(item);
 		}
-		return super.onOptionsItemSelected(item);
 	}
 
 	/*
@@ -75,28 +73,12 @@ public class LibraryActivity extends Activity {
 	 */
 	private class LoadTrackListTask extends AsyncTask<Void, Void, List<Long>> {
 
-		private ProgressDialog progress;
-
-		public LoadTrackListTask() {
-			progress = new ProgressDialog(LibraryActivity.this);
-		}
-
 		@Override
 		protected List<Long> doInBackground(Void... params) {
 			return new TrackDAO(LibraryActivity.this).getIds();
 		}
 
-		@Override
-		protected void onPreExecute() {
-			progress.setMessage("Loading library");
-			progress.show();
-		}
-
 		protected void onPostExecute(List<Long> ids) {
-			if (progress.isShowing()) {
-				progress.dismiss();
-			}
-
 			ArrayAdapter<Long> adapter = new ArrayAdapter<Long>(
 					LibraryActivity.this, R.layout.track_list_item,
 					R.id.track_list_item, ids);

@@ -23,7 +23,7 @@
         </activity>
         <activity
             android:name=".TrackViewActivity"
-            android:label="@string/title_activity_track_view" >
+            android:label="@string/title_activity_track_view"
             android:parentActivityName="pconley.vamp.LibraryActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
