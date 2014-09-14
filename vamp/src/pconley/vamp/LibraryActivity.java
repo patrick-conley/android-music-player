@@ -16,7 +16,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 /**
  * Main activity, showing the contents of the library.
@@ -74,6 +73,9 @@ public class LibraryActivity extends Activity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		switch (item.getItemId()) {
+		case R.id.action_player:
+			Intent intent = new Intent(this, PlayerActivity.class);
+			startActivity(intent);
 		default:
 			return super.onOptionsItemSelected(item);
 		}

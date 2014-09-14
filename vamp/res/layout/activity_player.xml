@@ -6,12 +6,6 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="pconley.vamp.LibraryActivity" >
-
-    <ListView
-        android:id="@+id/track_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-    </ListView>
+    tools:context="pconley.vamp.PlayerActivity" >
 
 </RelativeLayout>

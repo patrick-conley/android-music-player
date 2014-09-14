@@ -4,5 +4,6 @@
     <string name="app_name">Android Music Player</string>
     <string name="title_activity_library">Library</string>
     <string name="title_activity_track_view">Track Details</string>
+    <string name="title_activity_player">Player</string>
 
 </resources>

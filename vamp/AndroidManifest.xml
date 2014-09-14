@@ -14,7 +14,7 @@
         android:label="@string/app_name" >
         <activity
             android:name=".LibraryActivity"
-            android:label="@string/title_activity_library" >
+            android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,7 +24,15 @@
         <activity
             android:name=".TrackViewActivity"
             android:label="@string/title_activity_track_view"
-            android:parentActivityName="pconley.vamp.LibraryActivity" >
+            android:parentActivityName=".LibraryActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="pconley.vamp.LibraryActivity" />
+        </activity>
+        <activity
+            android:name=".PlayerActivity"
+            android:label="@string/title_activity_player"
+            android:parentActivityName=".LibraryActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="pconley.vamp.LibraryActivity" />
