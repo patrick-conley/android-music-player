@@ -5,8 +5,10 @@ import java.util.List;
 import pconley.vamp.db.TrackDAO;
 import android.app.Activity;
 import android.content.Intent;
+import android.database.SQLException;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 /**
  * Main activity, showing the contents of the library.
@@ -28,6 +31,16 @@ public class LibraryActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_library);
+
+		// Create a sample library.
+		// TODO: delete this (and the contents of the library) when I can read the real thing.
+		try {
+			TrackDAO.createSampleLibrary(LibraryActivity.this);
+		} catch (SQLException e) {
+			Log.w("Library", e.getMessage());
+		} catch (Exception e) {
+			Log.e("Library", e.getMessage());
+		}
 
 		trackListView = (ListView) findViewById(R.id.track_list);
 
