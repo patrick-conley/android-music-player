@@ -8,8 +8,17 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="pconley.vamp.LibraryActivity" >
 
+    <Button
+        android:id="@+id/button_create_library"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:text="@string/create_library_text"
+        android:onClick="createLibrary"/>
+
     <ListView
         android:id="@+id/track_list"
+        android:layout_below="@id/button_create_library"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
     </ListView>
