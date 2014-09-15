@@ -8,4 +8,20 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="pconley.vamp.PlayerActivity" >
 
+    <SeekBar
+        android:id="@+id/playback_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button_play_pause"
+        android:progress="0" />
+
+    <Button
+        android:id="@+id/button_play_pause"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:onClick="playPause"
+        android:text="@string/play_pause" />
+
 </RelativeLayout>

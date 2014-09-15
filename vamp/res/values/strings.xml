@@ -6,5 +6,6 @@
     <string name="title_activity_track_view">Track Details</string>
     <string name="title_activity_player">Player</string>
     <string name="create_library_text">Rebuild library</string>
+    <string name="play_pause">Play/Pause</string>
 
 </resources>

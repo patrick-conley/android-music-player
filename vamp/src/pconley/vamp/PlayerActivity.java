@@ -1,11 +1,32 @@
 package pconley.vamp;
 
+import java.io.File;
+import java.io.IOException;
+
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.Toast;
 
-public class PlayerActivity extends Activity {
+public class PlayerActivity extends Activity implements
+		MediaPlayer.OnPreparedListener {
+
+	private static final String SAMPLE_NAME = "sample_1.ogg";
+	private String state = "idle";
+
+	private MediaPlayer player;
+	private SeekBar progress;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -13,6 +34,43 @@ public class PlayerActivity extends Activity {
 		setContentView(R.layout.activity_player);
 
 		getActionBar().setDisplayHomeAsUpEnabled(true);
+
+		player = new MediaPlayer();
+		player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+		player.setOnPreparedListener(this);
+
+		progress = (SeekBar) findViewById(R.id.playback_progress);
+	}
+
+	protected void onResume() {
+		super.onResume();
+
+		File track = new File(
+				Environment
+						.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+				SAMPLE_NAME);
+
+		if (!track.exists()) {
+			displayMissingTrackDialog(track);
+			return;
+		}
+
+		try {
+			player.setDataSource(getApplicationContext(), Uri.fromFile(track));
+		} catch (IllegalArgumentException | IOException | SecurityException
+				| IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		player.prepareAsync();
+	}
+
+	protected void onPause() {
+		player.release();
+		player = null;
+
+		super.onPause();
 	}
 
 	@Override
@@ -32,4 +90,108 @@ public class PlayerActivity extends Activity {
 			return super.onOptionsItemSelected(item);
 		}
 	}
+
+	@Override
+	public void onPrepared(MediaPlayer mp) {
+		state = "prepared";
+		progress.setMax(player.getDuration());
+		progress.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+			}
+
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				// TODO: disable periodic progress bar updates - they'll reset
+				// the seek bar before it can perform the seek.
+			}
+
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress,
+					boolean fromUser) {
+				if (fromUser) {
+					player.seekTo(progress);
+				}
+			}
+		});
+
+		playPause(null);
+	}
+
+	/**
+	 * Start/resume playback if in the "prepared" or "paused" states; pause
+	 * playback if in the "started" state. Does nothing if in any other state.
+	 *
+	 * @param view
+	 */
+	public void playPause(View view) {
+		switch (state) {
+		case "prepared":
+		case "paused":
+			player.start();
+			state = "started";
+			followProgress();
+			break;
+		case "started":
+			player.pause();
+			state = "paused";
+			break;
+		case "idle":
+			Toast.makeText(this, "Player isn't ready yet", Toast.LENGTH_LONG)
+					.show();
+			break;
+		default:
+			Toast.makeText(this, "Invalid state", Toast.LENGTH_LONG).show();
+			break;
+		}
+		Log.i("Player", state);
+	}
+
+	/*
+	 * Update the progress bar periodically
+	 */
+	private void followProgress() {
+
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				while (state.equals("started") && player != null) {
+					progress.setProgress(player.getCurrentPosition());
+
+					try {
+						Thread.sleep(200);
+					} catch (InterruptedException e) {
+						Log.d("Player", "Interrupt received (not important)");
+					}
+				}
+			}
+		}).start();
+	}
+
+	/*
+	 * Display an alert dialog (to go back to the library) if the sample track
+	 * doesn't exist
+	 */
+	private void displayMissingTrackDialog(File track) {
+		Log.e("Player", "Sample track doesn't exist");
+		new AlertDialog.Builder(this)
+				.setCancelable(false)
+				.setTitle(R.string.title_activity_player)
+				.setMessage(
+						"The toy music player expects to play the file "
+								+ track.toString() + ", which doesn't exist.")
+				.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						finish();
+					}
+				})
+
+				.create().show();
+		return;
+	}
+
 }
