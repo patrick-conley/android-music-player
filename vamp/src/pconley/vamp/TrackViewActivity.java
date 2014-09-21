@@ -15,6 +15,8 @@ import android.widget.TextView;
  */
 public class TrackViewActivity extends Activity {
 
+	public static final String EXTRA_ID = "pconley.vamp.TrackViewActivity.track_id";
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -23,7 +25,7 @@ public class TrackViewActivity extends Activity {
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 
 		new LoadTrackTask().execute(getIntent().getLongExtra(
-				LibraryActivity.ID_NAME, -1));
+				EXTRA_ID, -1));
 	}
 
 	@Override

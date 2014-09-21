@@ -1,13 +1,11 @@
 package pconley.vamp;
 
 import java.io.File;
-import java.io.IOException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,18 +13,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
-import android.widget.Toast;
 
-public class PlayerActivity extends Activity implements
-		MediaPlayer.OnPreparedListener {
+public class PlayerActivity extends Activity {
 
 	private static final String SAMPLE_NAME = "sample_1.ogg";
-	private String state = "idle";
 
-	private MediaPlayer player;
-	private SeekBar progress;
+	// private SeekBar progress;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -35,15 +27,7 @@ public class PlayerActivity extends Activity implements
 
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 
-		player = new MediaPlayer();
-		player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-		player.setOnPreparedListener(this);
-
-		progress = (SeekBar) findViewById(R.id.playback_progress);
-	}
-
-	protected void onResume() {
-		super.onResume();
+		// progress = (SeekBar) findViewById(R.id.playback_progress);
 
 		File track = new File(
 				Environment
@@ -55,22 +39,9 @@ public class PlayerActivity extends Activity implements
 			return;
 		}
 
-		try {
-			player.setDataSource(getApplicationContext(), Uri.fromFile(track));
-		} catch (IllegalArgumentException | IOException | SecurityException
-				| IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		player.prepareAsync();
-	}
-
-	protected void onPause() {
-		player.release();
-		player = null;
-
-		super.onPause();
+		Intent intent = new Intent(this, PlayerService.class).setAction(
+				PlayerService.ACTION_PLAY).setData(Uri.fromFile(track));
+		startService(intent);
 	}
 
 	@Override
@@ -91,33 +62,35 @@ public class PlayerActivity extends Activity implements
 		}
 	}
 
-	@Override
-	public void onPrepared(MediaPlayer mp) {
-		state = "prepared";
-		progress.setMax(player.getDuration());
-		progress.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-
-			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-			}
-
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-				// TODO: disable periodic progress bar updates - they'll reset
-				// the seek bar before it can perform the seek.
-			}
-
-			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress,
-					boolean fromUser) {
-				if (fromUser) {
-					player.seekTo(progress);
-				}
-			}
-		});
-
-		playPause(null);
-	}
+	//
+	// @Override
+	// public void onPrepared(MediaPlayer mp) {
+	// progress.setProgress(0);
+	// progress.setMax(player.getDuration());
+	// progress.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+	//
+	// @Override
+	// public void onStopTrackingTouch(SeekBar seekBar) {
+	// }
+	//
+	// @Override
+	// public void onStartTrackingTouch(SeekBar seekBar) {
+	// // TODO: disable periodic progress bar updates - they'll reset
+	// // the seek bar before it can perform the seek.
+	// }
+	//
+	// @Override
+	// public void onProgressChanged(SeekBar seekBar, int progress,
+	// boolean fromUser) {
+	// if (fromUser) {
+	// player.seekTo(progress);
+	// }
+	// }
+	// });
+	//
+	// state = "prepared";
+	// playPause(null);
+	// }
 
 	/**
 	 * Start/resume playback if in the "prepared" or "paused" states; pause
@@ -126,49 +99,32 @@ public class PlayerActivity extends Activity implements
 	 * @param view
 	 */
 	public void playPause(View view) {
-		switch (state) {
-		case "prepared":
-		case "paused":
-			player.start();
-			state = "started";
-			followProgress();
-			break;
-		case "started":
-			player.pause();
-			state = "paused";
-			break;
-		case "idle":
-			Toast.makeText(this, "Player isn't ready yet", Toast.LENGTH_LONG)
-					.show();
-			break;
-		default:
-			Toast.makeText(this, "Invalid state", Toast.LENGTH_LONG).show();
-			break;
-		}
-		Log.i("Player", state);
+		Intent intent = new Intent(this, PlayerService.class)
+				.setAction(PlayerService.ACTION_PLAY_PAUSE);
+		startService(intent);
 	}
 
-	/*
-	 * Update the progress bar periodically
-	 */
-	private void followProgress() {
-
-		new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				while (state.equals("started") && player != null) {
-					progress.setProgress(player.getCurrentPosition());
-
-					try {
-						Thread.sleep(200);
-					} catch (InterruptedException e) {
-						Log.d("Player", "Interrupt received (not important)");
-					}
-				}
-			}
-		}).start();
-	}
+	// /*
+	// * Update the progress bar periodically
+	// */
+	// private void followProgress() {
+	//
+	// new Thread(new Runnable() {
+	//
+	// @Override
+	// public void run() {
+	// while (state.equals("started") && player != null) {
+	// progress.setProgress(player.getCurrentPosition());
+	//
+	// try {
+	// Thread.sleep(200);
+	// } catch (InterruptedException e) {
+	// Log.d("Player", "Interrupt received (not important)");
+	// }
+	// }
+	// }
+	// }).start();
+	// }
 
 	/*
 	 * Display an alert dialog (to go back to the library) if the sample track

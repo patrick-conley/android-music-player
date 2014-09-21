@@ -21,8 +21,6 @@ import android.widget.ListView;
  */
 public class LibraryActivity extends Activity {
 
-	public static final String ID_NAME = "pconley.vamp.track_id";
-
 	private ListView trackListView;
 
 	@Override
@@ -42,7 +40,7 @@ public class LibraryActivity extends Activity {
 
 				Intent intent = new Intent(LibraryActivity.this,
 						TrackViewActivity.class);
-				intent.putExtra(ID_NAME,
+				intent.putExtra(TrackViewActivity.EXTRA_ID,
 						(long) parent.getItemAtPosition(position));
 				startActivity(intent);
 			}

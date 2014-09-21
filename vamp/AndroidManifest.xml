@@ -39,6 +39,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="pconley.vamp.LibraryActivity" />
         </activity>
+
+        <service android:name=".PlayerService" />
     </application>
 
 </manifest>
