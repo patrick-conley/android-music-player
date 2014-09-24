@@ -6,21 +6,22 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="pconley.vamp.LibraryActivity" >
+    tools:context="pconley.vamp.PlayerActivity" >
+
+    <SeekBar
+        android:id="@+id/playback_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button_play_pause"
+        android:progress="0" />
 
     <Button
-        android:id="@+id/button_create_library"
+        android:id="@+id/button_play_pause"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:onClick="createLibrary"
-        android:text="@string/create_library_text" />
-
-    <ListView
-        android:id="@+id/track_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/button_create_library" >
-    </ListView>
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:onClick="playPause"
+        android:text="@string/play_pause" />
 
 </RelativeLayout>

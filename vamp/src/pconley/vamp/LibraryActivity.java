@@ -5,7 +5,6 @@ import java.util.List;
 import pconley.vamp.db.TrackDAO;
 import android.app.Activity;
 import android.content.Intent;
-import android.database.SQLException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,14 +15,11 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 /**
  * Main activity, showing the contents of the library.
  */
 public class LibraryActivity extends Activity {
-
-	public static final String ID_NAME = "pconley.vamp.track_id";
 
 	private ListView trackListView;
 
@@ -32,19 +28,9 @@ public class LibraryActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_library);
 
-		// Create a sample library.
-		// TODO: delete this (and the contents of the library) when I can read the real thing.
-		try {
-			TrackDAO.createSampleLibrary(LibraryActivity.this);
-		} catch (SQLException e) {
-			Log.w("Library", e.getMessage());
-		} catch (Exception e) {
-			Log.e("Library", e.getMessage());
-		}
-
 		trackListView = (ListView) findViewById(R.id.track_list);
 
-		new LoadTrackListTask().execute();
+		new LoadTrackListTask().execute(false);
 
 		trackListView.setOnItemClickListener(new OnItemClickListener() {
 
@@ -54,7 +40,7 @@ public class LibraryActivity extends Activity {
 
 				Intent intent = new Intent(LibraryActivity.this,
 						TrackViewActivity.class);
-				intent.putExtra(ID_NAME,
+				intent.putExtra(TrackViewActivity.EXTRA_ID,
 						(long) parent.getItemAtPosition(position));
 				startActivity(intent);
 			}
@@ -74,20 +60,49 @@ public class LibraryActivity extends Activity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		switch (item.getItemId()) {
+		case R.id.action_player:
+			Intent intent = new Intent(this, PlayerActivity.class);
+			startActivity(intent);
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
 
+	/**
+	 * Delete the contents of the library and replace it with sample contents.
+	 *
+	 * TODO: delete this (and the contents of the library) when I can read the
+	 * real thing.
+	 *
+	 * @param view
+	 *            The origin of the rebuild request
+	 */
+	public void createLibrary(View view) {
+		new LoadTrackListTask().execute(true);
+	}
+
 	/*
 	 * Load the contents of the library into a TextView with execute(). Work is
-	 * done in a background thread; the task displays a progress bar wihle
+	 * done in a background thread; the task displays a progress bar while
 	 * working.
+	 *
+	 * The library is first deleted and rebuilt if `LoadTrackListTask.execute`
+	 * is called with a true parameter.
 	 */
-	private class LoadTrackListTask extends AsyncTask<Void, Void, List<Long>> {
+	private class LoadTrackListTask extends
+			AsyncTask<Boolean, Void, List<Long>> {
 
 		@Override
-		protected List<Long> doInBackground(Void... params) {
+		protected List<Long> doInBackground(Boolean... params) {
+			// Create a sample library.
+			if (params.length > 0 && params[0] == true) {
+				try {
+					TrackDAO.createSampleLibrary(LibraryActivity.this);
+				} catch (Exception e) {
+					Log.w("Library", e.getMessage());
+				}
+			}
+
 			return new TrackDAO(LibraryActivity.this).getIds();
 		}
 
