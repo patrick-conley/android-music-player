@@ -1,6 +1,7 @@
 package pconley.vamp;
 
 import java.io.File;
+import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -22,9 +23,13 @@ import android.widget.SeekBar;
 
 public class PlayerActivity extends Activity {
 
-	private static final String SAMPLE_NAME = "sample_1.ogg";
+	/**
+	 * Action for incoming intents. Start playing a new list of tracks.
+	 */
+	public static final String ACTION_PLAY = "pconley.vamp.PlayerActivity.play";
+	public static final String EXTRA_TRACKS = "pconley.vamp.PlayerActivity.play.tracks";
 
-		private static final int SEC = 1000;
+	private static final int SEC = 1000;
 
 	/*
 	 * Progress/seek bar. Updates automatically as long as a track is playing,
@@ -61,7 +66,6 @@ public class PlayerActivity extends Activity {
 
 					startService(intent);
 				}
-
 			}
 
 			@Override
@@ -76,19 +80,29 @@ public class PlayerActivity extends Activity {
 			}
 		});
 
-		File track = new File(
-				Environment
-						.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-				SAMPLE_NAME);
+		// Play the track specified by the launching activity
+		if (ACTION_PLAY.equals(getIntent().getAction())) {
+			List<String> rawTracks = getIntent().getStringArrayListExtra(
+					EXTRA_TRACKS);
 
-		if (!track.exists()) {
-			displayMissingTrackDialog(track);
-			return;
+			// TODO: launching activity should provide the URI
+			File track = new File(
+					Environment
+							.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+					rawTracks.get(0));
+
+			// TODO: the service should check the track exists (send a broadcast
+			// to this activity if available and skip to the next track)
+			if (!track.exists()) {
+				displayMissingTrackDialog(track);
+				return;
+			}
+
+			Intent trackIntent = new Intent(this, PlayerService.class)
+					.setAction(PlayerService.ACTION_PLAY).setData(
+							Uri.fromFile(track));
+			startService(trackIntent);
 		}
-
-		Intent intent = new Intent(this, PlayerService.class).setAction(
-				PlayerService.ACTION_PLAY).setData(Uri.fromFile(track));
-		startService(intent);
 	}
 
 	@Override
@@ -120,6 +134,7 @@ public class PlayerActivity extends Activity {
 
 	@Override
 	protected void onPause() {
+		((ProgressBroadcastReceiver) progressReceiver).cancel();
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(
 				progressReceiver);
 
@@ -170,6 +185,12 @@ public class PlayerActivity extends Activity {
 
 		private CountDownTimer progressTimer;
 
+		public void cancel() {
+			if (progressTimer != null) {
+				progressTimer.cancel();
+			}
+		}
+
 		@Override
 		public void onReceive(Context context, Intent intent) {
 
@@ -188,8 +209,9 @@ public class PlayerActivity extends Activity {
 					progressTimer.cancel();
 				}
 
-				Log.w("Player", String.format("Starting timer at %d of %d",
-							position / SEC, duration / SEC));
+				Log.w("Player",
+						String.format("Starting timer at %d of %d", position
+								/ SEC, duration / SEC));
 				progressTimer = new CountDownTimer(duration - position, SEC) {
 
 					@Override

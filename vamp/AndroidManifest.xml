@@ -9,6 +9,7 @@
         android:targetSdkVersion="20" />
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
     <application
         android:allowBackup="true"
@@ -34,6 +35,7 @@
         <activity
             android:name=".PlayerActivity"
             android:label="@string/title_activity_player"
+            android:launchMode="singleTop"
             android:parentActivityName=".LibraryActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

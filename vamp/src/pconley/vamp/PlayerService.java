@@ -2,18 +2,27 @@ package pconley.vamp;
 
 import java.io.IOException;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 public class PlayerService extends Service implements
 		MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener,
 		MediaPlayer.OnErrorListener, MediaPlayer.OnInfoListener {
+
+	/**
+	 * ID used for this service's notifications.
+	 */
+	public static final int NOTIFICATION_ID = 1;
 
 	/**
 	 * Action for incoming intents. Start playing a new track. Specify the track
@@ -83,24 +92,26 @@ public class PlayerService extends Service implements
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		super.onStartCommand(intent, flags, startId);
 
-		Log.i("Player", intent.getAction());
+		if (intent != null) {
+			Log.i("Player", intent.getAction());
 
-		switch (intent.getAction()) {
-		case ACTION_PLAY:
-			playTrack(intent.getData());
-			break;
+			switch (intent.getAction()) {
+			case ACTION_PLAY:
+				playTrack(intent.getData());
+				break;
 
-		case ACTION_PLAY_PAUSE:
-			playPause();
-			break;
+			case ACTION_PLAY_PAUSE:
+				playPause();
+				break;
 
-		case ACTION_SEEK:
-			seekTo(intent.getIntExtra(EXTRA_SEEK_POSITION, 0));
-			break;
+			case ACTION_SEEK:
+				seekTo(intent.getIntExtra(EXTRA_SEEK_POSITION, 0));
+				break;
 
-		default:
-			Log.w("Player", "Invalid action " + intent.getAction());
-			break;
+			default:
+				Log.w("Player", "Invalid action " + intent.getAction());
+				break;
+			}
 		}
 
 		return Service.START_STICKY;
@@ -150,6 +161,8 @@ public class PlayerService extends Service implements
 		player.setOnCompletionListener(this);
 		player.setOnErrorListener(this);
 		player.setOnInfoListener(this);
+		player.setWakeMode(getApplicationContext(),
+				PowerManager.PARTIAL_WAKE_LOCK);
 
 		try {
 			player.setDataSource(getApplicationContext(), track);
@@ -177,11 +190,33 @@ public class PlayerService extends Service implements
 
 		if (player.isPlaying()) {
 			player.pause();
+			stopForeground(true);
 			broadcastIntent.putExtra(EXTRA_PROGRESS_STATE,
 					PROGRESS_STATE_PAUSED);
 			Log.d("Player", "paused");
 		} else {
+
+			Notification notification = new Notification.Builder(
+					getApplicationContext())
+					.setContentTitle(getString(R.string.app_name))
+					.setContentText("Now playing...")
+					.setSmallIcon(android.R.drawable.ic_media_play)
+					.setOngoing(true)
+					.setLargeIcon(
+							BitmapFactory.decodeResource(this.getResources(),
+									android.R.drawable.ic_media_play))
+					.setContentIntent(
+							PendingIntent.getActivity(getApplicationContext(),
+									0, new Intent(getApplicationContext(),
+											PlayerActivity.class),
+									PendingIntent.FLAG_UPDATE_CURRENT)).build();
+
+			notification.icon = android.R.drawable.ic_media_play;
+			notification.flags |= Notification.FLAG_ONGOING_EVENT;
+
 			player.start();
+
+			startForeground(NOTIFICATION_ID, notification);
 			broadcastIntent.putExtra(EXTRA_PROGRESS_STATE,
 					PROGRESS_STATE_PLAYING);
 			Log.d("Player", "started");
