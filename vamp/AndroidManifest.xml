@@ -42,7 +42,7 @@
                 android:value="pconley.vamp.LibraryActivity" />
         </activity>
 
-        <service android:name=".PlayerService" />
+        <service android:name="pconley.vamp.player.PlayerService" />
     </application>
 
 </manifest>

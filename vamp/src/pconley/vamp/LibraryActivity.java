@@ -1,14 +1,19 @@
 package pconley.vamp;
 
-import java.util.ArrayList;
+import java.io.File;
 import java.util.List;
 
 import pconley.vamp.db.TrackDAO;
-
+import pconley.vamp.player.PlayerService;
+import pconley.vamp.player.PlayerWarningReceiver;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 /**
  * Main activity, showing the contents of the library.
@@ -25,18 +31,16 @@ public class LibraryActivity extends Activity {
 
 	private ListView trackListView;
 
-	private static ArrayList<String> tracks;
+	private PlayerWarningReceiver warningReceiver;
 
-	static {
-		tracks = new ArrayList<String>();
-		tracks.add("sample_1.m4a");
-		tracks.add("sample_1.ogg");
-	}
+	private static final String trackName = "sample_1.m4a";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_library);
+
+		warningReceiver = new PlayerWarningReceiver(this);
 
 		trackListView = (ListView) findViewById(R.id.track_list);
 
@@ -58,6 +62,23 @@ public class LibraryActivity extends Activity {
 	}
 
 	@Override
+	protected void onResume() {
+		super.onResume();
+
+		LocalBroadcastManager.getInstance(this).registerReceiver(
+				warningReceiver,
+				new IntentFilter(PlayerService.FILTER_PLAYER_WARNINGS));
+	}
+
+	@Override
+	protected void onPause() {
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(
+				warningReceiver);
+
+		super.onPause();
+	}
+
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.library, menu);
@@ -71,10 +92,10 @@ public class LibraryActivity extends Activity {
 		// as you specify a parent activity in AndroidManifest.xml.
 		switch (item.getItemId()) {
 		case R.id.action_player:
-			Intent intent = new Intent(this, PlayerActivity.class);
-			intent.setAction(PlayerActivity.ACTION_PLAY);
-			intent.putStringArrayListExtra(PlayerActivity.EXTRA_TRACKS, tracks);
-			startActivity(intent);
+			if (launchPlayer()) {
+				startActivity(new Intent(this, PlayerActivity.class));
+			}
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -94,10 +115,34 @@ public class LibraryActivity extends Activity {
 	}
 
 	/*
+	 * Start the music player with a single track. Returns false if the track
+	 * didn't exist.
+	 */
+	private boolean launchPlayer() {
+		File track = new File(
+				Environment
+						.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+				trackName);
+
+		if (!track.exists()) {
+			Log.w("Library", "Missing track " + track);
+			Toast.makeText(this, "Missing track " + track, Toast.LENGTH_LONG)
+					.show();
+			return false;
+		}
+
+		Intent intent = new Intent(this, PlayerService.class).setAction(
+				PlayerService.ACTION_PLAY).setData(Uri.fromFile(track));
+		startService(intent);
+
+		return true;
+	}
+
+	/*
 	 * Load the contents of the library into a TextView with execute(). Work is
 	 * done in a background thread; the task displays a progress bar while
 	 * working.
-	 *
+	 * 
 	 * The library is first deleted and rebuilt if `LoadTrackListTask.execute`
 	 * is called with a true parameter.
 	 */

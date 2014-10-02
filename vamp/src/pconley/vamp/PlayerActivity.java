@@ -1,19 +1,14 @@
 package pconley.vamp;
 
-import java.io.File;
-import java.util.List;
-
+import pconley.vamp.player.PlayerService;
+import pconley.vamp.player.PlayerWarningReceiver;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
@@ -22,12 +17,6 @@ import android.view.View;
 import android.widget.SeekBar;
 
 public class PlayerActivity extends Activity {
-
-	/**
-	 * Action for incoming intents. Start playing a new list of tracks.
-	 */
-	public static final String ACTION_PLAY = "pconley.vamp.PlayerActivity.play";
-	public static final String EXTRA_TRACKS = "pconley.vamp.PlayerActivity.play.tracks";
 
 	private static final int SEC = 1000;
 
@@ -42,6 +31,7 @@ public class PlayerActivity extends Activity {
 	 * Receive progress updates from the player
 	 */
 	private BroadcastReceiver progressReceiver;
+	private PlayerWarningReceiver warningReceiver;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +39,7 @@ public class PlayerActivity extends Activity {
 		setContentView(R.layout.activity_player);
 
 		progressReceiver = new ProgressBroadcastReceiver();
+		warningReceiver = new PlayerWarningReceiver(this);
 
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -79,30 +70,6 @@ public class PlayerActivity extends Activity {
 				allowProgressUpdates = true;
 			}
 		});
-
-		// Play the track specified by the launching activity
-		if (ACTION_PLAY.equals(getIntent().getAction())) {
-			List<String> rawTracks = getIntent().getStringArrayListExtra(
-					EXTRA_TRACKS);
-
-			// TODO: launching activity should provide the URI
-			File track = new File(
-					Environment
-							.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-					rawTracks.get(0));
-
-			// TODO: the service should check the track exists (send a broadcast
-			// to this activity if available and skip to the next track)
-			if (!track.exists()) {
-				displayMissingTrackDialog(track);
-				return;
-			}
-
-			Intent trackIntent = new Intent(this, PlayerService.class)
-					.setAction(PlayerService.ACTION_PLAY).setData(
-							Uri.fromFile(track));
-			startService(trackIntent);
-		}
 	}
 
 	@Override
@@ -130,6 +97,9 @@ public class PlayerActivity extends Activity {
 		LocalBroadcastManager.getInstance(this).registerReceiver(
 				progressReceiver,
 				new IntentFilter(PlayerService.FILTER_PROGRESS));
+		LocalBroadcastManager.getInstance(this).registerReceiver(
+				warningReceiver,
+				new IntentFilter(PlayerService.FILTER_PLAYER_WARNINGS));
 	}
 
 	@Override
@@ -137,6 +107,8 @@ public class PlayerActivity extends Activity {
 		((ProgressBroadcastReceiver) progressReceiver).cancel();
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(
 				progressReceiver);
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(
+				warningReceiver);
 
 		super.onPause();
 	}
@@ -151,30 +123,6 @@ public class PlayerActivity extends Activity {
 		Intent intent = new Intent(this, PlayerService.class)
 				.setAction(PlayerService.ACTION_PLAY_PAUSE);
 		startService(intent);
-	}
-
-	/*
-	 * Display an alert dialog (to go back to the library) if the sample track
-	 * doesn't exist
-	 */
-	private void displayMissingTrackDialog(File track) {
-		Log.e("Player", "Sample track doesn't exist");
-		new AlertDialog.Builder(this)
-				.setCancelable(false)
-				.setTitle(R.string.title_activity_player)
-				.setMessage(
-						"The toy music player expects to play the file "
-								+ track.toString() + ", which doesn't exist.")
-				.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						finish();
-					}
-				})
-
-				.create().show();
-		return;
 	}
 
 	/*

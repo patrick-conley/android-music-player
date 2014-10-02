@@ -1,7 +1,10 @@
-package pconley.vamp;
+package pconley.vamp.player;
 
+import java.io.File;
 import java.io.IOException;
 
+import pconley.vamp.PlayerActivity;
+import pconley.vamp.R;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -68,6 +71,10 @@ public class PlayerService extends Service implements
 	 */
 	public static final String EXTRA_PROGRESS_DURATION = "pconley.vamp.playerService.progress.duration";
 
+	public static final String FILTER_PLAYER_WARNINGS = "pconley.vamp.playerService.warnings";
+	public static final String EXTRA_WARNING = "pconley.vamp.playerService.warnings.warning";
+	public static final int WARNING_MISSING_TRACK = 1;
+
 	private MediaPlayer player = null;
 
 	/**
@@ -124,6 +131,7 @@ public class PlayerService extends Service implements
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
+		stopForeground(true);
 		Intent intent = new Intent(FILTER_PROGRESS).putExtra(
 				EXTRA_PROGRESS_STATE, PROGRESS_STATE_DONE);
 		LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
@@ -150,9 +158,17 @@ public class PlayerService extends Service implements
 
 	// Play a new track
 	private void playTrack(Uri track) {
-
+		
 		if (player != null) {
 			player.release();
+		}
+
+		// Check for the track
+		if (!new File(track.getPath()).exists()) {
+			Log.e("Player", "Missing track");
+			sendBroadcast(new Intent(FILTER_PLAYER_WARNINGS).setData(track).putExtra(EXTRA_WARNING,
+					WARNING_MISSING_TRACK));
+			return;
 		}
 
 		player = new MediaPlayer();
