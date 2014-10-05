@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import pconley.vamp.PlayerActivity;
 import pconley.vamp.R;
+
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -13,9 +14,9 @@ import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 public class PlayerService extends Service implements
@@ -46,43 +47,26 @@ public class PlayerService extends Service implements
 	public static final String ACTION_SEEK = "pconley.vamp.playerService.seek";
 	public static final String EXTRA_SEEK_POSITION = "pconley.vamp.playerService.seek.time";
 
-	/**
-	 * Intent filter for outgoing broadcasts. Current track's metadata,
-	 * play/pause state, and elapsed/total time.
-	 */
-	public static final String FILTER_PROGRESS = "pconley.vamp.playerService.progress";
-
-	/**
-	 * In outgoing broadcasts, what's changed about the player's state. Done
-	 * state is only sent if there are no more tracks queued.
-	 */
-	public static final String EXTRA_PROGRESS_STATE = "pconley.vamp.playerService.progress.state";
-	public static final int PROGRESS_STATE_PAUSED = -1;
-	public static final int PROGRESS_STATE_PLAYING = 1;
-	public static final int PROGRESS_STATE_DONE = 0;
-
-	/**
-	 * In outgoing broadcasts, the current track's current position.
-	 */
-	public static final String EXTRA_PROGRESS_POSITION = "pconley.vamp.playerService.progress.position";
-
-	/**
-	 * In outgoing broadcasts, the current track's duration.
-	 */
-	public static final String EXTRA_PROGRESS_DURATION = "pconley.vamp.playerService.progress.duration";
-
 	public static final String FILTER_PLAYER_WARNINGS = "pconley.vamp.playerService.warnings";
 	public static final String EXTRA_WARNING = "pconley.vamp.playerService.warnings.warning";
 	public static final int WARNING_MISSING_TRACK = 1;
 
 	private MediaPlayer player = null;
 
+	private final IBinder binder = new PlayerBinder();
+
 	/**
-	 * Unimplemented.
+	 * Bind an activity to control the music player's state.
 	 */
 	@Override
 	public IBinder onBind(Intent intent) {
-		return null;
+		return binder;
+	}
+
+	public class PlayerBinder extends Binder {
+		public PlayerService getService() {
+			return PlayerService.this;
+		}
 	}
 
 	@Override
@@ -132,9 +116,6 @@ public class PlayerService extends Service implements
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		stopForeground(true);
-		Intent intent = new Intent(FILTER_PROGRESS).putExtra(
-				EXTRA_PROGRESS_STATE, PROGRESS_STATE_DONE);
-		LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
 		player.release();
 		player = null;
@@ -158,27 +139,28 @@ public class PlayerService extends Service implements
 
 	// Play a new track
 	private void playTrack(Uri track) {
-		
-		if (player != null) {
-			player.release();
+
+		if (player == null) {
+			player = new MediaPlayer();
+			player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+			player.setOnPreparedListener(this);
+			player.setOnCompletionListener(this);
+			player.setOnErrorListener(this);
+			player.setOnInfoListener(this);
+			player.setWakeMode(getApplicationContext(),
+					PowerManager.PARTIAL_WAKE_LOCK);
+
+		} else {
+			player.reset();
 		}
 
 		// Check for the track
 		if (!new File(track.getPath()).exists()) {
 			Log.e("Player", "Missing track");
-			sendBroadcast(new Intent(FILTER_PLAYER_WARNINGS).setData(track).putExtra(EXTRA_WARNING,
-					WARNING_MISSING_TRACK));
+			sendBroadcast(new Intent(FILTER_PLAYER_WARNINGS).setData(track)
+					.putExtra(EXTRA_WARNING, WARNING_MISSING_TRACK));
 			return;
 		}
-
-		player = new MediaPlayer();
-		player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-		player.setOnPreparedListener(this);
-		player.setOnCompletionListener(this);
-		player.setOnErrorListener(this);
-		player.setOnInfoListener(this);
-		player.setWakeMode(getApplicationContext(),
-				PowerManager.PARTIAL_WAKE_LOCK);
 
 		try {
 			player.setDataSource(getApplicationContext(), track);
@@ -193,23 +175,47 @@ public class PlayerService extends Service implements
 		}
 	}
 
-	// (Un)pause the current track
-	private void playPause() {
+	/**
+	 * @return The current track's current position (in ms), or -1 if nothing is
+	 *         playing.
+	 */
+	public int getCurrentPosition() {
+		return player == null ? -1 : player.getCurrentPosition();
+	}
+
+	/**
+	 * @return The current track's duration (in ms), or -1 if nothing is
+	 *         playing.
+	 */
+	public int getDuration() {
+		return player == null ? -1 : player.getDuration();
+	}
+
+	/**
+	 * @return Whether the service is playing a track.
+	 */
+	public boolean isPlaying() {
+		return player != null && player.isPlaying();
+	}
+
+	/**
+	 * Pause or unpause the current track.
+	 *
+	 * @return whether the player is now playing
+	 */
+	public boolean playPause() {
 		if (player == null) {
 			Log.w("Player", "Can't play/pause: no player");
-			return;
+			return false;
 		}
-
-		Intent broadcastIntent = new Intent(FILTER_PROGRESS).putExtra(
-				EXTRA_PROGRESS_POSITION, player.getCurrentPosition()).putExtra(
-				EXTRA_PROGRESS_DURATION, player.getDuration());
 
 		if (player.isPlaying()) {
 			player.pause();
 			stopForeground(true);
-			broadcastIntent.putExtra(EXTRA_PROGRESS_STATE,
-					PROGRESS_STATE_PAUSED);
+
 			Log.d("Player", "paused");
+
+			return false;
 		} else {
 
 			Notification notification = new Notification.Builder(
@@ -231,36 +237,27 @@ public class PlayerService extends Service implements
 			notification.flags |= Notification.FLAG_ONGOING_EVENT;
 
 			player.start();
-
 			startForeground(NOTIFICATION_ID, notification);
-			broadcastIntent.putExtra(EXTRA_PROGRESS_STATE,
-					PROGRESS_STATE_PLAYING);
+
 			Log.d("Player", "started");
+
+			return true;
 		}
-
-		LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
-
 	}
 
-	// Seek within the current track. Works in either play/pause states.
-	private void seekTo(int time) {
+	/**
+	 * Seek within the current track. Works in play and pause states.
+	 *
+	 * @param time
+	 *            target position (in ms). I'm not sure what will happen if the
+	 *            target is invalid.
+	 */
+	public void seekTo(int time) {
 		if (player == null) {
 			return;
 		}
 
 		player.seekTo(time);
-
-		// Broadcast the current position to reset the timer
-		Intent broadcastIntent = new Intent(FILTER_PROGRESS)
-				.putExtra(EXTRA_PROGRESS_POSITION, player.getCurrentPosition())
-				.putExtra(EXTRA_PROGRESS_DURATION, player.getDuration())
-				.putExtra(
-						EXTRA_PROGRESS_STATE,
-						player.isPlaying() ? PROGRESS_STATE_PLAYING
-								: PROGRESS_STATE_PAUSED);
-
-		LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
-
 	}
 
 }

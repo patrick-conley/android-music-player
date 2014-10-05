@@ -3,12 +3,14 @@ package pconley.vamp;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.player.PlayerWarningReceiver;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
@@ -30,19 +32,26 @@ public class PlayerActivity extends Activity {
 	/*
 	 * Receive progress updates from the player
 	 */
-	private BroadcastReceiver progressReceiver;
 	private PlayerWarningReceiver warningReceiver;
+
+	/*
+	 * Bound connection to the player to allow it to be controlled
+	 */
+	private PlayerService player;
+	private ServiceConnection playerConnection;
+
+	private CountDownTimer progressTimer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_player);
 
-		progressReceiver = new ProgressBroadcastReceiver();
 		warningReceiver = new PlayerWarningReceiver(this);
 
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 
+		// initialize the progress bar
 		progress = (SeekBar) findViewById(R.id.playback_progress);
 		progress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
@@ -50,19 +59,16 @@ public class PlayerActivity extends Activity {
 			public void onProgressChanged(SeekBar seekBar, int progress,
 					boolean fromUser) {
 				if (fromUser) {
-					Intent intent = new Intent(PlayerActivity.this,
-							PlayerService.class).setAction(
-							PlayerService.ACTION_SEEK).putExtra(
-							PlayerService.EXTRA_SEEK_POSITION, progress * SEC);
-
-					startService(intent);
+					player.seekTo(progress * SEC);
+					if (player.isPlaying()) {
+						startCountdown();
+					}
 				}
 			}
 
 			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {
 				allowProgressUpdates = false;
-
 			}
 
 			@Override
@@ -70,6 +76,25 @@ public class PlayerActivity extends Activity {
 				allowProgressUpdates = true;
 			}
 		});
+
+		// Define a connection to the music player
+		playerConnection = new ServiceConnection() {
+
+			@Override
+			public void onServiceConnected(ComponentName name, IBinder service) {
+				player = ((PlayerService.PlayerBinder) service).getService();
+
+				if (player.isPlaying()) {
+					startCountdown();
+				}
+			}
+
+			@Override
+			public void onServiceDisconnected(ComponentName name) {
+				cancelCountdown();
+				player = null;
+			}
+		};
 	}
 
 	@Override
@@ -90,25 +115,33 @@ public class PlayerActivity extends Activity {
 		}
 	}
 
+	/**
+	 * Register receivers for broadcasts from the player service and bind to
+	 * its running instance.
+	 */
 	@Override
 	protected void onResume() {
 		super.onResume();
 
 		LocalBroadcastManager.getInstance(this).registerReceiver(
-				progressReceiver,
-				new IntentFilter(PlayerService.FILTER_PROGRESS));
-		LocalBroadcastManager.getInstance(this).registerReceiver(
 				warningReceiver,
 				new IntentFilter(PlayerService.FILTER_PLAYER_WARNINGS));
+
+		bindService(new Intent(this, PlayerService.class), playerConnection,
+				Context.BIND_AUTO_CREATE);
+
 	}
 
+	/**
+	 * Unregister and unbind from the player service.
+	 */
 	@Override
 	protected void onPause() {
-		((ProgressBroadcastReceiver) progressReceiver).cancel();
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(
-				progressReceiver);
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(
 				warningReceiver);
+
+		cancelCountdown();
+		unbindService(playerConnection);
 
 		super.onPause();
 	}
@@ -120,87 +153,66 @@ public class PlayerActivity extends Activity {
 	 * @param view
 	 */
 	public void playPause(View view) {
-		Intent intent = new Intent(this, PlayerService.class)
-				.setAction(PlayerService.ACTION_PLAY_PAUSE);
-		startService(intent);
+		if (player.playPause()) {
+			startCountdown();
+		} else {
+			cancelCountdown();
+		}
 	}
 
-	/*
-	 * Receiver for broadcasts about current track progress. Updates the
-	 * progress bar.
-	 */
-	private class ProgressBroadcastReceiver extends BroadcastReceiver {
-
-		private CountDownTimer progressTimer;
-
-		public void cancel() {
-			if (progressTimer != null) {
-				progressTimer.cancel();
-			}
+	// Start (or reset) the countdown on the progress bar
+	private void startCountdown() {
+		if (progressTimer != null) {
+			progressTimer.cancel();
 		}
 
-		@Override
-		public void onReceive(Context context, Intent intent) {
+		final int position = player.getCurrentPosition();
+		final int duration = player.getDuration();
 
-			final int position = intent.getIntExtra(
-					PlayerService.EXTRA_PROGRESS_POSITION, 0);
-			final int duration = intent.getIntExtra(
-					PlayerService.EXTRA_PROGRESS_DURATION, 100 * SEC);
+		progress.setIndeterminate(duration == -1);
+		progress.setMax(duration / SEC);
 
-			switch (intent.getIntExtra(PlayerService.EXTRA_PROGRESS_STATE, 0)) {
-			case PlayerService.PROGRESS_STATE_PLAYING:
+		Log.i("Active track",
+				String.format("Starting timer at %d of %d", position
+						/ SEC, duration / SEC));
 
-				progress.setIndeterminate(duration == -1);
-				progress.setMax(duration / SEC);
+		progressTimer = new CountDownTimer(duration - position, SEC) {
 
-				if (progressTimer != null) {
-					progressTimer.cancel();
+			@Override
+			public void onTick(long remaining) {
+				if (allowProgressUpdates) {
+					progress.setProgress((duration - (int) remaining)
+							/ SEC);
+					Log.v("Active track", String.format(
+							"Progress is %d of %d",
+							(duration - (int) remaining) / SEC,
+							duration / SEC));
 				}
+			}
 
-				Log.w("Player",
-						String.format("Starting timer at %d of %d", position
-								/ SEC, duration / SEC));
-				progressTimer = new CountDownTimer(duration - position, SEC) {
-
-					@Override
-					public void onTick(long remaining) {
-						if (allowProgressUpdates) {
-							progress.setProgress((duration - (int) remaining)
-									/ SEC);
-							Log.v("Player", String.format(
-									"Progress is %d of %d",
-									(duration - (int) remaining) / SEC,
-									duration / SEC));
-						}
-					}
-
-					@Override
-					public void onFinish() {
-						// Do nothing
-					}
-				}.start();
-
-				break;
-			case PlayerService.PROGRESS_STATE_PAUSED:
-				progress.setProgress(position / SEC);
-				progress.setMax(duration / SEC);
-				progress.setIndeterminate(false);
-				if (progressTimer != null) {
-					progressTimer.cancel();
-					progressTimer = null;
-				}
-				break;
-			default:
+			@Override
+			public void onFinish() {
 				progress.setProgress(0);
 				progress.setMax(0);
-				if (progressTimer != null) {
-					progressTimer.cancel();
-					progressTimer = null;
-				}
-
 			}
+		}.start();
+	}
 
+	// Abort the countdown on the progress bar
+	private void cancelCountdown() {
+		if (progressTimer != null) {
+			progressTimer.cancel();
+			progressTimer = null;
 		}
+
+		Log.i("Active track", "Stopping timer");
+
+		int position = player.getCurrentPosition();
+		int duration = player.getDuration();
+
+		progress.setIndeterminate(duration == -1);
+		progress.setProgress(position / SEC);
+		progress.setMax(duration / SEC);
 	}
 
 }
