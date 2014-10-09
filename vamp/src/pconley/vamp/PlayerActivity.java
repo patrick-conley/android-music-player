@@ -1,8 +1,8 @@
 package pconley.vamp;
 
 import pconley.vamp.player.PlayerService;
-import pconley.vamp.player.PlayerWarningReceiver;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -30,9 +30,9 @@ public class PlayerActivity extends Activity {
 	private boolean allowProgressUpdates = true;
 
 	/*
-	 * Receive progress updates from the player
+	 * Receive status messages from the player
 	 */
-	private PlayerWarningReceiver warningReceiver;
+	private BroadcastReceiver playerReceiver;
 
 	/*
 	 * Bound connection to the player to allow it to be controlled
@@ -47,9 +47,9 @@ public class PlayerActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_player);
 
-		warningReceiver = new PlayerWarningReceiver(this);
-
 		getActionBar().setDisplayHomeAsUpEnabled(true);
+
+		playerReceiver = new PlayerService.StatusReceiver(this);
 
 		// initialize the progress bar
 		progress = (SeekBar) findViewById(R.id.playback_progress);
@@ -116,16 +116,16 @@ public class PlayerActivity extends Activity {
 	}
 
 	/**
-	 * Register receivers for broadcasts from the player service and bind to
-	 * its running instance.
+	 * Register receivers for broadcasts from the player service and bind to its
+	 * running instance.
 	 */
 	@Override
 	protected void onResume() {
 		super.onResume();
 
 		LocalBroadcastManager.getInstance(this).registerReceiver(
-				warningReceiver,
-				new IntentFilter(PlayerService.FILTER_PLAYER_WARNINGS));
+				playerReceiver,
+				new IntentFilter(PlayerService.FILTER_PLAYER_STATUS));
 
 		bindService(new Intent(this, PlayerService.class), playerConnection,
 				Context.BIND_AUTO_CREATE);
@@ -138,7 +138,7 @@ public class PlayerActivity extends Activity {
 	@Override
 	protected void onPause() {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(
-				warningReceiver);
+				playerReceiver);
 
 		cancelCountdown();
 		unbindService(playerConnection);
@@ -172,21 +172,17 @@ public class PlayerActivity extends Activity {
 		progress.setIndeterminate(duration == -1);
 		progress.setMax(duration / SEC);
 
-		Log.i("Active track",
-				String.format("Starting timer at %d of %d", position
-						/ SEC, duration / SEC));
+		Log.i("Active track", String.format("Starting timer at %d of %d",
+				position / SEC, duration / SEC));
 
 		progressTimer = new CountDownTimer(duration - position, SEC) {
 
 			@Override
 			public void onTick(long remaining) {
 				if (allowProgressUpdates) {
-					progress.setProgress((duration - (int) remaining)
-							/ SEC);
-					Log.v("Active track", String.format(
-							"Progress is %d of %d",
-							(duration - (int) remaining) / SEC,
-							duration / SEC));
+					progress.setProgress((duration - (int) remaining) / SEC);
+					Log.v("Active track", String.format("Progress is %d of %d",
+							(duration - (int) remaining) / SEC, duration / SEC));
 				}
 			}
 
@@ -210,7 +206,7 @@ public class PlayerActivity extends Activity {
 		int position = player.getCurrentPosition();
 		int duration = player.getDuration();
 
-		progress.setIndeterminate(duration == -1);
+		progress.setIndeterminate(false);
 		progress.setProgress(position / SEC);
 		progress.setMax(duration / SEC);
 	}

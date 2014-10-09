@@ -5,8 +5,8 @@ import java.util.List;
 
 import pconley.vamp.db.TrackDAO;
 import pconley.vamp.player.PlayerService;
-import pconley.vamp.player.PlayerWarningReceiver;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
@@ -31,7 +31,10 @@ public class LibraryActivity extends Activity {
 
 	private ListView trackListView;
 
-	private PlayerWarningReceiver warningReceiver;
+	/*
+	 * Receive status messages from the player
+	 */
+	private BroadcastReceiver playerReceiver;
 
 	private static final String trackName = "sample_1.m4a";
 
@@ -40,12 +43,11 @@ public class LibraryActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_library);
 
-		warningReceiver = new PlayerWarningReceiver(this);
-
-		trackListView = (ListView) findViewById(R.id.track_list);
+		playerReceiver = new PlayerService.StatusReceiver(this);
 
 		new LoadTrackListTask().execute(false);
 
+		trackListView = (ListView) findViewById(R.id.track_list);
 		trackListView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -66,14 +68,15 @@ public class LibraryActivity extends Activity {
 		super.onResume();
 
 		LocalBroadcastManager.getInstance(this).registerReceiver(
-				warningReceiver,
-				new IntentFilter(PlayerService.FILTER_PLAYER_WARNINGS));
+				playerReceiver,
+				new IntentFilter(PlayerService.FILTER_PLAYER_STATUS));
+
 	}
 
 	@Override
 	protected void onPause() {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(
-				warningReceiver);
+				playerReceiver);
 
 		super.onPause();
 	}
@@ -172,4 +175,5 @@ public class LibraryActivity extends Activity {
 		}
 
 	}
+
 }
