@@ -58,6 +58,8 @@ public class PlayerService extends Service implements
 
 	private final IBinder binder = new PlayerBinder();
 
+	private Notification.Builder notificationBase;
+
 	/**
 	 * Bind an activity to control the music player's state.
 	 */
@@ -70,6 +72,28 @@ public class PlayerService extends Service implements
 		public PlayerService getService() {
 			return PlayerService.this;
 		}
+	}
+
+	@Override
+	public void onCreate() {
+		super.onCreate();
+
+		// Constant content of the notification displayed while a track plays.
+		// Content that changes with the track needs to be added in playPause()
+		notificationBase = new Notification.Builder(getApplicationContext())
+				.setContentTitle(getString(R.string.app_name))
+				.setContentText("Now playing...")
+				.setSmallIcon(android.R.drawable.ic_media_play)
+				.setOngoing(true)
+				.setLargeIcon(
+						BitmapFactory.decodeResource(this.getResources(),
+								android.R.drawable.ic_media_play))
+				.setOngoing(true)
+				.setContentIntent(
+						PendingIntent.getActivity(getApplicationContext(), 0,
+								new Intent(getApplicationContext(),
+										PlayerActivity.class),
+								PendingIntent.FLAG_UPDATE_CURRENT));
 	}
 
 	@Override
@@ -213,9 +237,7 @@ public class PlayerService extends Service implements
 		if (player == null) {
 			Log.w("Player", "Can't play/pause: no player");
 			return false;
-		}
-
-		if (player.isPlaying()) {
+		} else if (player.isPlaying()) {
 			player.pause();
 			stopForeground(true);
 
@@ -224,28 +246,8 @@ public class PlayerService extends Service implements
 			return false;
 		} else {
 
-			// TODO: make this builder class-level, or its own view, or
-			// something
-			Notification notification = new Notification.Builder(
-					getApplicationContext())
-					.setContentTitle(getString(R.string.app_name))
-					.setContentText("Now playing...")
-					.setSmallIcon(android.R.drawable.ic_media_play)
-					.setOngoing(true)
-					.setLargeIcon(
-							BitmapFactory.decodeResource(this.getResources(),
-									android.R.drawable.ic_media_play))
-					.setContentIntent(
-							PendingIntent.getActivity(getApplicationContext(),
-									0, new Intent(getApplicationContext(),
-											PlayerActivity.class),
-									PendingIntent.FLAG_UPDATE_CURRENT)).build();
-
-			notification.icon = android.R.drawable.ic_media_play;
-			notification.flags |= Notification.FLAG_ONGOING_EVENT;
-
 			player.start();
-			startForeground(NOTIFICATION_ID, notification);
+			startForeground(NOTIFICATION_ID, notificationBase.build());
 
 			Log.d("Player", "started");
 
