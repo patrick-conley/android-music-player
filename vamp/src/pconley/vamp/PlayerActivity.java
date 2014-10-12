@@ -18,6 +18,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.SeekBar;
 
+/*
+ * FIXME: player must broadcast pause events
+ */
+
 public class PlayerActivity extends Activity {
 
 	private static final int SEC = 1000;

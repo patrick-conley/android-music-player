@@ -9,7 +9,7 @@
         android:targetSdkVersion="20" />
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -41,6 +41,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="pconley.vamp.LibraryActivity" />
         </activity>
+
+        <receiver android:name="pconley.vamp.player.PlayerSystemReceiver" >
+            <intent-filter>
+                <action android:name="android.media.AUDIO_BECOMING_NOISY" />
+            </intent-filter>
+        </receiver>
 
         <service android:name="pconley.vamp.player.PlayerService" />
     </application>

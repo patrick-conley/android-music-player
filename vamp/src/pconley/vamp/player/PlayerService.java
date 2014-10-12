@@ -38,6 +38,12 @@ public class PlayerService extends Service implements
 	public static final String ACTION_PLAY = "pconley.vamp.PlayerService.play";
 
 	/**
+	 * Action for incoming intents. Pause the player, provided it's playing.
+	 */
+	public static final String ACTION_PAUSE =
+		"pconley.vamp.PlayerService.pause";
+
+	/**
 	 * Action for incoming intents. Play/pause the current track. Does nothing
 	 * if there is no track in progress.
 	 */
@@ -121,6 +127,10 @@ public class PlayerService extends Service implements
 			switch (intent.getAction()) {
 			case ACTION_PLAY:
 				playTrack(intent.getData());
+				break;
+
+			case ACTION_PAUSE:
+				pause();
 				break;
 
 			case ACTION_PLAY_PAUSE:
@@ -288,6 +298,10 @@ public class PlayerService extends Service implements
 	 * @return whether the track was successfully paused.
 	 */
 	private boolean pause() {
+		if (player == null || !player.isPlaying()) {
+			return false;
+		}
+
 		player.pause();
 		stopForeground(true);
 
@@ -304,6 +318,10 @@ public class PlayerService extends Service implements
 	 * @return whether the track is now playing
 	 */
 	private boolean play() {
+		if (player == null) {
+			return false;
+		}
+
 		int focus = audioManager.requestAudioFocus(this,
 				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
