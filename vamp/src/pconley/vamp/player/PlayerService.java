@@ -23,7 +23,8 @@ import android.widget.Toast;
 
 public class PlayerService extends Service implements
 		MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener,
-		MediaPlayer.OnErrorListener, MediaPlayer.OnInfoListener {
+		MediaPlayer.OnErrorListener, MediaPlayer.OnInfoListener,
+		AudioManager.OnAudioFocusChangeListener {
 
 	/**
 	 * ID used for this service's notifications.
@@ -54,10 +55,12 @@ public class PlayerService extends Service implements
 	 */
 	public static final String FILTER_PLAYER_STATUS = "pconley.vamp.player.status";
 
+	private IBinder binder;
+	private AudioManager audioManager;
 	private MediaPlayer player = null;
 
-	private final IBinder binder = new PlayerBinder();
-
+	// Constant content of the notification displayed while a track plays.
+	// Content that changes with the track needs to be added in playPause()
 	private Notification.Builder notificationBase;
 
 	/**
@@ -78,8 +81,6 @@ public class PlayerService extends Service implements
 	public void onCreate() {
 		super.onCreate();
 
-		// Constant content of the notification displayed while a track plays.
-		// Content that changes with the track needs to be added in playPause()
 		notificationBase = new Notification.Builder(getApplicationContext())
 				.setContentTitle(getString(R.string.app_name))
 				.setContentText("Now playing...")
@@ -94,6 +95,10 @@ public class PlayerService extends Service implements
 								new Intent(getApplicationContext(),
 										PlayerActivity.class),
 								PendingIntent.FLAG_UPDATE_CURRENT));
+
+		audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
+		binder = new PlayerBinder();
 	}
 
 	@Override
@@ -137,7 +142,7 @@ public class PlayerService extends Service implements
 
 	@Override
 	public void onPrepared(MediaPlayer mp) {
-		playPause();
+		play();
 	}
 
 	@Override
@@ -161,6 +166,7 @@ public class PlayerService extends Service implements
 				StatusReceiver.EXTRA_STATUS_TYPE, StatusReceiver.STATUS_ERROR)
 				.putExtra(StatusReceiver.EXTRA_STATUS_CODE, extra));
 
+		// Return false to call onCompletion
 		return false;
 	}
 
@@ -173,6 +179,37 @@ public class PlayerService extends Service implements
 				.putExtra(StatusReceiver.EXTRA_STATUS_CODE, extra));
 
 		return true;
+	}
+
+	@Override
+	public void onAudioFocusChange(int focusChange) {
+
+		switch (focusChange) {
+		case AudioManager.AUDIOFOCUS_GAIN:
+			play();
+			break;
+		case AudioManager.AUDIOFOCUS_LOSS:
+
+			sendBroadcast(new Intent(FILTER_PLAYER_STATUS).putExtra(
+					StatusReceiver.EXTRA_STATUS_TYPE,
+					StatusReceiver.STATUS_MISC).putExtra(
+					StatusReceiver.EXTRA_STATUS, "Audio focus lost"));
+
+			onCompletion(player);
+			break;
+		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+
+			sendBroadcast(new Intent(FILTER_PLAYER_STATUS).putExtra(
+					StatusReceiver.EXTRA_STATUS_TYPE,
+					StatusReceiver.STATUS_MISC)
+					.putExtra(StatusReceiver.EXTRA_STATUS,
+							"Audio focus lost temporarily"));
+
+			pause();
+			break;
+		}
+
 	}
 
 	// Play a new track
@@ -238,10 +275,45 @@ public class PlayerService extends Service implements
 			Log.w("Player", "Can't play/pause: no player");
 			return false;
 		} else if (player.isPlaying()) {
-			player.pause();
-			stopForeground(true);
+			return !pause();
 
-			Log.d("Player", "paused");
+		} else {
+			return play();
+		}
+	}
+
+	/*
+	 * Try to pause the current track.
+	 *
+	 * @return whether the track was successfully paused.
+	 */
+	private boolean pause() {
+		player.pause();
+		stopForeground(true);
+
+		audioManager.abandonAudioFocus(this);
+
+		Log.d("Player", "paused");
+
+		return true;
+	}
+
+	/*
+	 * Try to play the current track.
+	 *
+	 * @return whether the track is now playing
+	 */
+	private boolean play() {
+		int focus = audioManager.requestAudioFocus(this,
+				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+
+		if (focus != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+
+			sendBroadcast(new Intent(FILTER_PLAYER_STATUS).putExtra(
+					StatusReceiver.EXTRA_STATUS_TYPE,
+					StatusReceiver.STATUS_ERROR)
+					.putExtra(StatusReceiver.EXTRA_STATUS,
+							"Could not obtain audio focus"));
 
 			return false;
 		} else {
@@ -273,7 +345,7 @@ public class PlayerService extends Service implements
 	/**
 	 * Receiver for general messages sent by the player service. The message is
 	 * just displayed as a toast.
-	 * 
+	 *
 	 * @author pconley
 	 */
 	public static class StatusReceiver extends BroadcastReceiver {
