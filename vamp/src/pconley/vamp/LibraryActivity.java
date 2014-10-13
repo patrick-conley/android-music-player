@@ -1,13 +1,21 @@
 package pconley.vamp;
 
+import java.io.File;
 import java.util.List;
 
 import pconley.vamp.db.TrackDAO;
+import pconley.vamp.player.PlayerEvents;
+import pconley.vamp.player.PlayerService;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
-import android.database.SQLException;
+import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,29 +31,37 @@ import android.widget.Toast;
  */
 public class LibraryActivity extends Activity {
 
-	public static final String ID_NAME = "pconley.vamp.track_id";
-
 	private ListView trackListView;
+
+	/*
+	 * Receive status messages from the player
+	 */
+	private BroadcastReceiver playerEventReceiver;
+
+	private static final String trackName = "sample_1.m4a";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_library);
 
-		// Create a sample library.
-		// TODO: delete this (and the contents of the library) when I can read the real thing.
-		try {
-			TrackDAO.createSampleLibrary(LibraryActivity.this);
-		} catch (SQLException e) {
-			Log.w("Library", e.getMessage());
-		} catch (Exception e) {
-			Log.e("Library", e.getMessage());
-		}
+		playerEventReceiver = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+
+				if (intent.hasExtra(PlayerEvents.EXTRA_MESSAGE)) {
+					Toast.makeText(LibraryActivity.this,
+							intent.getStringExtra(PlayerEvents.EXTRA_MESSAGE),
+							Toast.LENGTH_LONG).show();
+				}
+
+			}
+		};
+
+		new LoadTrackListTask().execute(false);
 
 		trackListView = (ListView) findViewById(R.id.track_list);
-
-		new LoadTrackListTask().execute();
-
 		trackListView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -54,11 +70,29 @@ public class LibraryActivity extends Activity {
 
 				Intent intent = new Intent(LibraryActivity.this,
 						TrackViewActivity.class);
-				intent.putExtra(ID_NAME,
+				intent.putExtra(TrackViewActivity.EXTRA_ID,
 						(long) parent.getItemAtPosition(position));
 				startActivity(intent);
 			}
 		});
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		LocalBroadcastManager.getInstance(this).registerReceiver(
+				playerEventReceiver,
+				new IntentFilter(PlayerEvents.FILTER_PLAYER_EVENT));
+
+	}
+
+	@Override
+	protected void onPause() {
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(
+				playerEventReceiver);
+
+		super.onPause();
 	}
 
 	@Override
@@ -74,20 +108,75 @@ public class LibraryActivity extends Activity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		switch (item.getItemId()) {
+		case R.id.action_player:
+			if (launchPlayer()) {
+				startActivity(new Intent(this, PlayerActivity.class));
+			}
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
 
+	/**
+	 * Delete the contents of the library and replace it with sample contents.
+	 *
+	 * TODO: delete this (and the contents of the library) when I can read the
+	 * real thing.
+	 *
+	 * @param view
+	 *            The origin of the rebuild request
+	 */
+	public void createLibrary(View view) {
+		new LoadTrackListTask().execute(true);
+	}
+
+	/*
+	 * Start the music player with a single track. Returns false if the track
+	 * didn't exist.
+	 */
+	private boolean launchPlayer() {
+		File track = new File(
+				Environment
+						.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+				trackName);
+
+		if (!track.exists()) {
+			Log.w("Library", "Missing track " + track);
+			Toast.makeText(this, "Missing track " + track, Toast.LENGTH_LONG)
+					.show();
+			return false;
+		}
+
+		Intent intent = new Intent(this, PlayerService.class).setAction(
+				PlayerService.ACTION_PLAY).setData(Uri.fromFile(track));
+		startService(intent);
+
+		return true;
+	}
+
 	/*
 	 * Load the contents of the library into a TextView with execute(). Work is
-	 * done in a background thread; the task displays a progress bar wihle
+	 * done in a background thread; the task displays a progress bar while
 	 * working.
+	 * 
+	 * The library is first deleted and rebuilt if `LoadTrackListTask.execute`
+	 * is called with a true parameter.
 	 */
-	private class LoadTrackListTask extends AsyncTask<Void, Void, List<Long>> {
+	private class LoadTrackListTask extends
+			AsyncTask<Boolean, Void, List<Long>> {
 
 		@Override
-		protected List<Long> doInBackground(Void... params) {
+		protected List<Long> doInBackground(Boolean... params) {
+			// Create a sample library.
+			if (params.length > 0 && params[0] == true) {
+				try {
+					TrackDAO.createSampleLibrary(LibraryActivity.this);
+				} catch (Exception e) {
+					Log.w("Library", e.getMessage());
+				}
+			}
+
 			return new TrackDAO(LibraryActivity.this).getIds();
 		}
 
@@ -100,4 +189,5 @@ public class LibraryActivity extends Activity {
 		}
 
 	}
+
 }

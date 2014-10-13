@@ -2,4 +2,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="pconley.vamp.TrackListActivity" >
 
+    <item
+        android:id="@+id/action_player"
+        android:orderInCategory="1"
+        android:showAsAction="ifRoom"
+        android:title="@string/title_activity_player"/>
+
 </menu>
