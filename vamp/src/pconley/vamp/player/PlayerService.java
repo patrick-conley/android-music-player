@@ -308,27 +308,26 @@ public class PlayerService extends Service implements
 			return false;
 		}
 
-		int focus = audioManager.requestAudioFocus(this,
-				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+		boolean focus = audioManager.requestAudioFocus(this,
+				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN) ==
+			AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
 
-		if (focus != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+		Intent broadcast = new
+			Intent(PlayerEvents.FILTER_PLAYER_EVENT).putExtra(PlayerEvents.EXTRA_STATE,
+					focus);
 
-			pause("Could not obtain audio focus");
-
-			return false;
+		if (focus) {
+			broadcast.putExtra(PlayerEvents.EXTRA_MESSAGE, "Could not obtain audio focus");
 		} else {
-
 			player.start();
 			startForeground(NOTIFICATION_ID, notificationBase.build());
 
-			broadcastManager.sendBroadcast(new Intent(
-					PlayerEvents.FILTER_PLAYER_EVENT).putExtra(
-					PlayerEvents.EXTRA_STATE, true));
-
 			Log.d("Player", "started");
-
-			return true;
 		}
+
+		broadcastManager.sendBroadcast(broadcast);
+
+		return focus;
 	}
 
 	/**
