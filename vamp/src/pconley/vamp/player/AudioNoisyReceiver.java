@@ -6,10 +6,10 @@ import android.content.Intent;
 import android.media.AudioManager;
 
 /**
- * Listen for the AudioManager's AUDIO_BECOMING_NOISY intent action, and pause
- * the player if it's running.
+ * Listen for the AudioManager's AUDIO_BECOMING_NOISY intent, and pause the
+ * player if it's running.
  */
-public class PlayerSystemReceiver extends BroadcastReceiver {
+public class AudioNoisyReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {

@@ -4,9 +4,11 @@ import java.io.File;
 import java.util.List;
 
 import pconley.vamp.db.TrackDAO;
+import pconley.vamp.player.PlayerEvents;
 import pconley.vamp.player.PlayerService;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
@@ -34,7 +36,7 @@ public class LibraryActivity extends Activity {
 	/*
 	 * Receive status messages from the player
 	 */
-	private BroadcastReceiver playerReceiver;
+	private BroadcastReceiver playerEventReceiver;
 
 	private static final String trackName = "sample_1.m4a";
 
@@ -43,7 +45,19 @@ public class LibraryActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_library);
 
-		playerReceiver = new PlayerService.StatusReceiver(this);
+		playerEventReceiver = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+
+				if (intent.hasExtra(PlayerEvents.EXTRA_MESSAGE)) {
+					Toast.makeText(LibraryActivity.this,
+							intent.getStringExtra(PlayerEvents.EXTRA_MESSAGE),
+							Toast.LENGTH_LONG).show();
+				}
+
+			}
+		};
 
 		new LoadTrackListTask().execute(false);
 
@@ -68,15 +82,15 @@ public class LibraryActivity extends Activity {
 		super.onResume();
 
 		LocalBroadcastManager.getInstance(this).registerReceiver(
-				playerReceiver,
-				new IntentFilter(PlayerService.FILTER_PLAYER_STATUS));
+				playerEventReceiver,
+				new IntentFilter(PlayerEvents.FILTER_PLAYER_EVENT));
 
 	}
 
 	@Override
 	protected void onPause() {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(
-				playerReceiver);
+				playerEventReceiver);
 
 		super.onPause();
 	}

@@ -1,6 +1,7 @@
 package pconley.vamp;
 
 import pconley.vamp.player.PlayerService;
+import pconley.vamp.player.PlayerEvents;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -17,10 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.SeekBar;
-
-/*
- * FIXME: player must broadcast pause events
- */
+import android.widget.Toast;
 
 public class PlayerActivity extends Activity {
 
@@ -53,7 +51,7 @@ public class PlayerActivity extends Activity {
 
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 
-		playerReceiver = new PlayerService.StatusReceiver(this);
+		playerReceiver = new PlayerEventReceiver();
 
 		// initialize the progress bar
 		progress = (SeekBar) findViewById(R.id.playback_progress);
@@ -64,9 +62,6 @@ public class PlayerActivity extends Activity {
 					boolean fromUser) {
 				if (fromUser) {
 					player.seekTo(progress * SEC);
-					if (player.isPlaying()) {
-						startCountdown();
-					}
 				}
 			}
 
@@ -129,7 +124,7 @@ public class PlayerActivity extends Activity {
 
 		LocalBroadcastManager.getInstance(this).registerReceiver(
 				playerReceiver,
-				new IntentFilter(PlayerService.FILTER_PLAYER_STATUS));
+				new IntentFilter(PlayerEvents.FILTER_PLAYER_EVENT));
 
 		bindService(new Intent(this, PlayerService.class), playerConnection,
 				Context.BIND_AUTO_CREATE);
@@ -156,11 +151,11 @@ public class PlayerActivity extends Activity {
 	 *
 	 * @param view
 	 */
-	public void playPause(View view) {
-		if (player.playPause()) {
-			startCountdown();
+	public void onPlayPauseClick(View view) {
+		if (player.isPlaying()) {
+			player.pause();
 		} else {
-			cancelCountdown();
+			player.play();
 		}
 	}
 
@@ -215,4 +210,25 @@ public class PlayerActivity extends Activity {
 		progress.setMax(duration / SEC);
 	}
 
+	private class PlayerEventReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+
+			if (!intent.hasExtra(PlayerEvents.EXTRA_STATE)) {
+				Log.e("Active track", "Unspecified event received");
+			} else if (intent.getBooleanExtra(PlayerEvents.EXTRA_STATE, false)) {
+				startCountdown();
+			} else {
+
+				cancelCountdown();
+
+				if (intent.hasExtra(PlayerEvents.EXTRA_MESSAGE)) {
+					Toast.makeText(PlayerActivity.this,
+							intent.getStringExtra(PlayerEvents.EXTRA_MESSAGE),
+							Toast.LENGTH_LONG).show();
+				}
+			}
+		}
+	}
 }
