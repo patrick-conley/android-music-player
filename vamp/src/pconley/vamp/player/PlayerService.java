@@ -2,7 +2,7 @@ package pconley.vamp.player;
 
 import java.io.IOException;
 
-import pconley.vamp.PlayerActivity;
+import pconley.vamp.CurrentTrackActivity;
 import pconley.vamp.R;
 
 import android.app.Notification;
@@ -87,7 +87,7 @@ public class PlayerService extends Service implements
 				.setContentIntent(
 						PendingIntent.getActivity(getApplicationContext(), 0,
 								new Intent(getApplicationContext(),
-										PlayerActivity.class),
+										CurrentTrackActivity.class),
 								PendingIntent.FLAG_UPDATE_CURRENT));
 
 		audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -188,28 +188,15 @@ public class PlayerService extends Service implements
 	public void onAudioFocusChange(int focusChange) {
 
 		switch (focusChange) {
-		case AudioManager.AUDIOFOCUS_GAIN:
-			play();
-			break;
 		case AudioManager.AUDIOFOCUS_LOSS:
 
-			broadcastManager.sendBroadcast(new Intent(
-					PlayerEvents.FILTER_PLAYER_EVENT).putExtra(
-					PlayerEvents.EXTRA_STATE, false).putExtra(
-					PlayerEvents.EXTRA_MESSAGE, "Audio focus lost"));
-
+			pause("Audio focus lost");
 			onCompletion(player);
 			break;
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
 
-			broadcastManager
-					.sendBroadcast(new Intent(PlayerEvents.FILTER_PLAYER_EVENT)
-							.putExtra(PlayerEvents.EXTRA_STATE, false)
-							.putExtra(PlayerEvents.EXTRA_MESSAGE,
-									"Audio focus lost temporarily"));
-
-			pause();
+			pause("Audio focus lost temporarily");
 			break;
 		}
 
@@ -270,14 +257,14 @@ public class PlayerService extends Service implements
 	 *
 	 * @return whether the track was successfully paused.
 	 */
-	public boolean pause() {
-		return pause(null);
+	public void pause() {
+		pause(null);
 	}
 
 	/*
 	 * Pause the current track, and broadcast an event advertising the event.
 	 */
-	private boolean pause(String reason) {
+	private void pause(String reason) {
 		if (player != null && player.isPlaying()) {
 			player.pause();
 
@@ -293,8 +280,6 @@ public class PlayerService extends Service implements
 			broadcast.putExtra(PlayerEvents.EXTRA_MESSAGE, reason);
 		}
 		broadcastManager.sendBroadcast(broadcast);
-
-		return true;
 	}
 
 	/**
@@ -302,32 +287,29 @@ public class PlayerService extends Service implements
 	 *
 	 * @return whether the track is now playing
 	 */
-	public boolean play() {
+	public void play() {
 		if (player == null) {
 			Log.w("Player", "Can't play: no player");
-			return false;
+			return;
 		}
 
-		boolean focus = audioManager.requestAudioFocus(this,
-				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN) ==
-			AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
+		boolean hasFocus = audioManager.requestAudioFocus(this,
+				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
 
-		Intent broadcast = new
-			Intent(PlayerEvents.FILTER_PLAYER_EVENT).putExtra(PlayerEvents.EXTRA_STATE,
-					focus);
+		Intent broadcast = new Intent(PlayerEvents.FILTER_PLAYER_EVENT)
+				.putExtra(PlayerEvents.EXTRA_STATE, hasFocus);
 
-		if (focus) {
-			broadcast.putExtra(PlayerEvents.EXTRA_MESSAGE, "Could not obtain audio focus");
-		} else {
+		if (hasFocus) {
 			player.start();
 			startForeground(NOTIFICATION_ID, notificationBase.build());
 
 			Log.d("Player", "started");
+		} else {
+			broadcast.putExtra(PlayerEvents.EXTRA_MESSAGE,
+					"Could not obtain audio focus");
 		}
 
 		broadcastManager.sendBroadcast(broadcast);
-
-		return focus;
 	}
 
 	/**

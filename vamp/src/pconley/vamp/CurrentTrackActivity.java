@@ -20,7 +20,7 @@ import android.view.View;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
-public class PlayerActivity extends Activity {
+public class CurrentTrackActivity extends Activity {
 
 	private static final int SEC = 1000;
 
@@ -122,12 +122,12 @@ public class PlayerActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 
+		bindService(new Intent(this, PlayerService.class), playerConnection,
+				Context.BIND_AUTO_CREATE);
+
 		LocalBroadcastManager.getInstance(this).registerReceiver(
 				playerReceiver,
 				new IntentFilter(PlayerEvents.FILTER_PLAYER_EVENT));
-
-		bindService(new Intent(this, PlayerService.class), playerConnection,
-				Context.BIND_AUTO_CREATE);
 
 	}
 
@@ -224,7 +224,7 @@ public class PlayerActivity extends Activity {
 				cancelCountdown();
 
 				if (intent.hasExtra(PlayerEvents.EXTRA_MESSAGE)) {
-					Toast.makeText(PlayerActivity.this,
+					Toast.makeText(CurrentTrackActivity.this,
 							intent.getStringExtra(PlayerEvents.EXTRA_MESSAGE),
 							Toast.LENGTH_LONG).show();
 				}

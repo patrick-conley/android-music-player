@@ -110,7 +110,7 @@ public class LibraryActivity extends Activity {
 		switch (item.getItemId()) {
 		case R.id.action_player:
 			if (launchPlayer()) {
-				startActivity(new Intent(this, PlayerActivity.class));
+				startActivity(new Intent(this, CurrentTrackActivity.class));
 			}
 			return true;
 		default:
