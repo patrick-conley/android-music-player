@@ -2,6 +2,7 @@ package pconley.vamp.db;
 
 import java.util.LinkedList;
 import java.util.List;
+
 import pconley.vamp.db.LibraryContract.TagEntry;
 import pconley.vamp.db.LibraryContract.TrackEntry;
 import pconley.vamp.db.LibraryContract.TrackTagRelation;
@@ -13,6 +14,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 
 public class TrackDAO {
 
@@ -85,7 +87,7 @@ public class TrackDAO {
 		}
 
 		Track.Builder builder = new Track.Builder(trackId,
-				results.getString(uriColumn));
+				Uri.parse(results.getString(uriColumn)));
 
 		results.close();
 
@@ -123,18 +125,18 @@ public class TrackDAO {
 		// Insert several tracks
 		long[] trackIds = new long[12];
 		String[] uris = new String[] {
-				"file:///sdcard/Music/They Might Be Giants/They Might Be Giants/01 Everything Right Is Wrong Again.m4a",
-				"file:///sdcard/Music/They Might Be Giants/They Might Be Giants/02 Put Your Hand Inside the Puppet Head.m4a",
-				"file:///sdcard/Music/They Might Be Giants/They Might Be Giants/03 Number Three.m4a",
-				"file:///sdcard/Music/They Might Be Giants/They Might Be Giants/17 Alienation's for the Rich.m4a",
-				"file:///sdcard/Music/They Might Be Giants/They Might Be Giants/18 The Day.m4a",
-				"file:///sdcard/Music/They Might Be Giants/They Might Be Giants/19 Rhythm Section Want Ad.m4a",
-				"file:///sdcard/Music/Schoenberg, Arnold/Concerto for Violin and Orchestra/00-01 Poco allegro.ogg",
-				"file:///sdcard/Music/Schoenberg, Arnold/Concerto for Violin and Orchestra/00-02 Andante grazioso.ogg",
-				"file:///sdcard/Music/Schoenberg, Arnold/Concerto for Violin and Orchestra/00-03 Finale Allegro.ogg",
-				"file:///sdcard/Music/Sibelius, Jean/Concerto for Violin and Orchestra in D minor/00-04 Allegro moderato.ogg",
-				"file:///sdcard/Music/Sibelius, Jean/Concerto for Violin and Orchestra in D minor/00-05 Adagio di molto.ogg",
-				"file:///sdcard/Music/Sibelius, Jean/Concerto for Violin and Orchestra in D minor/00-06 Allegro, ma non tanto.ogg", };
+				"file:///storage/extSdCard/Music/popular/They Might Be Giants/They Might Be Giants/01 Everything Right Is Wrong Again.m4a",
+				"file:///storage/extSdCard/Music/popular/They Might Be Giants/They Might Be Giants/02 Put Your Hand Inside the Puppet Head.m4a",
+				"file:///storage/extSdCard/Music/popular/They Might Be Giants/They Might Be Giants/03 Number Three.m4a",
+				"file:///storage/extSdCard/Music/popular/They Might Be Giants/They Might Be Giants/17 Alienation's for the Rich.m4a",
+				"file:///storage/extSdCard/Music/popular/They Might Be Giants/They Might Be Giants/18 The Day.m4a",
+				"file:///storage/extSdCard/Music/popular/They Might Be Giants/They Might Be Giants/19 Rhythm Section Want Ad.m4a",
+				"file:///storage/extSdCard/Music/classical/Schoenberg, Arnold (1874-1951)/Concerto for Violin and Orchestra, op 36/00-01 Poco allegro.ogg",
+				"file:///storage/extSdCard/Music/classical/Schoenberg, Arnold (1874-1951)/Concerto for Violin and Orchestra, op 36/00-02 Andante grazioso.ogg",
+				"file:///storage/extSdCard/Music/classical/Schoenberg, Arnold (1874-1951)/Concerto for Violin and Orchestra, op 36/00-03 Finale Allegro.ogg",
+				"file:///storage/extSdCard/Music/classical/Sibelius, Jean (1865-1957)/Concerto for Violin and Orchestra in D minor, Op. 47/00-04 Allegro moderato.ogg",
+				"file:///storage/extSdCard/Music/classical/Sibelius, Jean (1865-1957)/Concerto for Violin and Orchestra in D minor, Op. 47/00-05 Adagio di molto.ogg",
+				"file:///storage/extSdCard/Music/classical/Sibelius, Jean (1865-1957)/Concerto for Violin and Orchestra in D minor, Op. 47/00-06 Allegro, ma non tanto.ogg", };
 
 		for (int i = 0; i < uris.length; i++) {
 			ContentValues value = new ContentValues();

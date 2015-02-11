@@ -11,11 +11,11 @@ import pconley.vamp.db.LibraryHelper;
 import pconley.vamp.db.TrackDAO;
 import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.test.AndroidTestCase;
 import android.test.RenamingDelegatingContext;
 
@@ -259,7 +259,7 @@ public class TrackDAOTest extends AndroidTestCase {
 
 		dupes.close();
 
-		Track.Builder builder = new Track.Builder(trackId, uri);
+		Track.Builder builder = new Track.Builder(trackId, Uri.parse(uri));
 
 		for (int i = 0; i < tagNames.length; i++) {
 			builder.add(new Tag(

@@ -1,20 +1,16 @@
 package pconley.vamp;
 
-import java.io.File;
 import java.util.List;
 
 import pconley.vamp.db.TrackDAO;
 import pconley.vamp.player.PlayerEvents;
-import pconley.vamp.player.PlayerService;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
@@ -37,8 +33,6 @@ public class LibraryActivity extends Activity {
 	 * Receive status messages from the player
 	 */
 	private BroadcastReceiver playerEventReceiver;
-
-	private static final String trackName = "sample_1.m4a";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -69,8 +63,8 @@ public class LibraryActivity extends Activity {
 					int position, long id) {
 
 				Intent intent = new Intent(LibraryActivity.this,
-						TrackViewActivity.class);
-				intent.putExtra(TrackViewActivity.EXTRA_ID,
+						PlayerActivity.class);
+				intent.putExtra(PlayerActivity.EXTRA_ID,
 						(long) parent.getItemAtPosition(position));
 				startActivity(intent);
 			}
@@ -109,9 +103,7 @@ public class LibraryActivity extends Activity {
 		// as you specify a parent activity in AndroidManifest.xml.
 		switch (item.getItemId()) {
 		case R.id.action_player:
-			if (launchPlayer()) {
-				startActivity(new Intent(this, CurrentTrackActivity.class));
-			}
+			startActivity(new Intent(this, PlayerActivity.class));
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -132,30 +124,6 @@ public class LibraryActivity extends Activity {
 	}
 
 	/*
-	 * Start the music player with a single track. Returns false if the track
-	 * didn't exist.
-	 */
-	private boolean launchPlayer() {
-		File track = new File(
-				Environment
-						.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-				trackName);
-
-		if (!track.exists()) {
-			Log.w("Library", "Missing track " + track);
-			Toast.makeText(this, "Missing track " + track, Toast.LENGTH_LONG)
-					.show();
-			return false;
-		}
-
-		Intent intent = new Intent(this, PlayerService.class).setAction(
-				PlayerService.ACTION_PLAY).setData(Uri.fromFile(track));
-		startService(intent);
-
-		return true;
-	}
-
-	/*
 	 * Load the contents of the library into a TextView with execute(). Work is
 	 * done in a background thread; the task displays a progress bar while
 	 * working.
@@ -171,6 +139,7 @@ public class LibraryActivity extends Activity {
 			// Create a sample library.
 			if (params.length > 0 && params[0] == true) {
 				try {
+					Log.i("Library", "Rebuilding library");
 					TrackDAO.createSampleLibrary(LibraryActivity.this);
 				} catch (Exception e) {
 					Log.w("Library", e.getMessage());

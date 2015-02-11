@@ -2,7 +2,7 @@ package pconley.vamp.player;
 
 import java.io.IOException;
 
-import pconley.vamp.CurrentTrackActivity;
+import pconley.vamp.PlayerActivity;
 import pconley.vamp.R;
 
 import android.app.Notification;
@@ -87,7 +87,7 @@ public class PlayerService extends Service implements
 				.setContentIntent(
 						PendingIntent.getActivity(getApplicationContext(), 0,
 								new Intent(getApplicationContext(),
-										CurrentTrackActivity.class),
+										PlayerActivity.class),
 								PendingIntent.FLAG_UPDATE_CURRENT));
 
 		audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -232,6 +232,9 @@ public class PlayerService extends Service implements
 	/**
 	 * @return The current track's current position (in ms), or -1 if nothing is
 	 *         playing.
+	 * 
+	 *         FIXME: these methods should throw an IllegalStateException if the
+	 *         player doesn't exist.
 	 */
 	public int getCurrentPosition() {
 		return player == null ? -1 : player.getCurrentPosition();
