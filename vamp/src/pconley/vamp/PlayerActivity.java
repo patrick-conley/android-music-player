@@ -1,6 +1,5 @@
 package pconley.vamp;
 
-import pconley.vamp.db.TrackDAO;
 import pconley.vamp.model.Track;
 import pconley.vamp.player.PlayerEvents;
 import pconley.vamp.player.PlayerService;
@@ -11,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.IBinder;
@@ -27,8 +25,6 @@ import android.widget.Toast;
 public class PlayerActivity extends Activity {
 
 	private static final int SEC = 1000;
-
-	public static final String EXTRA_ID = "pconley.vamp.CurrentTrackActivity.track_id";
 
 	/*
 	 * Progress/seek bar. Updates automatically as long as a track is playing,
@@ -59,12 +55,6 @@ public class PlayerActivity extends Activity {
 
 		// Create a receiver to listen for errors from the player service.
 		playerReceiver = new PlayerEventReceiver();
-
-		// Begin playing a track, and display its metadata.
-		// FIXME: what happens if the player is destroyed?
-		if (getIntent().hasExtra(EXTRA_ID)) {
-			new LoadTrackTask().execute(getIntent().getLongExtra(EXTRA_ID, -1));
-		}
 
 		// Initialize the progress bar
 		progress = (SeekBar) findViewById(R.id.playback_progress);
@@ -191,6 +181,15 @@ public class PlayerActivity extends Activity {
 
 			if (player.isPlaying()) {
 				startCountdown();
+
+				// FIXME: duplicated behaviour with PlayerEventReceiver
+				Track track = player.getCurrentTrack();
+
+				((TextView) findViewById(R.id.view_uri)).setText(track.getUri()
+						.toString());
+				((TextView) findViewById(R.id.view_tags)).setText(track
+						.tagsToString());
+
 			}
 		}
 
@@ -233,10 +232,19 @@ public class PlayerActivity extends Activity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 
-			if (!intent.hasExtra(PlayerEvents.EXTRA_STATE)) {
-				Log.e("Active track", "Unspecified event received");
-			} else if (intent.getBooleanExtra(PlayerEvents.EXTRA_STATE, false)) {
+			boolean isPlaying = intent.getBooleanExtra(
+					PlayerEvents.EXTRA_STATE, false);
+
+			if (isPlaying) {
 				startCountdown();
+
+				Track track = player.getCurrentTrack();
+
+				((TextView) findViewById(R.id.view_uri)).setText(track.getUri()
+						.toString());
+				((TextView) findViewById(R.id.view_tags)).setText(track
+						.tagsToString());
+
 			} else {
 
 				cancelCountdown();
@@ -250,29 +258,4 @@ public class PlayerActivity extends Activity {
 		}
 	}
 
-	/*
-	 * Load the given track from the database, and display it and its tags in
-	 * this activity's text field.
-	 *
-	 * Work is done in a background thread.
-	 */
-	private class LoadTrackTask extends AsyncTask<Long, Void, Track> {
-
-		@Override
-		protected Track doInBackground(Long... params) {
-			return new TrackDAO(PlayerActivity.this).getTrack(params[0]);
-		}
-
-		protected void onPostExecute(Track track) {
-			Intent intent = new Intent(PlayerActivity.this, PlayerService.class)
-					.setAction(PlayerService.ACTION_PLAY).setData(track.getUri());
-			startService(intent);
-
-			((TextView) findViewById(R.id.view_uri)).setText(track.getUri()
-					.toString());
-			((TextView) findViewById(R.id.view_tags)).setText(track
-					.tagsToString());
-		}
-
-	}
 }

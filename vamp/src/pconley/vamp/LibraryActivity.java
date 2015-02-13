@@ -4,6 +4,7 @@ import java.util.List;
 
 import pconley.vamp.db.TrackDAO;
 import pconley.vamp.player.PlayerEvents;
+import pconley.vamp.player.PlayerService;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -53,6 +54,8 @@ public class LibraryActivity extends Activity {
 			}
 		};
 
+		// Get the list of tracks in the library. If one is clicked, play it and
+		// open the Now Playing screen.
 		new LoadTrackListTask().execute(false);
 
 		trackListView = (ListView) findViewById(R.id.track_list);
@@ -63,10 +66,14 @@ public class LibraryActivity extends Activity {
 					int position, long id) {
 
 				Intent intent = new Intent(LibraryActivity.this,
-						PlayerActivity.class);
-				intent.putExtra(PlayerActivity.EXTRA_ID,
+						PlayerService.class);
+				intent.setAction(PlayerService.ACTION_PLAY);
+				intent.putExtra(PlayerService.EXTRA_ID,
 						(long) parent.getItemAtPosition(position));
-				startActivity(intent);
+				startService(intent);
+
+				startActivity(new Intent(LibraryActivity.this,
+						PlayerActivity.class));
 			}
 		});
 	}

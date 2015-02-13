@@ -11,9 +11,12 @@ import java.util.Set;
 import android.net.Uri;
 
 /**
- * A piece of music, and its metadata.
+ * The URI of a track of music, and the metadata associated with the destination
+ * file.
+ * 
+ * @author pconley
  */
-public class Track {
+public final class Track {
 
 	private long id;
 	private Uri uri;

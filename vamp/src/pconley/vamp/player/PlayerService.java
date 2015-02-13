@@ -4,7 +4,8 @@ import java.io.IOException;
 
 import pconley.vamp.PlayerActivity;
 import pconley.vamp.R;
-
+import pconley.vamp.db.TrackDAO;
+import pconley.vamp.model.Track;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -13,7 +14,6 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -21,14 +21,15 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 public class PlayerService extends Service implements
-		MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener,
-		MediaPlayer.OnErrorListener, MediaPlayer.OnInfoListener,
-		AudioManager.OnAudioFocusChangeListener {
+		MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener,
+		MediaPlayer.OnInfoListener, AudioManager.OnAudioFocusChangeListener {
 
 	/**
 	 * ID used for this service's notifications.
 	 */
 	public static final int NOTIFICATION_ID = 1;
+
+	public static final String EXTRA_ID = "pconley.vamp.player.PlayerService.track_id";
 
 	/**
 	 * Action for incoming intents. Start playing a new track. Specify the track
@@ -47,6 +48,8 @@ public class PlayerService extends Service implements
 	 */
 	public static final String ACTION_SEEK = "pconley.vamp.playerService.seek";
 	public static final String EXTRA_SEEK_POSITION = "pconley.vamp.playerService.seek.time";
+
+	private Track currentTrack = null;
 
 	private IBinder binder;
 	private AudioManager audioManager;
@@ -101,21 +104,39 @@ public class PlayerService extends Service implements
 		if (player != null) {
 			player.release();
 			player = null;
+			currentTrack = null;
 		}
 
 		super.onDestroy();
 	}
 
+	/**
+	 * Handle intents that interact with the media player: play/pause, new
+	 * track, etc.
+	 */
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		super.onStartCommand(intent, flags, startId);
 
 		if (intent != null) {
+
+			if (intent.getAction() == null) {
+				Log.e("Player",
+						"Intent to start the player missing a required action");
+				return START_NOT_STICKY;
+			}
+
 			Log.i("Player", intent.getAction());
 
 			switch (intent.getAction()) {
 			case ACTION_PLAY:
-				playTrack(intent.getData());
+
+				if (!intent.hasExtra(EXTRA_ID)) {
+					throw new IllegalArgumentException(
+							"PLAY action given with no track");
+				}
+
+				beginTrack(intent.getLongExtra(EXTRA_ID, -1));
 				break;
 
 			case ACTION_PAUSE:
@@ -136,16 +157,12 @@ public class PlayerService extends Service implements
 	}
 
 	@Override
-	public void onPrepared(MediaPlayer mp) {
-		play();
-	}
-
-	@Override
 	public void onCompletion(MediaPlayer mp) {
 		stopForeground(true);
 
 		player.release();
 		player = null;
+		currentTrack = null;
 	}
 
 	/**
@@ -202,37 +219,18 @@ public class PlayerService extends Service implements
 
 	}
 
-	// Play a new track
-	private void playTrack(Uri track) {
-
-		if (player == null) {
-			player = new MediaPlayer();
-			player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-			player.setOnPreparedListener(this);
-			player.setOnCompletionListener(this);
-			player.setOnErrorListener(this);
-			player.setOnInfoListener(this);
-			player.setWakeMode(getApplicationContext(),
-					PowerManager.PARTIAL_WAKE_LOCK);
-
-		} else {
-			player.reset();
-		}
-
-		try {
-			player.setDataSource(getApplicationContext(), track);
-			player.prepareAsync();
-			Log.d("Player", "Preparing track " + track);
-		} catch (IllegalArgumentException | SecurityException
-				| IllegalStateException | IOException e) {
-			Log.e("Player", e.getMessage());
-		}
+	/**
+	 * @return Data for the currently-playing (or paused) track, provided one is
+	 *         prepared by the MediaPlayer. Returns null otherwise.
+	 */
+	public Track getCurrentTrack() {
+		return currentTrack;
 	}
 
 	/**
 	 * @return The current track's current position (in ms), or -1 if nothing is
 	 *         playing.
-	 * 
+	 *
 	 *         FIXME: these methods should throw an IllegalStateException if the
 	 *         player doesn't exist.
 	 */
@@ -253,6 +251,36 @@ public class PlayerService extends Service implements
 	 */
 	public boolean isPlaying() {
 		return player != null && player.isPlaying();
+	}
+
+	public void beginTrack(long trackId) {
+
+		if (player == null) {
+			player = new MediaPlayer();
+			player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+			player.setOnCompletionListener(PlayerService.this);
+			player.setOnErrorListener(PlayerService.this);
+			player.setOnInfoListener(PlayerService.this);
+			player.setWakeMode(getApplicationContext(),
+					PowerManager.PARTIAL_WAKE_LOCK);
+
+		} else {
+			player.reset();
+		}
+
+		try {
+			currentTrack = new TrackDAO(PlayerService.this).getTrack(trackId);
+
+			player.setDataSource(getApplicationContext(), currentTrack.getUri());
+			player.prepare();
+			Log.d("Player", "Preparing track " + currentTrack);
+
+			play();
+
+		} catch (IllegalArgumentException | SecurityException
+				| IllegalStateException | IOException e) {
+			Log.e("Player", e.getMessage());
+		}
 	}
 
 	/**

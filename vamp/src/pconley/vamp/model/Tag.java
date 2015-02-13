@@ -1,9 +1,12 @@
 package pconley.vamp.model;
 
 /**
- * An element of musical metadata.
+ * A piece of music metadata, represented by a unique key-value pair.
+ * 
+ * @author pconley
+ *
  */
-public class Tag {
+public final class Tag {
 
 	private long id;
 	private String name;
