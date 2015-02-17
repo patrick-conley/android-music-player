@@ -29,13 +29,12 @@ public class PlayerService extends Service implements
 	 */
 	public static final int NOTIFICATION_ID = 1;
 
-	public static final String EXTRA_ID = "pconley.vamp.player.PlayerService.track_id";
-
 	/**
 	 * Action for incoming intents. Start playing a new track. Specify the track
-	 * with the Intent's data.
+	 * with EXTRA_ID.
 	 */
 	public static final String ACTION_PLAY = "pconley.vamp.PlayerService.play";
+	public static final String EXTRA_ID = "pconley.vamp.player.PlayerService.track_id";
 
 	/**
 	 * Action for incoming intents. Pause the player, provided it's playing.
@@ -48,6 +47,44 @@ public class PlayerService extends Service implements
 	 */
 	public static final String ACTION_SEEK = "pconley.vamp.playerService.seek";
 	public static final String EXTRA_SEEK_POSITION = "pconley.vamp.playerService.seek.time";
+
+	/**
+	 * Broadcast filter used by messages for this player's status receiver
+	 */
+	public static final String FILTER_PLAYER_EVENT = "pconley.vamp.player.event";
+
+	/**
+	 * Extra used in broadcasts about player state changes. Value is one of
+	 * EVENT_NEW_TRACK, EVENT_PLAY, EVENT_PAUSE, or EVENT_STOP.
+	 */
+	public static final String EXTRA_EVENT = "pconley.vamp.player.event";
+
+	/**
+	 * A new track has been loaded. It may or may not be playing.
+	 */
+	public static final String EVENT_NEW_TRACK = "pconley.vamp.player.event.new";
+
+	/**
+	 * The player has started or resumed playing the current track.
+	 */
+	public static final String EVENT_PLAY = "pconley.vamp.player.event.play";
+
+	/**
+	 * The current track has been paused.
+	 */
+	public static final String EVENT_PAUSE = "pconley.vamp.player.event.pause";
+
+	/**
+	 * The player is done with all tracks. If it stopped because of an error,
+	 * the error will be described by the string EXTRA_MESSAGE.
+	 */
+	public static final String EVENT_STOP = "pconley.vamp.player.event.stop";
+
+	/**
+	 * Reason for an unexpected stop/pause event. Probably given as an
+	 * unreadable error code.
+	 */
+	public static final String EXTRA_MESSAGE = "pconley.vamp.player.event.message";
 
 	private Track currentTrack = null;
 
@@ -126,7 +163,7 @@ public class PlayerService extends Service implements
 				return START_NOT_STICKY;
 			}
 
-			Log.i("Player", intent.getAction());
+			Log.i("Player", "Received control action " + intent.getAction());
 
 			switch (intent.getAction()) {
 			case ACTION_PLAY:
@@ -163,6 +200,9 @@ public class PlayerService extends Service implements
 		player.release();
 		player = null;
 		currentTrack = null;
+
+		broadcastManager.sendBroadcast(new Intent(FILTER_PLAYER_EVENT)
+				.putExtra(EXTRA_EVENT, EVENT_STOP));
 	}
 
 	/**
@@ -176,13 +216,14 @@ public class PlayerService extends Service implements
 		// FIXME: broadcasts do little if we're between activities
 		// FIXME: use actual messages rather than codes (as I figure out what
 		// messages mean)
-		broadcastManager.sendBroadcast(new Intent(
-				PlayerEvents.FILTER_PLAYER_EVENT).putExtra(
-				PlayerEvents.EXTRA_STATE, false).putExtra(
-				PlayerEvents.EXTRA_MESSAGE,
-				String.valueOf(what) + "," + String.valueOf(extra)));
 
-		// Return false to call onCompletion
+		Intent broadcast = new Intent(FILTER_PLAYER_EVENT).putExtra(
+				EXTRA_EVENT, EVENT_STOP).putExtra(EXTRA_MESSAGE,
+				String.valueOf(what) + "," + String.valueOf(extra));
+
+		broadcastManager.sendBroadcast(broadcast);
+
+		// Return false in order to call onCompletion
 		return false;
 	}
 
@@ -192,11 +233,18 @@ public class PlayerService extends Service implements
 				"Info " + String.valueOf(what) + "," + String.valueOf(extra));
 		// FIXME: use actual messages rather than codes (as I figure out what
 		// messages mean)
-		broadcastManager.sendBroadcast(new Intent(
-				PlayerEvents.FILTER_PLAYER_EVENT).putExtra(
-				PlayerEvents.EXTRA_STATE, player.isPlaying()).putExtra(
-				PlayerEvents.EXTRA_MESSAGE,
-				String.valueOf(what) + "," + String.valueOf(extra)));
+
+		Intent broadcast = new Intent(FILTER_PLAYER_EVENT)
+				.putExtra(EXTRA_MESSAGE,
+						String.valueOf(what) + "," + String.valueOf(extra));
+
+		if (isPlaying()) {
+			broadcast.putExtra(EXTRA_EVENT, EVENT_PLAY);
+		} else {
+			broadcast.putExtra(EXTRA_EVENT, EVENT_PAUSE);
+		}
+
+		broadcastManager.sendBroadcast(broadcast);
 
 		return true;
 	}
@@ -284,18 +332,19 @@ public class PlayerService extends Service implements
 	}
 
 	/**
-	 * Try to pause the current track.
-	 *
-	 * @return whether the track was successfully paused.
+	 * Pause the current track.
 	 */
 	public void pause() {
 		pause(null);
 	}
 
-	/*
-	 * Pause the current track, and broadcast an event advertising the event.
+	/**
+	 * Pause the current track.
 	 */
-	private void pause(String reason) {
+	private void pause(String message) {
+
+		Intent broadcast = new Intent(FILTER_PLAYER_EVENT);
+
 		if (player != null && player.isPlaying()) {
 			player.pause();
 
@@ -303,14 +352,20 @@ public class PlayerService extends Service implements
 			audioManager.abandonAudioFocus(this);
 
 			Log.d("Player", "paused");
-		}
 
-		Intent broadcast = new Intent(PlayerEvents.FILTER_PLAYER_EVENT)
-				.putExtra(PlayerEvents.EXTRA_STATE, false);
-		if (reason != null) {
-			broadcast.putExtra(PlayerEvents.EXTRA_MESSAGE, reason);
+			broadcast.putExtra(EXTRA_EVENT, EVENT_PAUSE);
+
+			if (message != null) {
+				broadcast.putExtra(EXTRA_MESSAGE, message);
+			}
+
+			broadcastManager.sendBroadcast(broadcast);
+		} else if (message != null) {
+
+			broadcast.putExtra(EXTRA_EVENT, EVENT_STOP).putExtra(
+					EXTRA_MESSAGE, message);
+			broadcastManager.sendBroadcast(broadcast);
 		}
-		broadcastManager.sendBroadcast(broadcast);
 	}
 
 	/**
@@ -327,16 +382,17 @@ public class PlayerService extends Service implements
 		boolean hasFocus = audioManager.requestAudioFocus(this,
 				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
 
-		Intent broadcast = new Intent(PlayerEvents.FILTER_PLAYER_EVENT)
-				.putExtra(PlayerEvents.EXTRA_STATE, hasFocus);
+		Intent broadcast = new Intent(FILTER_PLAYER_EVENT);
 
 		if (hasFocus) {
 			player.start();
+			broadcast.putExtra(EXTRA_EVENT, EVENT_PLAY);
 			startForeground(NOTIFICATION_ID, notificationBase.build());
 
 			Log.d("Player", "started");
 		} else {
-			broadcast.putExtra(PlayerEvents.EXTRA_MESSAGE,
+			broadcast.putExtra(EXTRA_EVENT, EVENT_PAUSE);
+			broadcast.putExtra(EXTRA_MESSAGE,
 					"Could not obtain audio focus");
 		}
 
@@ -357,9 +413,15 @@ public class PlayerService extends Service implements
 
 		player.seekTo(time);
 
-		broadcastManager.sendBroadcast(new Intent(
-				PlayerEvents.FILTER_PLAYER_EVENT).putExtra(
-				PlayerEvents.EXTRA_STATE, player.isPlaying()));
+		Intent broadcast = new Intent(FILTER_PLAYER_EVENT);
+
+		if (isPlaying()) {
+			broadcast.putExtra(EXTRA_EVENT, EVENT_PLAY);
+		} else {
+			broadcast.putExtra(EXTRA_EVENT, EVENT_PAUSE);
+		}
+
+		broadcastManager.sendBroadcast(broadcast);
 	}
 
 }

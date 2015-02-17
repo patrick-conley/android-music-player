@@ -1,7 +1,6 @@
 package pconley.vamp;
 
 import pconley.vamp.model.Track;
-import pconley.vamp.player.PlayerEvents;
 import pconley.vamp.player.PlayerService;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -89,9 +88,11 @@ public class PlayerActivity extends Activity {
 		bindService(new Intent(this, PlayerService.class), playerConnection,
 				Context.BIND_AUTO_CREATE);
 
+		IntentFilter filter = new IntentFilter(
+				PlayerService.FILTER_PLAYER_EVENT);
+
 		LocalBroadcastManager.getInstance(this).registerReceiver(
-				playerReceiver,
-				new IntentFilter(PlayerEvents.FILTER_PLAYER_EVENT));
+				playerReceiver, filter);
 
 	}
 
@@ -123,6 +124,10 @@ public class PlayerActivity extends Activity {
 		}
 	}
 
+	/*
+	 * Start the progress bar countdown. Call this method after a seek operation
+	 * to restart counting at the correct place.
+	 */
 	// Start (or reset) the countdown on the progress bar
 	private void startCountdown() {
 		if (progressTimer != null) {
@@ -157,7 +162,9 @@ public class PlayerActivity extends Activity {
 		}.start();
 	}
 
-	// Abort the countdown on the progress bar
+	/*
+	 * Stop the progress bar countdown.
+	 */
 	private void cancelCountdown() {
 		if (progressTimer != null) {
 			progressTimer.cancel();
@@ -174,6 +181,19 @@ public class PlayerActivity extends Activity {
 		progress.setMax(duration / SEC);
 	}
 
+	/*
+	 * Display the tags for the current track.
+	 */
+	private void displayTrackDetails() {
+
+		Track track = player.getCurrentTrack();
+
+		((TextView) findViewById(R.id.view_uri)).setText(track.getUri()
+				.toString());
+		((TextView) findViewById(R.id.view_tags)).setText(track.tagsToString());
+
+	}
+
 	private final class PlayerServiceConnection implements ServiceConnection {
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
@@ -181,15 +201,7 @@ public class PlayerActivity extends Activity {
 
 			if (player.isPlaying()) {
 				startCountdown();
-
-				// FIXME: duplicated behaviour with PlayerEventReceiver
-				Track track = player.getCurrentTrack();
-
-				((TextView) findViewById(R.id.view_uri)).setText(track.getUri()
-						.toString());
-				((TextView) findViewById(R.id.view_tags)).setText(track
-						.tagsToString());
-
+				displayTrackDetails();
 			}
 		}
 
@@ -232,29 +244,53 @@ public class PlayerActivity extends Activity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 
-			boolean isPlaying = intent.getBooleanExtra(
-					PlayerEvents.EXTRA_STATE, false);
+			if (!intent.hasExtra(PlayerService.EXTRA_EVENT)) {
+				Log.e("Active track",
+						"Broadcast from Player missing required event.");
+				finish();
+			}
 
-			if (isPlaying) {
-				startCountdown();
+			Log.i("Active track",
+					"Received player event "
+							+ intent.getStringExtra(PlayerService.EXTRA_EVENT));
 
-				Track track = player.getCurrentTrack();
+			switch (intent.getStringExtra(PlayerService.EXTRA_EVENT)) {
+			case PlayerService.EVENT_NEW_TRACK:
+				displayTrackDetails();
 
-				((TextView) findViewById(R.id.view_uri)).setText(track.getUri()
-						.toString());
-				((TextView) findViewById(R.id.view_tags)).setText(track
-						.tagsToString());
-
-			} else {
-
+				break;
+			case PlayerService.EVENT_PAUSE:
 				cancelCountdown();
 
-				if (intent.hasExtra(PlayerEvents.EXTRA_MESSAGE)) {
+				if (intent.hasExtra(PlayerService.EXTRA_MESSAGE)) {
 					Toast.makeText(PlayerActivity.this,
-							intent.getStringExtra(PlayerEvents.EXTRA_MESSAGE),
+							intent.getStringExtra(PlayerService.EXTRA_MESSAGE),
 							Toast.LENGTH_LONG).show();
 				}
+
+				break;
+
+			case PlayerService.EVENT_PLAY:
+				startCountdown();
+
+				break;
+
+			case PlayerService.EVENT_STOP:
+				cancelCountdown();
+
+				if (intent.hasExtra(PlayerService.EXTRA_MESSAGE)) {
+					Toast.makeText(PlayerActivity.this,
+							intent.getStringExtra(PlayerService.EXTRA_MESSAGE),
+							Toast.LENGTH_LONG).show();
+				}
+
+				((TextView) findViewById(R.id.view_uri)).setText("");
+				((TextView) findViewById(R.id.view_tags)).setText("");
+
+				break;
+
 			}
+
 		}
 	}
 

@@ -3,7 +3,6 @@ package pconley.vamp;
 import java.util.List;
 
 import pconley.vamp.db.TrackDAO;
-import pconley.vamp.player.PlayerEvents;
 import pconley.vamp.player.PlayerService;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -31,7 +30,7 @@ public class LibraryActivity extends Activity {
 	private ListView trackListView;
 
 	/*
-	 * Receive status messages from the player
+	 * Receive status messages from the player. Only necessary to show errors.
 	 */
 	private BroadcastReceiver playerEventReceiver;
 
@@ -45,9 +44,9 @@ public class LibraryActivity extends Activity {
 			@Override
 			public void onReceive(Context context, Intent intent) {
 
-				if (intent.hasExtra(PlayerEvents.EXTRA_MESSAGE)) {
+				if (intent.hasExtra(PlayerService.EXTRA_MESSAGE)) {
 					Toast.makeText(LibraryActivity.this,
-							intent.getStringExtra(PlayerEvents.EXTRA_MESSAGE),
+							intent.getStringExtra(PlayerService.EXTRA_MESSAGE),
 							Toast.LENGTH_LONG).show();
 				}
 
@@ -84,7 +83,7 @@ public class LibraryActivity extends Activity {
 
 		LocalBroadcastManager.getInstance(this).registerReceiver(
 				playerEventReceiver,
-				new IntentFilter(PlayerEvents.FILTER_PLAYER_EVENT));
+				new IntentFilter(PlayerService.FILTER_PLAYER_EVENT));
 
 	}
 
