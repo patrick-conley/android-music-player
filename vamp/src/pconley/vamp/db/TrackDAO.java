@@ -86,8 +86,8 @@ public class TrackDAO {
 					results.getLong(trackIdColumn), trackId));
 		}
 
-		Track.Builder builder = new Track.Builder(trackId,
-				Uri.parse(results.getString(uriColumn)));
+		Track.Builder builder = new Track.Builder(trackId, Uri.parse(results
+				.getString(uriColumn)));
 
 		results.close();
 
@@ -122,21 +122,41 @@ public class TrackDAO {
 		library.execSQL("delete from Tags");
 		library.execSQL("delete from Tracks");
 
+		// Hardcoded path: applies to my device only
+		final String libPath = "file:///storage/extSdCard/Music/";
+
 		// Insert several tracks
-		long[] trackIds = new long[12];
+		long[] trackIds = new long[13];
 		String[] uris = new String[] {
-				"file:///storage/extSdCard/Music/popular/They Might Be Giants/They Might Be Giants/01 Everything Right Is Wrong Again.m4a",
-				"file:///storage/extSdCard/Music/popular/They Might Be Giants/They Might Be Giants/02 Put Your Hand Inside the Puppet Head.m4a",
-				"file:///storage/extSdCard/Music/popular/They Might Be Giants/They Might Be Giants/03 Number Three.m4a",
-				"file:///storage/extSdCard/Music/popular/They Might Be Giants/They Might Be Giants/17 Alienation's for the Rich.m4a",
-				"file:///storage/extSdCard/Music/popular/They Might Be Giants/They Might Be Giants/18 The Day.m4a",
-				"file:///storage/extSdCard/Music/popular/They Might Be Giants/They Might Be Giants/19 Rhythm Section Want Ad.m4a",
-				"file:///storage/extSdCard/Music/classical/Schoenberg, Arnold (1874-1951)/Concerto for Violin and Orchestra, op 36/00-01 Poco allegro.ogg",
-				"file:///storage/extSdCard/Music/classical/Schoenberg, Arnold (1874-1951)/Concerto for Violin and Orchestra, op 36/00-02 Andante grazioso.ogg",
-				"file:///storage/extSdCard/Music/classical/Schoenberg, Arnold (1874-1951)/Concerto for Violin and Orchestra, op 36/00-03 Finale Allegro.ogg",
-				"file:///storage/extSdCard/Music/classical/Sibelius, Jean (1865-1957)/Concerto for Violin and Orchestra in D minor, Op. 47/00-04 Allegro moderato.ogg",
-				"file:///storage/extSdCard/Music/classical/Sibelius, Jean (1865-1957)/Concerto for Violin and Orchestra in D minor, Op. 47/00-05 Adagio di molto.ogg",
-				"file:///storage/extSdCard/Music/classical/Sibelius, Jean (1865-1957)/Concerto for Violin and Orchestra in D minor, Op. 47/00-06 Allegro, ma non tanto.ogg", };
+				// Test: MP4 tracks with "standard" tags
+				libPath
+						+ "popular/They Might Be Giants/They Might Be Giants/01 Everything Right Is Wrong Again.m4a",
+				libPath
+						+ "popular/They Might Be Giants/They Might Be Giants/02 Put Your Hand Inside the Puppet Head.m4a",
+				libPath
+						+ "popular/They Might Be Giants/They Might Be Giants/03 Number Three.m4a",
+				libPath
+						+ "popular/They Might Be Giants/They Might Be Giants/17 Alienation's for the Rich.m4a",
+				libPath
+						+ "popular/They Might Be Giants/They Might Be Giants/18 The Day.m4a",
+				libPath
+						+ "popular/They Might Be Giants/They Might Be Giants/19 Rhythm Section Want Ad.m4a",
+				// Test: Ogg Vorbis tracks with unusual metadata
+				libPath
+						+ "classical/Schoenberg, Arnold (1874-1951)/Concerto for Violin and Orchestra, op 36/00-01 Poco allegro.ogg",
+				libPath
+						+ "classical/Schoenberg, Arnold (1874-1951)/Concerto for Violin and Orchestra, op 36/00-02 Andante grazioso.ogg",
+				libPath
+						+ "classical/Schoenberg, Arnold (1874-1951)/Concerto for Violin and Orchestra, op 36/00-03 Finale Allegro.ogg",
+				libPath
+						+ "classical/Sibelius, Jean (1865-1957)/Concerto for Violin and Orchestra in D minor, Op. 47/00-04 Allegro moderato.ogg",
+				libPath
+						+ "classical/Sibelius, Jean (1865-1957)/Concerto for Violin and Orchestra in D minor, Op. 47/00-05 Adagio di molto.ogg",
+				libPath
+						+ "classical/Sibelius, Jean (1865-1957)/Concerto for Violin and Orchestra in D minor, Op. 47/00-06 Allegro, ma non tanto.ogg",
+				// Test: missing track
+				libPath
+						+ "popular/Elvis Presley/Girls! Girls! Girls!/Return to Sender.mp3", };
 
 		for (int i = 0; i < uris.length; i++) {
 			ContentValues value = new ContentValues();

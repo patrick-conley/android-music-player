@@ -234,9 +234,9 @@ public class PlayerService extends Service implements
 		// FIXME: use actual messages rather than codes (as I figure out what
 		// messages mean)
 
-		Intent broadcast = new Intent(FILTER_PLAYER_EVENT)
-				.putExtra(EXTRA_MESSAGE,
-						String.valueOf(what) + "," + String.valueOf(extra));
+		Intent broadcast = new Intent(FILTER_PLAYER_EVENT).putExtra(
+				EXTRA_MESSAGE,
+				String.valueOf(what) + "," + String.valueOf(extra));
 
 		if (isPlaying()) {
 			broadcast.putExtra(EXTRA_EVENT, EVENT_PLAY);
@@ -319,14 +319,23 @@ public class PlayerService extends Service implements
 		try {
 			currentTrack = new TrackDAO(PlayerService.this).getTrack(trackId);
 
+			Log.d("Player", "Preparing track " + currentTrack);
 			player.setDataSource(getApplicationContext(), currentTrack.getUri());
 			player.prepare();
-			Log.d("Player", "Preparing track " + currentTrack);
+
+			broadcastManager.sendBroadcast(new Intent(FILTER_PLAYER_EVENT)
+					.putExtra(EXTRA_EVENT, EVENT_NEW_TRACK));
 
 			play();
 
+		} catch (IOException e) {
+			broadcastManager.sendBroadcast(new Intent(FILTER_PLAYER_EVENT)
+					.putExtra(EXTRA_EVENT, EVENT_STOP).putExtra(
+							EXTRA_MESSAGE,
+							"Track " + currentTrack.getUri()
+									+ " could not be read."));
 		} catch (IllegalArgumentException | SecurityException
-				| IllegalStateException | IOException e) {
+				| IllegalStateException e) {
 			Log.e("Player", e.getMessage());
 		}
 	}
@@ -362,8 +371,8 @@ public class PlayerService extends Service implements
 			broadcastManager.sendBroadcast(broadcast);
 		} else if (message != null) {
 
-			broadcast.putExtra(EXTRA_EVENT, EVENT_STOP).putExtra(
-					EXTRA_MESSAGE, message);
+			broadcast.putExtra(EXTRA_EVENT, EVENT_STOP).putExtra(EXTRA_MESSAGE,
+					message);
 			broadcastManager.sendBroadcast(broadcast);
 		}
 	}
@@ -392,8 +401,7 @@ public class PlayerService extends Service implements
 			Log.d("Player", "started");
 		} else {
 			broadcast.putExtra(EXTRA_EVENT, EVENT_PAUSE);
-			broadcast.putExtra(EXTRA_MESSAGE,
-					"Could not obtain audio focus");
+			broadcast.putExtra(EXTRA_MESSAGE, "Could not obtain audio focus");
 		}
 
 		broadcastManager.sendBroadcast(broadcast);

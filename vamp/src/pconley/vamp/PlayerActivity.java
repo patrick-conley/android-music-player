@@ -30,20 +30,22 @@ public class PlayerActivity extends Activity {
 	 * and a user isn't touching it.
 	 */
 	private SeekBar progress;
-	private boolean allowProgressUpdates = true;
+	private CountDownTimer progressTimer;
+
+	// Countdown timer can advance the progress bar only if a user isn't
+	// dragging it
+	private boolean canTimerCountDown = true;
 
 	/*
-	 * Receive status messages from the player
+	 * Receive status (state changes, error messages) from the player.
 	 */
 	private BroadcastReceiver playerReceiver;
 
 	/*
-	 * Bound connection to the player to allow it to be controlled
+	 * Bound connection to the player to allow it to be controlled.
 	 */
 	private PlayerService player;
 	private ServiceConnection playerConnection;
-
-	private CountDownTimer progressTimer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,15 +54,15 @@ public class PlayerActivity extends Activity {
 
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 
-		// Create a receiver to listen for errors from the player service.
+		// Set up a connection to the music player
+		playerConnection = new PlayerServiceConnection();
+
+		// Create a receiver to listen for status events from the player.
 		playerReceiver = new PlayerEventReceiver();
 
 		// Initialize the progress bar
 		progress = (SeekBar) findViewById(R.id.playback_progress);
 		progress.setOnSeekBarChangeListener(new OnSeekBarChangeListener());
-
-		// Set up a connection to the music player
-		playerConnection = new PlayerServiceConnection();
 	}
 
 	@Override
@@ -147,7 +149,7 @@ public class PlayerActivity extends Activity {
 
 			@Override
 			public void onTick(long remaining) {
-				if (allowProgressUpdates) {
+				if (canTimerCountDown) {
 					progress.setProgress((duration - (int) remaining) / SEC);
 					Log.v("Active track", String.format("Progress is %d of %d",
 							(duration - (int) remaining) / SEC, duration / SEC));
@@ -217,6 +219,7 @@ public class PlayerActivity extends Activity {
 	 */
 	private final class OnSeekBarChangeListener implements
 			SeekBar.OnSeekBarChangeListener {
+
 		@Override
 		public void onProgressChanged(SeekBar seekBar, int progress,
 				boolean fromUser) {
@@ -227,12 +230,12 @@ public class PlayerActivity extends Activity {
 
 		@Override
 		public void onStartTrackingTouch(SeekBar seekBar) {
-			allowProgressUpdates = false;
+			canTimerCountDown = false;
 		}
 
 		@Override
 		public void onStopTrackingTouch(SeekBar seekBar) {
-			allowProgressUpdates = true;
+			canTimerCountDown = true;
 		}
 	}
 
