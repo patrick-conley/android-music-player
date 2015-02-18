@@ -28,6 +28,7 @@ import android.widget.Toast;
 public class LibraryActivity extends Activity {
 
 	private ListView trackListView;
+	private long[] trackIds;
 
 	/*
 	 * Receive status messages from the player. Only necessary to show errors.
@@ -66,9 +67,9 @@ public class LibraryActivity extends Activity {
 
 				Intent intent = new Intent(LibraryActivity.this,
 						PlayerService.class);
-				intent.setAction(PlayerService.ACTION_PLAY);
-				intent.putExtra(PlayerService.EXTRA_TRACK_ID,
-						(long) parent.getItemAtPosition(position));
+				intent.setAction(PlayerService.ACTION_PLAY)
+						.putExtra(PlayerService.EXTRA_TRACKS, trackIds)
+						.putExtra(PlayerService.EXTRA_START_POSITION, position);
 				startService(intent);
 
 				startActivity(new Intent(LibraryActivity.this,
@@ -131,11 +132,10 @@ public class LibraryActivity extends Activity {
 
 	/*
 	 * Load the contents of the library into a TextView with execute(). Work is
-	 * done in a background thread; the task displays a progress bar while
-	 * working.
+	 * done in a background thread.
 	 * 
-	 * The library is first deleted and rebuilt if `LoadTrackListTask.execute`
-	 * is called with a true parameter.
+	 * The library is first deleted and rebuilt if
+	 * `LoadTrackListTask.execute(true)` is called.
 	 */
 	private class LoadTrackListTask extends
 			AsyncTask<Boolean, Void, List<Long>> {
@@ -161,6 +161,14 @@ public class LibraryActivity extends Activity {
 					R.id.track_list_item, ids);
 
 			trackListView.setAdapter(adapter);
+
+			// Get a list of the track IDs as required for intent extras:
+			// there's no built-in means of converting these to primitives.
+			trackIds = new long[ids.size()];
+
+			for (int i = 0; i < trackIds.length; i++) {
+				trackIds[i] = ids.get(i);
+			}
 		}
 
 	}
