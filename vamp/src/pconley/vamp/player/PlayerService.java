@@ -30,11 +30,15 @@ public class PlayerService extends Service implements
 	public static final int NOTIFICATION_ID = 1;
 
 	/**
-	 * Action for incoming intents. Start playing a new track. Specify the track
-	 * with EXTRA_TRACK_ID.
+	 * Action for incoming intents. Start playing a new track.
+	 * 
+	 * Use EXTRA_TRACK_LIST to set an array of tracks to play, and
+	 * EXTRA_START_POSITION to specify the start position in the list (if not
+	 * included, begin with the first track).
 	 */
 	public static final String ACTION_PLAY = "pconley.vamp.PlayerService.play";
-	public static final String EXTRA_TRACK_ID = "pconley.vamp.player.PlayerService.track_id";
+	public static final String EXTRA_TRACKS = "pconley.vamp.player.PlayerService.track_list";
+	public static final String EXTRA_START_POSITION = "pconley.vamp.player.PlayerService.position";
 
 	/**
 	 * Action for incoming intents. Pause the player, provided it's playing.
@@ -62,11 +66,8 @@ public class PlayerService extends Service implements
 	/**
 	 * A new track has been loaded. It may or may not be playing.
 	 */
-	public static final String EVENT_NEW_TRACK = "pconley.vamp.player.event.new";
+	public static final String EVENT_NEW_TRACK = "pconley.vamp.player.event.new_track";
 
-	/**
-	 * The player has started or resumed playing the current track.
-	 */
 	public static final String EVENT_PLAY = "pconley.vamp.player.event.play";
 
 	/**
@@ -86,7 +87,11 @@ public class PlayerService extends Service implements
 	 */
 	public static final String EXTRA_MESSAGE = "pconley.vamp.player.event.message";
 
+	private long[] trackIds = null;
 	private Track currentTrack = null;
+
+	private boolean isPlaying = false;
+	private boolean isPrepared = false;
 
 	private IBinder binder;
 	private AudioManager audioManager;
@@ -139,6 +144,7 @@ public class PlayerService extends Service implements
 	@Override
 	public void onDestroy() {
 		if (player != null) {
+			player.reset();
 			player.release();
 			player = null;
 			currentTrack = null;
@@ -168,12 +174,14 @@ public class PlayerService extends Service implements
 			switch (intent.getAction()) {
 			case ACTION_PLAY:
 
-				if (!intent.hasExtra(EXTRA_TRACK_ID)) {
+				if (!intent.hasExtra(EXTRA_TRACKS)) {
 					throw new IllegalArgumentException(
-							"PLAY action given with no track");
+							"Play action given with no tracks");
 				}
 
-				beginTrack(intent.getLongExtra(EXTRA_TRACK_ID, -1));
+				trackIds = intent.getLongArrayExtra(EXTRA_TRACKS);
+
+				beginTrack(intent.getIntExtra(EXTRA_START_POSITION, 0));
 				break;
 
 			case ACTION_PAUSE:
@@ -197,6 +205,10 @@ public class PlayerService extends Service implements
 	public void onCompletion(MediaPlayer mp) {
 		stopForeground(true);
 
+		isPlaying = false;
+		isPrepared = false;
+
+		player.reset();
 		player.release();
 		player = null;
 		currentTrack = null;
@@ -238,10 +250,12 @@ public class PlayerService extends Service implements
 				EXTRA_MESSAGE,
 				String.valueOf(what) + "," + String.valueOf(extra));
 
-		if (isPlaying()) {
+		if (isPlaying) {
 			broadcast.putExtra(EXTRA_EVENT, EVENT_PLAY);
-		} else {
+		} else if (isPrepared) {
 			broadcast.putExtra(EXTRA_EVENT, EVENT_PAUSE);
+		} else {
+			broadcast.putExtra(EXTRA_EVENT, EVENT_STOP);
 		}
 
 		broadcastManager.sendBroadcast(broadcast);
@@ -272,7 +286,7 @@ public class PlayerService extends Service implements
 	 *         prepared by the MediaPlayer. Returns null otherwise.
 	 */
 	public Track getCurrentTrack() {
-		return currentTrack;
+		return isPrepared ? currentTrack : null;
 	}
 
 	/**
@@ -280,7 +294,7 @@ public class PlayerService extends Service implements
 	 *         playing.
 	 */
 	public int getCurrentPosition() {
-		return player == null ? -1 : player.getCurrentPosition();
+		return isPrepared ? player.getCurrentPosition() : -1;
 	}
 
 	/**
@@ -288,37 +302,41 @@ public class PlayerService extends Service implements
 	 *         playing.
 	 */
 	public int getDuration() {
-		return player == null ? -1 : player.getDuration();
+		return isPrepared ? player.getDuration() : -1;
 	}
 
 	/**
 	 * @return Whether the service is playing a track.
 	 */
 	public boolean isPlaying() {
-		return player != null && player.isPlaying();
+		return isPlaying;
 	}
 
-	public void beginTrack(long trackId) {
+	public void beginTrack(int position) {
 
-		if (player == null) {
-			player = new MediaPlayer();
-			player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-			player.setOnCompletionListener(PlayerService.this);
-			player.setOnErrorListener(PlayerService.this);
-			player.setOnInfoListener(PlayerService.this);
-			player.setWakeMode(getApplicationContext(),
-					PowerManager.PARTIAL_WAKE_LOCK);
-
-		} else {
+		if (player != null) {
 			player.reset();
+			isPrepared = false;
+			isPlaying = false;
+		} else {
+			player = new MediaPlayer();
 		}
 
+		player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+		player.setOnCompletionListener(PlayerService.this);
+		player.setOnErrorListener(PlayerService.this);
+		player.setOnInfoListener(PlayerService.this);
+		player.setWakeMode(getApplicationContext(),
+				PowerManager.PARTIAL_WAKE_LOCK);
+
 		try {
-			currentTrack = new TrackDAO(PlayerService.this).getTrack(trackId);
+			currentTrack = new TrackDAO(PlayerService.this)
+					.getTrack(trackIds[position]);
 
 			Log.d("Player", "Preparing track " + currentTrack);
 			player.setDataSource(getApplicationContext(), currentTrack.getUri());
 			player.prepare();
+			isPrepared = true;
 
 			broadcastManager.sendBroadcast(new Intent(FILTER_PLAYER_EVENT)
 					.putExtra(EXTRA_EVENT, EVENT_NEW_TRACK));
@@ -331,9 +349,13 @@ public class PlayerService extends Service implements
 							EXTRA_MESSAGE,
 							"Track " + currentTrack.getUri()
 									+ " could not be read."));
+
+			onCompletion(player);
 		} catch (IllegalArgumentException | SecurityException
 				| IllegalStateException e) {
 			Log.e("Player", e.getMessage());
+
+			onCompletion(player);
 		}
 	}
 
@@ -351,8 +373,9 @@ public class PlayerService extends Service implements
 
 		Intent broadcast = new Intent(FILTER_PLAYER_EVENT);
 
-		if (player != null && player.isPlaying()) {
+		if (isPlaying) {
 			player.pause();
+			isPlaying = false;
 
 			stopForeground(true);
 			audioManager.abandonAudioFocus(this);
@@ -366,7 +389,7 @@ public class PlayerService extends Service implements
 			}
 
 			broadcastManager.sendBroadcast(broadcast);
-		} else if (message != null) {
+		} else if (!isPrepared && message != null) {
 
 			broadcast.putExtra(EXTRA_EVENT, EVENT_STOP).putExtra(EXTRA_MESSAGE,
 					message);
@@ -380,9 +403,11 @@ public class PlayerService extends Service implements
 	 * @return whether the track is now playing
 	 */
 	public void play() {
-		if (player == null) {
+		if (!isPrepared) {
 			Log.w("Player", "Can't play: no player");
 			return;
+		} else if (isPlaying) {
+			return; // nothing to do
 		}
 
 		boolean hasFocus = audioManager.requestAudioFocus(this,
@@ -391,11 +416,14 @@ public class PlayerService extends Service implements
 		Intent broadcast = new Intent(FILTER_PLAYER_EVENT);
 
 		if (hasFocus) {
-			player.start();
-			broadcast.putExtra(EXTRA_EVENT, EVENT_PLAY);
 			startForeground(NOTIFICATION_ID, notificationBase.build());
 
+			player.start();
+			isPlaying = true;
 			Log.d("Player", "started");
+
+			broadcast.putExtra(EXTRA_EVENT, EVENT_PLAY);
+
 		} else {
 			broadcast.putExtra(EXTRA_EVENT, EVENT_PAUSE);
 			broadcast.putExtra(EXTRA_MESSAGE, "Could not obtain audio focus");
@@ -412,7 +440,7 @@ public class PlayerService extends Service implements
 	 *            target is invalid.
 	 */
 	public void seekTo(int time) {
-		if (player == null) {
+		if (!isPrepared) {
 			return;
 		}
 
@@ -420,7 +448,7 @@ public class PlayerService extends Service implements
 
 		Intent broadcast = new Intent(FILTER_PLAYER_EVENT);
 
-		if (isPlaying()) {
+		if (isPlaying) {
 			broadcast.putExtra(EXTRA_EVENT, EVENT_PLAY);
 		} else {
 			broadcast.putExtra(EXTRA_EVENT, EVENT_PAUSE);
