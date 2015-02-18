@@ -8,17 +8,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import android.net.Uri;
+
 /**
- * A piece of music, and its metadata.
+ * The URI of a track of music, and the metadata associated with the destination
+ * file.
+ * 
+ * @author pconley
  */
-public class Track {
+public final class Track {
 
 	private long id;
-	private String uri;
+	private Uri uri;
 	private Map<String, Set<Tag>> tags;
 
 	/* Private constructor. Use the builder. */
-	private Track(long id, String uri, Map<String, Set<Tag>> tags) {
+	private Track(long id, Uri uri, Map<String, Set<Tag>> tags) {
 		this.id = id;
 		this.uri = uri;
 		this.tags = tags;
@@ -28,7 +33,7 @@ public class Track {
 		return id;
 	}
 
-	public String getUri() {
+	public Uri getUri() {
 		return uri;
 	}
 
@@ -117,10 +122,10 @@ public class Track {
 	public static class Builder {
 
 		private long id;
-		private String uri;
+		private Uri uri;
 		private Map<String, Set<Tag>> tags;
 
-		public Builder(long id, String uri) {
+		public Builder(long id, Uri uri) {
 			this.id = id;
 			this.uri = uri;
 

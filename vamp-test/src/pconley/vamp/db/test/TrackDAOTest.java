@@ -11,20 +11,20 @@ import pconley.vamp.db.LibraryHelper;
 import pconley.vamp.db.TrackDAO;
 import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.test.AndroidTestCase;
 import android.test.RenamingDelegatingContext;
 
 public class TrackDAOTest extends AndroidTestCase {
 
 	private static final String namePrefix = "test_";
-	private static final String uri = "file:///track.ogg";
+	private static final Uri uri = Uri.parse("file:///track.ogg");
 
-	private static final String sampleUri = "file:///sample.ogg";
+	private static final Uri sampleUri = Uri.parse("file:///sample.ogg");
 	private static final String[] sampleTagNames = { "title", "album", "artist" };
 	private static final String[] sampleTagValues = { "SampleTrack",
 			"SampleAlbum", "SampleArtist" };
@@ -239,13 +239,13 @@ public class TrackDAOTest extends AndroidTestCase {
 	/*
 	 * Add a track to the database. Duplicate tracks will be updated.
 	 */
-	private Track insertTrack(String uri, String[] tagNames, String[] tagValues) {
+	private Track insertTrack(Uri uri, String[] tagNames, String[] tagValues) {
 		long trackId;
 
 		// Check if the track already exists; get its ID or insert it
 		Cursor dupes = library.query(TrackEntry.NAME,
 				new String[] { TrackEntry.COLUMN_ID }, duplicateTrackSelection,
-				new String[] { uri }, null, null, null);
+				new String[] { uri.toString() }, null, null, null);
 
 		if (dupes.getCount() > 0) {
 			dupes.moveToFirst();
@@ -253,7 +253,7 @@ public class TrackDAOTest extends AndroidTestCase {
 					.getColumnIndexOrThrow(TrackEntry.COLUMN_ID));
 		} else {
 			ContentValues track = new ContentValues();
-			track.put(TrackEntry.COLUMN_URI, uri);
+			track.put(TrackEntry.COLUMN_URI, uri.toString());
 			trackId = library.insertOrThrow(TrackEntry.NAME, null, track);
 		}
 
