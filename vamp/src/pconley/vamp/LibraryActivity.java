@@ -67,7 +67,7 @@ public class LibraryActivity extends Activity {
 				Intent intent = new Intent(LibraryActivity.this,
 						PlayerService.class);
 				intent.setAction(PlayerService.ACTION_PLAY);
-				intent.putExtra(PlayerService.EXTRA_ID,
+				intent.putExtra(PlayerService.EXTRA_TRACK_ID,
 						(long) parent.getItemAtPosition(position));
 				startService(intent);
 

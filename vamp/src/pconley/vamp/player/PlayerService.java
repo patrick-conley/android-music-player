@@ -31,10 +31,10 @@ public class PlayerService extends Service implements
 
 	/**
 	 * Action for incoming intents. Start playing a new track. Specify the track
-	 * with EXTRA_ID.
+	 * with EXTRA_TRACK_ID.
 	 */
 	public static final String ACTION_PLAY = "pconley.vamp.PlayerService.play";
-	public static final String EXTRA_ID = "pconley.vamp.player.PlayerService.track_id";
+	public static final String EXTRA_TRACK_ID = "pconley.vamp.player.PlayerService.track_id";
 
 	/**
 	 * Action for incoming intents. Pause the player, provided it's playing.
@@ -168,12 +168,12 @@ public class PlayerService extends Service implements
 			switch (intent.getAction()) {
 			case ACTION_PLAY:
 
-				if (!intent.hasExtra(EXTRA_ID)) {
+				if (!intent.hasExtra(EXTRA_TRACK_ID)) {
 					throw new IllegalArgumentException(
 							"PLAY action given with no track");
 				}
 
-				beginTrack(intent.getLongExtra(EXTRA_ID, -1));
+				beginTrack(intent.getLongExtra(EXTRA_TRACK_ID, -1));
 				break;
 
 			case ACTION_PAUSE:
@@ -278,9 +278,6 @@ public class PlayerService extends Service implements
 	/**
 	 * @return The current track's current position (in ms), or -1 if nothing is
 	 *         playing.
-	 *
-	 *         FIXME: these methods should throw an IllegalStateException if the
-	 *         player doesn't exist.
 	 */
 	public int getCurrentPosition() {
 		return player == null ? -1 : player.getCurrentPosition();

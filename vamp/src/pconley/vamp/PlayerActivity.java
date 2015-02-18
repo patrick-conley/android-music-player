@@ -90,11 +90,9 @@ public class PlayerActivity extends Activity {
 		bindService(new Intent(this, PlayerService.class), playerConnection,
 				Context.BIND_AUTO_CREATE);
 
-		IntentFilter filter = new IntentFilter(
-				PlayerService.FILTER_PLAYER_EVENT);
-
 		LocalBroadcastManager.getInstance(this).registerReceiver(
-				playerReceiver, filter);
+				playerReceiver,
+				new IntentFilter(PlayerService.FILTER_PLAYER_EVENT));
 
 	}
 
