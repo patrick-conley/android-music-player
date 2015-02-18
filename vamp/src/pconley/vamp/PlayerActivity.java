@@ -123,14 +123,12 @@ public class PlayerActivity extends Activity {
 
 		// Player may be null if an attentive user presses play/pause before the
 		// service is bound.
-		if (player == null) {
-			return;
-		}
-
-		if (player.isPlaying()) {
-			player.pause();
-		} else {
-			player.play();
+		if (player != null) {
+			if (player.isPlaying()) {
+				player.pause();
+			} else {
+				player.play();
+			}
 		}
 	}
 
@@ -225,7 +223,7 @@ public class PlayerActivity extends Activity {
 		}
 
 		/**
-		 * Clean up if the Player has been lost unexpectedly
+		 * Clean up if the Player has been lost unexpectedly.
 		 */
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
