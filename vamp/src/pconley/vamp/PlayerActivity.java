@@ -80,8 +80,11 @@ public class PlayerActivity extends Activity {
 	}
 
 	/**
-	 * Register receivers for broadcasts from the player service and bind to its
-	 * running instance.
+	 * Bind to the running instance of the player.
+	 *
+	 * The player's broadcast receiver would normally be registered from here,
+	 * but to guarantee synchrony it must be registered from
+	 * PlayerServiceConnection.onServiceConnected.
 	 */
 	@Override
 	protected void onResume() {
@@ -89,11 +92,6 @@ public class PlayerActivity extends Activity {
 
 		bindService(new Intent(this, PlayerService.class), playerConnection,
 				Context.BIND_AUTO_CREATE);
-
-		LocalBroadcastManager.getInstance(this).registerReceiver(
-				playerReceiver,
-				new IntentFilter(PlayerService.FILTER_PLAYER_EVENT));
-
 	}
 
 	/**
@@ -104,7 +102,12 @@ public class PlayerActivity extends Activity {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(
 				playerReceiver);
 
-		cancelCountdown();
+		// Player may be null if the activity is paused before the service has
+		// been bound. This seems to happen when restarting after a crash.
+		if (player != null) {
+			cancelCountdown();
+		}
+
 		unbindService(playerConnection);
 
 		super.onPause();
@@ -117,6 +120,13 @@ public class PlayerActivity extends Activity {
 	 * @param view
 	 */
 	public void onPlayPauseClick(View view) {
+
+		// Player may be null if an attentive user presses play/pause before the
+		// service is bound.
+		if (player == null) {
+			return;
+		}
+
 		if (player.isPlaying()) {
 			player.pause();
 		} else {
@@ -128,7 +138,6 @@ public class PlayerActivity extends Activity {
 	 * Start the progress bar countdown. Call this method after a seek operation
 	 * to restart counting at the correct place.
 	 */
-	// Start (or reset) the countdown on the progress bar
 	private void startCountdown() {
 		if (progressTimer != null) {
 			progressTimer.cancel();
@@ -195,6 +204,11 @@ public class PlayerActivity extends Activity {
 	}
 
 	private final class PlayerServiceConnection implements ServiceConnection {
+
+		/**
+		 * Get the running service's instance. Register the broadcast receiver,
+		 * and update the UI.
+		 */
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			player = ((PlayerService.PlayerBinder) service).getService();
@@ -203,8 +217,16 @@ public class PlayerActivity extends Activity {
 				startCountdown();
 				displayTrackDetails();
 			}
+
+			LocalBroadcastManager
+					.getInstance(PlayerActivity.this)
+					.registerReceiver(playerReceiver,
+							new IntentFilter(PlayerService.FILTER_PLAYER_EVENT));
 		}
 
+		/**
+		 * Clean up if the Player has been lost unexpectedly
+		 */
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
 			cancelCountdown();
