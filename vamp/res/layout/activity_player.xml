@@ -17,7 +17,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/row_progress"
+        android:layout_above="@+id/row_controls"
         android:layout_below="@+id/view_uri" >
 
         <TextView
@@ -28,45 +28,10 @@
     </ScrollView>
 
     <RelativeLayout
-        android:id="@+id/row_progress"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/row_controls"
-        android:layout_marginBottom="@dimen/activity_vertical_margin" >
-
-        <TextView
-            android:id="@+id/progress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_centerVertical="true"
-            android:text="@string/blank_time"
-            android:textSize="@dimen/large_text_size" />
-
-        <SeekBar
-            android:id="@+id/progress_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_toLeftOf="@+id/duration"
-            android:layout_toRightOf="@+id/progress"
-            android:progress="0" />
-
-        <TextView
-            android:id="@+id/duration"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:gravity="right"
-            android:text="@string/blank_time"
-            android:textSize="@dimen/large_text_size" />
-    </RelativeLayout>
-
-    <RelativeLayout
         android:id="@+id/row_controls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true" >
+        android:layout_above="@+id/row_progress" >
 
         <Button
             android:id="@+id/button_prev"
@@ -94,6 +59,41 @@
             android:layout_alignParentRight="true"
             android:onClick="onNextClick"
             android:text="@string/next"
+            android:textSize="@dimen/large_text_size" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/row_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="@dimen/activity_vertical_margin" >
+
+        <TextView
+            android:id="@+id/progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:text="@string/blank_time"
+            android:textSize="@dimen/large_text_size" />
+
+        <SeekBar
+            android:id="@+id/progress_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/duration"
+            android:layout_toRightOf="@+id/progress"
+            android:progress="0" />
+
+        <TextView
+            android:id="@+id/duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:gravity="right"
+            android:text="@string/blank_time"
             android:textSize="@dimen/large_text_size" />
     </RelativeLayout>
 

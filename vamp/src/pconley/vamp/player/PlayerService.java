@@ -278,13 +278,15 @@ public class PlayerService extends Service implements
 		switch (focusChange) {
 		case AudioManager.AUDIOFOCUS_LOSS:
 
-			pause("Audio focus lost");
+			Log.w("Player", "Audio focus lost");
+			pause();
 			onCompletion(player);
 			break;
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
 
-			pause("Audio focus lost temporarily");
+			Log.i("Player", "Audio focus lost temporarily");
+			pause();
 			break;
 		}
 

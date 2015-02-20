@@ -65,7 +65,7 @@ public class PlayerActivity extends Activity {
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 
 		// Format for track duration/progress
-		dateFormat = new SimpleDateFormat("mm:ss", Locale.US);
+		dateFormat = new SimpleDateFormat("m:ss", Locale.US);
 		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
 		// Set up a connection to the music player
@@ -184,6 +184,39 @@ public class PlayerActivity extends Activity {
 	}
 
 	/*
+	 * Update values for progress & duration timers, and position in the
+	 * progress bar.
+	 * 
+	 * If no track is playing, times are set to 0:00 and the progress bar is
+	 * locked to the beginning.
+	 */
+	private void displayProgress() {
+
+		final int progress = player.getProgress();
+		final int duration = player.getDuration();
+
+		progressView = (TextView) findViewById(R.id.progress);
+		durationView = (TextView) findViewById(R.id.duration);
+
+		if (progress != -1) {
+			progressBar.setIndeterminate(duration == -1);
+			progressBar.setProgress(progress / SEC);
+			progressBar.setMax(duration / SEC);
+
+			progressView.setText(dateFormat.format(new Date(progress)));
+			durationView.setText(dateFormat.format(new Date(duration)));
+		} else {
+			progressBar.setIndeterminate(false);
+			progressBar.setProgress(0);
+			progressBar.setMax(0);
+
+			progressView.setText(getString(R.string.blank_time));
+			durationView.setText(getString(R.string.blank_time));
+		}
+
+	}
+
+	/*
 	 * Start the progress bar countdown. Call this method after a seek operation
 	 * to restart counting at the correct place.
 	 */
@@ -192,16 +225,10 @@ public class PlayerActivity extends Activity {
 			progressTimer.cancel();
 		}
 
+		displayProgress();
+
 		final int position = player.getProgress();
 		final int duration = player.getDuration();
-
-		progressView = (TextView) findViewById(R.id.progress);
-		durationView = (TextView) findViewById(R.id.duration);
-
-		progressBar.setIndeterminate(duration == -1);
-		progressBar.setMax(duration / SEC);
-
-		durationView.setText(dateFormat.format(new Date(duration)));
 
 		Log.i("Active track", String.format("Starting timer at %d of %d",
 				position / SEC, duration / SEC));
@@ -238,12 +265,8 @@ public class PlayerActivity extends Activity {
 
 		Log.i("Active track", "Stopping timer");
 
-		int position = player.getProgress();
-		int duration = player.getDuration();
-
+		displayProgress();
 		progressBar.setIndeterminate(false);
-		progressBar.setProgress(position / SEC);
-		progressBar.setMax(duration / SEC);
 	}
 
 	private void clearCountdown() {
@@ -252,13 +275,7 @@ public class PlayerActivity extends Activity {
 		}
 
 		Log.i("Active track", "Clearing timer & times");
-
-		progressView.setText(R.string.blank_time);
-		durationView.setText(R.string.blank_time);
-
-		progressBar.setProgress(0);
-		progressBar.setMax(0);
-		progressBar.setIndeterminate(false);
+		displayProgress();
 	}
 
 	/*
