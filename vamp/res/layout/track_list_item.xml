@@ -6,6 +6,7 @@
     <TextView
         android:id="@+id/track_list_item"
         android:layout_width="fill_parent"
+        android:textSize="@dimen/text_size"
         android:layout_height="wrap_content" />
 
 </RelativeLayout>

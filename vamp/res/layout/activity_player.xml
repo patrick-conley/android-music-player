@@ -11,33 +11,90 @@
     <TextView
         android:id="@+id/view_uri"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/text_size" />
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/view_uri" >
+        android:layout_above="@+id/row_progress"
+        android:layout_below="@+id/view_uri" >
 
         <TextView
             android:id="@+id/view_tags"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_size" />
     </ScrollView>
 
-    <SeekBar
-        android:id="@+id/playback_progress"
+    <RelativeLayout
+        android:id="@+id/row_progress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/button_play_pause"
-        android:progress="0" />
+        android:layout_above="@+id/row_controls"
+        android:layout_marginBottom="@dimen/activity_vertical_margin" >
 
-    <Button
-        android:id="@+id/button_play_pause"
+        <TextView
+            android:id="@+id/progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:text="@string/blank_time"
+            android:textSize="@dimen/large_text_size" />
+
+        <SeekBar
+            android:id="@+id/progress_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/duration"
+            android:layout_toRightOf="@+id/progress"
+            android:progress="0" />
+
+        <TextView
+            android:id="@+id/duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:gravity="right"
+            android:text="@string/blank_time"
+            android:textSize="@dimen/large_text_size" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/row_controls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:onClick="onPlayPauseClick"
-        android:text="@string/play_pause" />
+        android:layout_alignParentBottom="true" >
+
+        <Button
+            android:id="@+id/button_prev"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:onClick="onPrevClick"
+            android:text="@string/previous"
+            android:textSize="@dimen/large_text_size" />
+
+        <Button
+            android:id="@+id/button_play_pause"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/button_next"
+            android:layout_toRightOf="@+id/button_prev"
+            android:onClick="onPlayPauseClick"
+            android:text="@string/play_pause"
+            android:textSize="@dimen/large_text_size" />
+
+        <Button
+            android:id="@+id/button_next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:onClick="onNextClick"
+            android:text="@string/next"
+            android:textSize="@dimen/large_text_size" />
+    </RelativeLayout>
 
 </RelativeLayout>

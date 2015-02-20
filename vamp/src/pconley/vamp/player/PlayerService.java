@@ -30,6 +30,12 @@ public class PlayerService extends Service implements
 	public static final int NOTIFICATION_ID = 1;
 
 	/**
+	 * If a "previous" action is used after this time, the current track should
+	 * be restarted instead of beginning the previous track.
+	 */
+	public static final int PREV_RESTART_LIMIT = 2;
+
+	/**
 	 * Action for incoming intents. Start playing a new track.
 	 * 
 	 * Use EXTRA_TRACK_LIST to set an array of tracks to play, and
@@ -293,7 +299,7 @@ public class PlayerService extends Service implements
 	 * @return The current track's current position (in ms), or -1 if nothing is
 	 *         playing.
 	 */
-	public int getCurrentPosition() {
+	public int getProgress() {
 		return isPrepared ? player.getCurrentPosition() : -1;
 	}
 
@@ -312,6 +318,12 @@ public class PlayerService extends Service implements
 		return isPlaying;
 	}
 
+	/**
+	 * Begin playing a new track from the current collection. Changing the
+	 * collection requires restarting the service with a new intent.
+	 * 
+	 * @param position
+	 */
 	public void beginTrack(int position) {
 
 		if (player != null) {
@@ -404,7 +416,7 @@ public class PlayerService extends Service implements
 	 */
 	public void play() {
 		if (!isPrepared) {
-			Log.w("Player", "Can't play: no player");
+			Log.w("Player", "Can't play: player not prepared.");
 			return;
 		} else if (isPlaying) {
 			return; // nothing to do
@@ -441,6 +453,7 @@ public class PlayerService extends Service implements
 	 */
 	public void seekTo(int time) {
 		if (!isPrepared) {
+			Log.w("Player", "Can't seek: player not prepared.");
 			return;
 		}
 
