@@ -93,7 +93,10 @@ public class PlayerService extends Service implements
 	 */
 	public static final String EXTRA_MESSAGE = "pconley.vamp.player.event.message";
 
+	private static final int SEC = 1000;
+
 	private long[] trackIds = null;
+	private int currentPosition = -1;
 	private Track currentTrack = null;
 
 	private boolean isPlaying = false;
@@ -342,6 +345,7 @@ public class PlayerService extends Service implements
 				PowerManager.PARTIAL_WAKE_LOCK);
 
 		try {
+			currentPosition = position;
 			currentTrack = new TrackDAO(PlayerService.this)
 					.getTrack(trackIds[position]);
 
@@ -468,6 +472,45 @@ public class PlayerService extends Service implements
 		}
 
 		broadcastManager.sendBroadcast(broadcast);
+	}
+
+	/**
+	 * If progress is less than 3s and the current track is not the first track
+	 * in the collection, go to the beginning of the previous track. Otherwise,
+	 * go to the beginning of this track.
+	 *
+	 * Does nothing if the player is not prepared.
+	 */
+	public void previous() {
+		if (!isPrepared) {
+			Log.w("Player", "Can't go to previous: player not prepared.");
+			return;
+		}
+
+		if (getProgress() / SEC > PREV_RESTART_LIMIT || currentPosition == 0) {
+			seekTo(0);
+		} else {
+			beginTrack(currentPosition - 1);
+		}
+
+	}
+
+	/**
+	 * If the current track is not the last track in the collection, got to the
+	 * beginning of the next track. Otherwise, stop playing.
+	 */
+	public void next() {
+		if (!isPrepared) {
+			Log.w("Player", "Can't go to next: player not prepared.");
+			return;
+		}
+
+		if (currentPosition < trackIds.length - 1) {
+			beginTrack(currentPosition + 1);
+		} else {
+			onCompletion(player);
+		}
+
 	}
 
 }

@@ -150,31 +150,37 @@ public class PlayerActivity extends Activity {
 
 	/**
 	 * Callback for the Previous Track button.
-	 * 
+	 *
 	 * If progress is less than 3s and the current track is not the first track
 	 * in the collection, go to the beginning of the previous track. Otherwise,
 	 * go to the beginning of this track.
-	 * 
+	 *
 	 * Does nothing if the player is not prepared.
-	 * 
+	 *
 	 * @param view
 	 */
 	public void onPrevClick(View view) {
-		return;
+
+		if (player != null) {
+			player.previous();
+		}
 	}
 
 	/**
 	 * Callback for the Next Track button.
-	 * 
+	 *
 	 * If the current track is not the last track in the collection, go to the
 	 * beginning of the next track. Otherwise, end the current track.
-	 * 
+	 *
 	 * Does nothing if the player is not prepared.
-	 * 
+	 *
 	 * @param view
 	 */
 	public void onNextClick(View view) {
-		return;
+
+		if (player != null) {
+			player.next();
+		}
 	}
 
 	/*
