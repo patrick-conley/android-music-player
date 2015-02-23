@@ -72,6 +72,8 @@ public class PlayerService extends Service implements
 	private MediaPlayer player = null;
 	private LocalBroadcastManager broadcastManager;
 
+	private TrackDAO trackDao;
+
 	// Constant content of the notification displayed while a track plays.
 	// Content that changes with the track needs to be added in playPause()
 	private Notification.Builder notificationBase;
@@ -187,7 +189,7 @@ public class PlayerService extends Service implements
 		player = null;
 		currentTrack = null;
 
-		broadcast(PlayerEvent.STOP);
+		broadcastEvent(PlayerEvent.STOP);
 	}
 
 	/**
@@ -294,26 +296,30 @@ public class PlayerService extends Service implements
 			isPlaying = false;
 		} else {
 			player = new MediaPlayer();
+
+			player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+			player.setOnCompletionListener(PlayerService.this);
+			player.setOnErrorListener(PlayerService.this);
+			player.setOnInfoListener(PlayerService.this);
+			player.setWakeMode(getApplicationContext(),
+					PowerManager.PARTIAL_WAKE_LOCK);
 		}
 
-		player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-		player.setOnCompletionListener(PlayerService.this);
-		player.setOnErrorListener(PlayerService.this);
-		player.setOnInfoListener(PlayerService.this);
-		player.setWakeMode(getApplicationContext(),
-				PowerManager.PARTIAL_WAKE_LOCK);
-
 		try {
+
+			if (trackDao == null) {
+				trackDao = new TrackDAO(this);
+			}
+
 			currentTrackId = position;
-			currentTrack = new TrackDAO(PlayerService.this)
-					.getTrack(trackIds[position]);
+			currentTrack = trackDao.getTrack(trackIds[position]);
 
 			Log.d("Player", "Preparing track " + currentTrack);
 			player.setDataSource(getApplicationContext(), currentTrack.getUri());
 			player.prepare();
 			isPrepared = true;
 
-			broadcast(PlayerEvent.NEW_TRACK);
+			broadcastEvent(PlayerEvent.NEW_TRACK);
 
 			play();
 
@@ -383,7 +389,7 @@ public class PlayerService extends Service implements
 			isPlaying = true;
 			Log.d("Player", "started");
 
-			broadcast(PlayerEvent.PLAY);
+			broadcastEvent(PlayerEvent.PLAY);
 
 		} else {
 			broadcast(PlayerEvent.PAUSE, "Could not obtain audio focus");
@@ -405,7 +411,7 @@ public class PlayerService extends Service implements
 
 		player.seekTo(time);
 
-		broadcast(isPlaying ? PlayerEvent.PLAY : PlayerEvent.PAUSE);
+		broadcastEvent(isPlaying ? PlayerEvent.PLAY : PlayerEvent.PAUSE);
 	}
 
 	/**
@@ -453,7 +459,7 @@ public class PlayerService extends Service implements
 	 * 
 	 * @param event
 	 */
-	private void broadcast(PlayerEvent event) {
+	private void broadcastEvent(PlayerEvent event) {
 		broadcast(event, null);
 	}
 

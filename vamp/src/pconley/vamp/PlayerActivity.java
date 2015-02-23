@@ -358,7 +358,8 @@ public class PlayerActivity extends Activity {
 
 			Log.i("Active track",
 					"Received player event "
-							+ intent.getStringExtra(PlayerEvent.EXTRA_EVENT));
+							+ (PlayerEvent) intent
+									.getSerializableExtra(PlayerEvent.EXTRA_EVENT));
 
 			switch ((PlayerEvent) intent
 					.getSerializableExtra(PlayerEvent.EXTRA_EVENT)) {
