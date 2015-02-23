@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import pconley.vamp.model.Track;
+import pconley.vamp.player.PlayerEvent;
 import pconley.vamp.player.PlayerService;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -301,10 +302,9 @@ public class PlayerActivity extends Activity {
 				displayTrackDetails();
 			}
 
-			LocalBroadcastManager
-					.getInstance(PlayerActivity.this)
+			LocalBroadcastManager.getInstance(PlayerActivity.this)
 					.registerReceiver(playerReceiver,
-							new IntentFilter(PlayerService.FILTER_PLAYER_EVENT));
+							new IntentFilter(PlayerEvent.FILTER_PLAYER_EVENT));
 		}
 
 		/**
@@ -350,7 +350,7 @@ public class PlayerActivity extends Activity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 
-			if (!intent.hasExtra(PlayerService.EXTRA_EVENT)) {
+			if (!intent.hasExtra(PlayerEvent.EXTRA_EVENT)) {
 				Log.e("Active track",
 						"Broadcast from Player missing required event.");
 				finish();
@@ -358,35 +358,36 @@ public class PlayerActivity extends Activity {
 
 			Log.i("Active track",
 					"Received player event "
-							+ intent.getStringExtra(PlayerService.EXTRA_EVENT));
+							+ intent.getStringExtra(PlayerEvent.EXTRA_EVENT));
 
-			switch (intent.getStringExtra(PlayerService.EXTRA_EVENT)) {
-			case PlayerService.EVENT_NEW_TRACK:
+			switch ((PlayerEvent) intent
+					.getSerializableExtra(PlayerEvent.EXTRA_EVENT)) {
+			case NEW_TRACK:
 				displayTrackDetails();
 
 				break;
-			case PlayerService.EVENT_PAUSE:
+			case PAUSE:
 				stopCountdown();
 
-				if (intent.hasExtra(PlayerService.EXTRA_MESSAGE)) {
+				if (intent.hasExtra(PlayerEvent.EXTRA_MESSAGE)) {
 					Toast.makeText(PlayerActivity.this,
-							intent.getStringExtra(PlayerService.EXTRA_MESSAGE),
+							intent.getStringExtra(PlayerEvent.EXTRA_MESSAGE),
 							Toast.LENGTH_LONG).show();
 				}
 
 				break;
 
-			case PlayerService.EVENT_PLAY:
+			case PLAY:
 				startCountdown();
 
 				break;
 
-			case PlayerService.EVENT_STOP:
+			case STOP:
 				clearCountdown();
 
-				if (intent.hasExtra(PlayerService.EXTRA_MESSAGE)) {
+				if (intent.hasExtra(PlayerEvent.EXTRA_MESSAGE)) {
 					Toast.makeText(PlayerActivity.this,
-							intent.getStringExtra(PlayerService.EXTRA_MESSAGE),
+							intent.getStringExtra(PlayerEvent.EXTRA_MESSAGE),
 							Toast.LENGTH_LONG).show();
 				}
 
