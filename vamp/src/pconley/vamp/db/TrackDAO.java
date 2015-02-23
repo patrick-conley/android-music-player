@@ -21,11 +21,12 @@ public class TrackDAO {
 	private SQLiteDatabase library;
 
 	private static final String GET_TRACK_QUERY = String
-			.format("SELECT * FROM (SELECT %s AS %s FROM %s WHERE %s = ?) INNER JOIN %s USING (%s) ORDER BY %s,%s",
-					TrackTagRelation.TAG_ID, TagEntry.COLUMN_ID,
-					TrackTagRelation.NAME, TrackTagRelation.TRACK_ID,
-					TagEntry.NAME, TagEntry.COLUMN_ID, TagEntry.COLUMN_ID,
-					TagEntry.COLUMN_TAG);
+			.format("SELECT * FROM (SELECT * FROM (SELECT %s AS %s, %s FROM %s WHERE %s = ?) LEFT OUTER JOIN %s USING (%s)) LEFT OUTER JOIN %s ON %s = %s",
+					TrackEntry.COLUMN_ID, TrackTagRelation.TRACK_ID,
+					TrackEntry.COLUMN_URI, TrackEntry.NAME,
+					TrackEntry.COLUMN_ID, TrackTagRelation.NAME,
+					TrackTagRelation.TRACK_ID, TagEntry.NAME,
+					TrackTagRelation.TAG_ID, TagEntry.COLUMN_ID);
 
 	/**
 	 * Open a database connection. Should not be called from the UI thread.
@@ -35,6 +36,13 @@ public class TrackDAO {
 	 */
 	public TrackDAO(Context context) {
 		library = new LibraryHelper(context).getReadableDatabase();
+	}
+
+	/**
+	 * Close this DAO's reference to the database.
+	 */
+	public void close() {
+		library.close();
 	}
 
 	public List<Long> getIds() {
@@ -50,6 +58,8 @@ public class TrackDAO {
 			tracks.add(results.getLong(idColumn));
 		}
 
+		results.close();
+
 		return tracks;
 	}
 
@@ -57,50 +67,33 @@ public class TrackDAO {
 	 * Load every tag for a single track.
 	 *
 	 * @param trackId
+	 * @return Track with the given ID; null if no such track exists.
 	 */
 	public Track getTrack(long trackId) {
 
-		// Get the track itself from the library
-		Cursor results = library.query(TrackEntry.NAME, new String[] {
-				TrackEntry.COLUMN_ID, TrackEntry.COLUMN_URI },
-				String.format("%s = %d", TrackEntry.COLUMN_ID, trackId), null,
-				null, null, null);
-
-		int trackIdColumn = results.getColumnIndexOrThrow(TrackEntry.COLUMN_ID);
-		int uriColumn = results.getColumnIndexOrThrow(TrackEntry.COLUMN_URI);
-
-		if (results.getCount() != 1) {
-			if (results.getCount() == 0) {
-				return null;
-			} else {
-				throw new IllegalArgumentException(
-						"Database returned more than one track");
-			}
-		}
-
-		results.moveToFirst();
-
-		if (results.getLong(trackIdColumn) != trackId) {
-			throw new IllegalStateException(String.format(
-					"Database returned incorrect track %d. %d expected.",
-					results.getLong(trackIdColumn), trackId));
-		}
-
-		Track.Builder builder = new Track.Builder(trackId, Uri.parse(results
-				.getString(uriColumn)));
-
-		results.close();
-
-		results = library.rawQuery(GET_TRACK_QUERY,
+		Cursor results = library.rawQuery(GET_TRACK_QUERY,
 				new String[] { String.valueOf(trackId) });
+
+		if (results.getCount() == 0) {
+			return null;
+		}
+
+		int uriColumn = results.getColumnIndexOrThrow(TrackEntry.COLUMN_URI);
 		int tagIdColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_ID);
 		int nameColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_TAG);
 		int valueColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_VAL);
 
-		for (results.moveToFirst(); !results.isAfterLast(); results
-				.moveToNext()) {
-			builder.add(new Tag(results.getLong(tagIdColumn), results
-					.getString(nameColumn), results.getString(valueColumn)));
+		results.moveToFirst();
+
+		Track.Builder builder = new Track.Builder(trackId, Uri.parse(results
+				.getString(uriColumn)));
+
+		// Add tags to the track, provided there is at least one.
+		if (!results.isNull(tagIdColumn)) {
+			for (; !results.isAfterLast(); results.moveToNext()) {
+				builder.add(new Tag(results.getLong(tagIdColumn), results
+						.getString(nameColumn), results.getString(valueColumn)));
+			}
 		}
 
 		results.close();

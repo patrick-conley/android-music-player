@@ -125,6 +125,8 @@ public class PlayerService extends Service implements
 			player = null;
 			currentTrack = null;
 		}
+		
+		trackDao.close();
 
 		super.onDestroy();
 	}

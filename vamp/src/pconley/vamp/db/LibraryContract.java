@@ -16,7 +16,7 @@ public class LibraryContract {
 
 		public static final String NAME = "Tracks";
 		public static final String COLUMN_ID = _ID;
-		public static final String COLUMN_URI = "trackUri";
+		public static final String COLUMN_URI = "uri";
 
 		public static final String SQL_CREATE = String
 				.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY, %s TEXT UNIQUE NOT NULL);",
@@ -30,8 +30,8 @@ public class LibraryContract {
 	public static abstract class TrackTagRelation {
 
 		public static final String NAME = "TrackHasTags";
-		public static final String TRACK_ID = "trackID";
-		public static final String TAG_ID = "tagID";
+		public static final String TRACK_ID = "track_id";
+		public static final String TAG_ID = "tag_id";
 
 		public static final String SQL_CREATE = String
 				.format("CREATE TABLE %s (%s INTEGER REFERENCES %s(%s) NOT NULL, %s INTEGER REFERENCES %s(%s) NOT NULL, CONSTRAINT no_dup_tracktags UNIQUE (%s, %s) ON CONFLICT FAIL);",

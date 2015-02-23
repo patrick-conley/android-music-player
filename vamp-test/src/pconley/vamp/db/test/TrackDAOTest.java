@@ -63,6 +63,22 @@ public class TrackDAOTest extends AndroidTestCase {
 	}
 
 	/**
+	 * Given that the database has been closed, when I try to retrieve tracks,
+	 * then I get an exception.
+	 */
+	public void testReadOnClosedDatabase() {
+		dao.close();
+
+		try {
+			dao.getIds();
+		} catch (IllegalStateException e) {
+			return;
+		}
+
+		fail("DAO throws an exception on read-after-close.");
+	}
+
+	/**
 	 * Given there are tracks in the database, when I try to retrieve tracks,
 	 * then I get all of them.
 	 */
@@ -262,9 +278,8 @@ public class TrackDAOTest extends AndroidTestCase {
 		Track.Builder builder = new Track.Builder(trackId, uri);
 
 		for (int i = 0; i < tagNames.length; i++) {
-			builder.add(new Tag(
-					insertTag(tagNames[i], tagValues[i], trackId), tagNames[i],
-					tagValues[i]));
+			builder.add(new Tag(insertTag(tagNames[i], tagValues[i], trackId),
+					tagNames[i], tagValues[i]));
 		}
 
 		return builder.build();
