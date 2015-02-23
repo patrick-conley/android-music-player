@@ -39,7 +39,7 @@ public class PlayerActivity extends Activity {
 	private SeekBar progressBar;
 	private CountDownTimer progressTimer;
 
-	private TextView progressView;
+	private TextView positionView;
 	private TextView durationView;
 
 	// Countdown timer can advance the progress bar only if a user isn't
@@ -64,7 +64,7 @@ public class PlayerActivity extends Activity {
 
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 
-		// Format for track duration/progress
+		// Format for track duration/position
 		dateFormat = new SimpleDateFormat("m:ss", Locale.US);
 		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
@@ -151,11 +151,8 @@ public class PlayerActivity extends Activity {
 	/**
 	 * Callback for the Previous Track button.
 	 *
-	 * If progress is less than 3s and the current track is not the first track
-	 * in the collection, go to the beginning of the previous track. Otherwise,
-	 * go to the beginning of this track.
-	 *
-	 * Does nothing if the player is not prepared.
+	 * Go to the beginning of the previous track, if possible. Does nothing if
+	 * the player is not prepared.
 	 *
 	 * @param view
 	 */
@@ -168,11 +165,9 @@ public class PlayerActivity extends Activity {
 
 	/**
 	 * Callback for the Next Track button.
-	 *
-	 * If the current track is not the last track in the collection, go to the
-	 * beginning of the next track. Otherwise, end the current track.
-	 *
-	 * Does nothing if the player is not prepared.
+	 * 
+	 * Go to the beginning of the next track, if possible. Does nothing if the
+	 * player is not prepared.
 	 *
 	 * @param view
 	 */
@@ -190,27 +185,27 @@ public class PlayerActivity extends Activity {
 	 * If no track is playing, times are set to 0:00 and the progress bar is
 	 * locked to the beginning.
 	 */
-	private void displayProgress() {
+	private void displayPosition() {
 
-		final int progress = player.getProgress();
+		final int position = player.getPosition();
 		final int duration = player.getDuration();
 
-		progressView = (TextView) findViewById(R.id.progress);
+		positionView = (TextView) findViewById(R.id.position);
 		durationView = (TextView) findViewById(R.id.duration);
 
-		if (progress != -1) {
+		if (position != -1) {
 			progressBar.setIndeterminate(duration == -1);
-			progressBar.setProgress(progress / SEC);
+			progressBar.setProgress(position / SEC);
 			progressBar.setMax(duration / SEC);
 
-			progressView.setText(dateFormat.format(new Date(progress)));
+			positionView.setText(dateFormat.format(new Date(position)));
 			durationView.setText(dateFormat.format(new Date(duration)));
 		} else {
 			progressBar.setIndeterminate(false);
 			progressBar.setProgress(0);
 			progressBar.setMax(0);
 
-			progressView.setText(getString(R.string.blank_time));
+			positionView.setText(getString(R.string.blank_time));
 			durationView.setText(getString(R.string.blank_time));
 		}
 
@@ -225,9 +220,9 @@ public class PlayerActivity extends Activity {
 			progressTimer.cancel();
 		}
 
-		displayProgress();
+		displayPosition();
 
-		final int position = player.getProgress();
+		final int position = player.getPosition();
 		final int duration = player.getDuration();
 
 		Log.i("Active track", String.format("Starting timer at %d of %d",
@@ -238,9 +233,9 @@ public class PlayerActivity extends Activity {
 			@Override
 			public void onTick(long remaining) {
 				if (canTimerCountDown) {
-					int progress = duration - (int) remaining;
-					progressBar.setProgress(progress / SEC);
-					progressView.setText(dateFormat.format(new Date(progress)));
+					int position = duration - (int) remaining;
+					progressBar.setProgress(position / SEC);
+					positionView.setText(dateFormat.format(new Date(position)));
 					Log.v("Active track", String.format("Progress is %d of %d",
 							(duration - (int) remaining) / SEC, duration / SEC));
 				}
@@ -265,7 +260,7 @@ public class PlayerActivity extends Activity {
 
 		Log.i("Active track", "Stopping timer");
 
-		displayProgress();
+		displayPosition();
 		progressBar.setIndeterminate(false);
 	}
 
@@ -275,7 +270,7 @@ public class PlayerActivity extends Activity {
 		}
 
 		Log.i("Active track", "Clearing timer & times");
-		displayProgress();
+		displayPosition();
 	}
 
 	/*

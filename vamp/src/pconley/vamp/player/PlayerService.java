@@ -96,7 +96,7 @@ public class PlayerService extends Service implements
 	private static final int SEC = 1000;
 
 	private long[] trackIds = null;
-	private int currentPosition = -1;
+	private int currentTrackId = -1;
 	private Track currentTrack = null;
 
 	private boolean isPlaying = false;
@@ -304,7 +304,7 @@ public class PlayerService extends Service implements
 	 * @return The current track's current position (in ms), or -1 if nothing is
 	 *         playing.
 	 */
-	public int getProgress() {
+	public int getPosition() {
 		return isPrepared ? player.getCurrentPosition() : -1;
 	}
 
@@ -347,7 +347,7 @@ public class PlayerService extends Service implements
 				PowerManager.PARTIAL_WAKE_LOCK);
 
 		try {
-			currentPosition = position;
+			currentTrackId = position;
 			currentTrack = new TrackDAO(PlayerService.this)
 					.getTrack(trackIds[position]);
 
@@ -477,7 +477,7 @@ public class PlayerService extends Service implements
 	}
 
 	/**
-	 * If progress is less than 3s and the current track is not the first track
+	 * If position is less than 3s and the current track is not the first track
 	 * in the collection, go to the beginning of the previous track. Otherwise,
 	 * go to the beginning of this track.
 	 *
@@ -489,10 +489,10 @@ public class PlayerService extends Service implements
 			return;
 		}
 
-		if (getProgress() / SEC > PREV_RESTART_LIMIT || currentPosition == 0) {
+		if (getPosition() / SEC > PREV_RESTART_LIMIT || currentTrackId == 0) {
 			seekTo(0);
 		} else {
-			beginTrack(currentPosition - 1);
+			beginTrack(currentTrackId - 1);
 		}
 
 	}
@@ -507,8 +507,8 @@ public class PlayerService extends Service implements
 			return;
 		}
 
-		if (currentPosition < trackIds.length - 1) {
-			beginTrack(currentPosition + 1);
+		if (currentTrackId < trackIds.length - 1) {
+			beginTrack(currentTrackId + 1);
 		} else {
 			onCompletion(player);
 		}
