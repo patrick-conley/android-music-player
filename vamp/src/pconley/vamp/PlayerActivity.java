@@ -1,5 +1,10 @@
 package pconley.vamp;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 import pconley.vamp.model.Track;
 import pconley.vamp.player.PlayerService;
 import android.app.Activity;
@@ -25,12 +30,17 @@ public class PlayerActivity extends Activity {
 
 	private static final int SEC = 1000;
 
+	SimpleDateFormat dateFormat;
+
 	/*
 	 * Progress/seek bar. Updates automatically as long as a track is playing,
 	 * and a user isn't touching it.
 	 */
-	private SeekBar progress;
+	private SeekBar progressBar;
 	private CountDownTimer progressTimer;
+
+	private TextView positionView;
+	private TextView durationView;
 
 	// Countdown timer can advance the progress bar only if a user isn't
 	// dragging it
@@ -54,6 +64,10 @@ public class PlayerActivity extends Activity {
 
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 
+		// Format for track duration/position
+		dateFormat = new SimpleDateFormat("m:ss", Locale.US);
+		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
 		// Set up a connection to the music player
 		playerConnection = new PlayerServiceConnection();
 
@@ -61,8 +75,8 @@ public class PlayerActivity extends Activity {
 		playerReceiver = new PlayerEventReceiver();
 
 		// Initialize the progress bar
-		progress = (SeekBar) findViewById(R.id.playback_progress);
-		progress.setOnSeekBarChangeListener(new OnSeekBarChangeListener());
+		progressBar = (SeekBar) findViewById(R.id.progress_bar);
+		progressBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener());
 	}
 
 	@Override
@@ -105,7 +119,7 @@ public class PlayerActivity extends Activity {
 		// Player may be null if the activity is paused before the service has
 		// been bound. This seems to happen when restarting after a crash.
 		if (player != null) {
-			cancelCountdown();
+			stopCountdown();
 		}
 
 		unbindService(playerConnection);
@@ -114,6 +128,8 @@ public class PlayerActivity extends Activity {
 	}
 
 	/**
+	 * Callback for the play/pause button.
+	 * 
 	 * Start/resume playback if in the "prepared" or "paused" states; pause
 	 * playback if in the "started" state. Does nothing if in any other state.
 	 *
@@ -132,6 +148,69 @@ public class PlayerActivity extends Activity {
 		}
 	}
 
+	/**
+	 * Callback for the Previous Track button.
+	 *
+	 * Go to the beginning of the previous track, if possible. Does nothing if
+	 * the player is not prepared.
+	 *
+	 * @param view
+	 */
+	public void onPrevClick(View view) {
+
+		if (player != null) {
+			player.previous();
+		}
+	}
+
+	/**
+	 * Callback for the Next Track button.
+	 * 
+	 * Go to the beginning of the next track, if possible. Does nothing if the
+	 * player is not prepared.
+	 *
+	 * @param view
+	 */
+	public void onNextClick(View view) {
+
+		if (player != null) {
+			player.next();
+		}
+	}
+
+	/*
+	 * Update values for progress & duration timers, and position in the
+	 * progress bar.
+	 * 
+	 * If no track is playing, times are set to 0:00 and the progress bar is
+	 * locked to the beginning.
+	 */
+	private void displayPosition() {
+
+		final int position = player.getPosition();
+		final int duration = player.getDuration();
+
+		positionView = (TextView) findViewById(R.id.position);
+		durationView = (TextView) findViewById(R.id.duration);
+
+		if (position != -1) {
+			progressBar.setIndeterminate(duration == -1);
+			progressBar.setProgress(position / SEC);
+			progressBar.setMax(duration / SEC);
+
+			positionView.setText(dateFormat.format(new Date(position)));
+			durationView.setText(dateFormat.format(new Date(duration)));
+		} else {
+			progressBar.setIndeterminate(false);
+			progressBar.setProgress(0);
+			progressBar.setMax(0);
+
+			positionView.setText(getString(R.string.blank_time));
+			durationView.setText(getString(R.string.blank_time));
+		}
+
+	}
+
 	/*
 	 * Start the progress bar countdown. Call this method after a seek operation
 	 * to restart counting at the correct place.
@@ -141,11 +220,10 @@ public class PlayerActivity extends Activity {
 			progressTimer.cancel();
 		}
 
-		final int position = player.getCurrentPosition();
-		final int duration = player.getDuration();
+		displayPosition();
 
-		progress.setIndeterminate(duration == -1);
-		progress.setMax(duration / SEC);
+		final int position = player.getPosition();
+		final int duration = player.getDuration();
 
 		Log.i("Active track", String.format("Starting timer at %d of %d",
 				position / SEC, duration / SEC));
@@ -155,7 +233,9 @@ public class PlayerActivity extends Activity {
 			@Override
 			public void onTick(long remaining) {
 				if (canTimerCountDown) {
-					progress.setProgress((duration - (int) remaining) / SEC);
+					int position = duration - (int) remaining;
+					progressBar.setProgress(position / SEC);
+					positionView.setText(dateFormat.format(new Date(position)));
 					Log.v("Active track", String.format("Progress is %d of %d",
 							(duration - (int) remaining) / SEC, duration / SEC));
 				}
@@ -163,8 +243,8 @@ public class PlayerActivity extends Activity {
 
 			@Override
 			public void onFinish() {
-				progress.setProgress(0);
-				progress.setMax(0);
+				progressBar.setProgress(0);
+				progressBar.setMax(0);
 			}
 		}.start();
 	}
@@ -172,7 +252,7 @@ public class PlayerActivity extends Activity {
 	/*
 	 * Stop the progress bar countdown.
 	 */
-	private void cancelCountdown() {
+	private void stopCountdown() {
 		if (progressTimer != null) {
 			progressTimer.cancel();
 			progressTimer = null;
@@ -180,12 +260,17 @@ public class PlayerActivity extends Activity {
 
 		Log.i("Active track", "Stopping timer");
 
-		int position = player.getCurrentPosition();
-		int duration = player.getDuration();
+		displayPosition();
+		progressBar.setIndeterminate(false);
+	}
 
-		progress.setIndeterminate(false);
-		progress.setProgress(position / SEC);
-		progress.setMax(duration / SEC);
+	private void clearCountdown() {
+		if (progressTimer != null) {
+			stopCountdown();
+		}
+
+		Log.i("Active track", "Clearing timer & times");
+		displayPosition();
 	}
 
 	/*
@@ -227,7 +312,7 @@ public class PlayerActivity extends Activity {
 		 */
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
-			cancelCountdown();
+			stopCountdown();
 			player = null;
 		}
 	}
@@ -281,7 +366,7 @@ public class PlayerActivity extends Activity {
 
 				break;
 			case PlayerService.EVENT_PAUSE:
-				cancelCountdown();
+				stopCountdown();
 
 				if (intent.hasExtra(PlayerService.EXTRA_MESSAGE)) {
 					Toast.makeText(PlayerActivity.this,
@@ -297,7 +382,7 @@ public class PlayerActivity extends Activity {
 				break;
 
 			case PlayerService.EVENT_STOP:
-				cancelCountdown();
+				clearCountdown();
 
 				if (intent.hasExtra(PlayerService.EXTRA_MESSAGE)) {
 					Toast.makeText(PlayerActivity.this,

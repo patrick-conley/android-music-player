@@ -30,6 +30,12 @@ public class PlayerService extends Service implements
 	public static final int NOTIFICATION_ID = 1;
 
 	/**
+	 * If a "previous" action is used after this time, the current track should
+	 * be restarted instead of beginning the previous track.
+	 */
+	public static final int PREV_RESTART_LIMIT = 2;
+
+	/**
 	 * Action for incoming intents. Start playing a new track.
 	 * 
 	 * Use EXTRA_TRACK_LIST to set an array of tracks to play, and
@@ -87,7 +93,10 @@ public class PlayerService extends Service implements
 	 */
 	public static final String EXTRA_MESSAGE = "pconley.vamp.player.event.message";
 
+	private static final int SEC = 1000;
+
 	private long[] trackIds = null;
+	private int currentTrackId = -1;
 	private Track currentTrack = null;
 
 	private boolean isPlaying = false;
@@ -269,13 +278,15 @@ public class PlayerService extends Service implements
 		switch (focusChange) {
 		case AudioManager.AUDIOFOCUS_LOSS:
 
-			pause("Audio focus lost");
+			Log.w("Player", "Audio focus lost");
+			pause();
 			onCompletion(player);
 			break;
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
 
-			pause("Audio focus lost temporarily");
+			Log.i("Player", "Audio focus lost temporarily");
+			pause();
 			break;
 		}
 
@@ -293,7 +304,7 @@ public class PlayerService extends Service implements
 	 * @return The current track's current position (in ms), or -1 if nothing is
 	 *         playing.
 	 */
-	public int getCurrentPosition() {
+	public int getPosition() {
 		return isPrepared ? player.getCurrentPosition() : -1;
 	}
 
@@ -312,6 +323,12 @@ public class PlayerService extends Service implements
 		return isPlaying;
 	}
 
+	/**
+	 * Begin playing a new track from the current collection. Changing the
+	 * collection requires restarting the service with a new intent.
+	 * 
+	 * @param position
+	 */
 	public void beginTrack(int position) {
 
 		if (player != null) {
@@ -330,6 +347,7 @@ public class PlayerService extends Service implements
 				PowerManager.PARTIAL_WAKE_LOCK);
 
 		try {
+			currentTrackId = position;
 			currentTrack = new TrackDAO(PlayerService.this)
 					.getTrack(trackIds[position]);
 
@@ -404,7 +422,7 @@ public class PlayerService extends Service implements
 	 */
 	public void play() {
 		if (!isPrepared) {
-			Log.w("Player", "Can't play: no player");
+			Log.w("Player", "Can't play: player not prepared.");
 			return;
 		} else if (isPlaying) {
 			return; // nothing to do
@@ -441,6 +459,7 @@ public class PlayerService extends Service implements
 	 */
 	public void seekTo(int time) {
 		if (!isPrepared) {
+			Log.w("Player", "Can't seek: player not prepared.");
 			return;
 		}
 
@@ -455,6 +474,45 @@ public class PlayerService extends Service implements
 		}
 
 		broadcastManager.sendBroadcast(broadcast);
+	}
+
+	/**
+	 * If position is less than 3s and the current track is not the first track
+	 * in the collection, go to the beginning of the previous track. Otherwise,
+	 * go to the beginning of this track.
+	 *
+	 * Does nothing if the player is not prepared.
+	 */
+	public void previous() {
+		if (!isPrepared) {
+			Log.w("Player", "Can't go to previous: player not prepared.");
+			return;
+		}
+
+		if (getPosition() / SEC > PREV_RESTART_LIMIT || currentTrackId == 0) {
+			seekTo(0);
+		} else {
+			beginTrack(currentTrackId - 1);
+		}
+
+	}
+
+	/**
+	 * If the current track is not the last track in the collection, got to the
+	 * beginning of the next track. Otherwise, stop playing.
+	 */
+	public void next() {
+		if (!isPrepared) {
+			Log.w("Player", "Can't go to next: player not prepared.");
+			return;
+		}
+
+		if (currentTrackId < trackIds.length - 1) {
+			beginTrack(currentTrackId + 1);
+		} else {
+			onCompletion(player);
+		}
+
 	}
 
 }
