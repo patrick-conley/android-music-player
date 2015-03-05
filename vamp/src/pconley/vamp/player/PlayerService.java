@@ -1,11 +1,14 @@
 package pconley.vamp.player;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import pconley.vamp.PlayerActivity;
 import pconley.vamp.R;
 import pconley.vamp.db.TrackDAO;
 import pconley.vamp.model.Track;
+import pconley.vamp.util.PlaylistIterator;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -23,7 +26,7 @@ import android.util.Log;
 public class PlayerService extends Service implements
 		MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener,
 		MediaPlayer.OnInfoListener, AudioManager.OnAudioFocusChangeListener {
-
+	
 	/**
 	 * ID used for this service's notifications.
 	 */
@@ -60,9 +63,8 @@ public class PlayerService extends Service implements
 
 	private static final int SEC = 1000;
 
-	private long[] trackIds = null;
-	private int currentTrackId = -1;
-	private Track currentTrack = null;
+	private List<Track> playlist;
+	private PlaylistIterator trackIterator;
 
 	private boolean isPlaying = false;
 	private boolean isPrepared = false;
@@ -71,8 +73,6 @@ public class PlayerService extends Service implements
 	private AudioManager audioManager;
 	private MediaPlayer player = null;
 	private LocalBroadcastManager broadcastManager;
-
-	private TrackDAO trackDao;
 
 	// Constant content of the notification displayed while a track plays.
 	// Content that changes with the track needs to be added in playPause()
@@ -120,13 +120,8 @@ public class PlayerService extends Service implements
 	@Override
 	public void onDestroy() {
 		if (player != null) {
-			player.reset();
-			player.release();
-			player = null;
-			currentTrack = null;
+			stop();
 		}
-
-		trackDao.close();
 
 		super.onDestroy();
 	}
@@ -157,9 +152,18 @@ public class PlayerService extends Service implements
 							"Play action given with no tracks");
 				}
 
-				trackIds = intent.getLongArrayExtra(EXTRA_TRACKS);
+				TrackDAO dao = new TrackDAO(this);
 
-				start(intent.getIntExtra(EXTRA_START_POSITION, 0));
+				playlist = new ArrayList<Track>();
+				for (long id : intent.getLongArrayExtra(EXTRA_TRACKS)) {
+					playlist.add(dao.getTrack(id));
+				}
+				trackIterator = new PlaylistIterator(playlist);
+				trackIterator.setPosition(intent.getIntExtra(EXTRA_START_POSITION, 0));
+
+				dao.close();
+
+				start();
 				break;
 
 			case ACTION_PAUSE:
@@ -181,12 +185,13 @@ public class PlayerService extends Service implements
 
 	/**
 	 * When a track completes normally and more tracks are available, start the
-	 * next one. 
+	 * next one.
 	 */
 	@Override
 	public void onCompletion(MediaPlayer mp) {
-		if (isPrepared && currentTrackId < trackIds.length - 1) {
-			start(currentTrackId + 1);
+		if (isPrepared && trackIterator.hasNext()) {
+			trackIterator.next();
+			start();
 		}
 	}
 
@@ -251,7 +256,7 @@ public class PlayerService extends Service implements
 	 *         prepared by the MediaPlayer. Returns null otherwise.
 	 */
 	public Track getCurrentTrack() {
-		return isPrepared ? currentTrack : null;
+		return isPrepared ? trackIterator.current() : null;
 	}
 
 	/**
@@ -278,12 +283,11 @@ public class PlayerService extends Service implements
 	}
 
 	/**
-	 * Begin playing a new track from the current collection. Changing the
-	 * collection requires restarting the service with a new intent.
-	 * 
-	 * @param position
+	 * Begin playing the selected track from the queue. Changing the queue
+	 * requires restarting the service with a new intent.
 	 */
-	private void start(int position) {
+	private void start() {
+		Track current = trackIterator.current();
 
 		// Set or reset the player
 		if (player != null) {
@@ -303,15 +307,8 @@ public class PlayerService extends Service implements
 
 		try {
 
-			if (trackDao == null) {
-				trackDao = new TrackDAO(this);
-			}
-
-			currentTrackId = position;
-			currentTrack = trackDao.getTrack(trackIds[position]);
-
-			Log.d("Player", "Preparing track " + currentTrack);
-			player.setDataSource(getApplicationContext(), currentTrack.getUri());
+			Log.d("Player", "Preparing track " + current);
+			player.setDataSource(getApplicationContext(), current.getUri());
 			player.prepare();
 			isPrepared = true;
 
@@ -320,7 +317,7 @@ public class PlayerService extends Service implements
 			play();
 
 		} catch (IOException e) {
-			stop("Track " + currentTrack.getUri() + " could not be read.");
+			stop("Track " + current.getUri() + " could not be read.");
 		} catch (IllegalArgumentException | SecurityException
 				| IllegalStateException e) {
 			Log.e("Player", e.getMessage());
@@ -351,7 +348,6 @@ public class PlayerService extends Service implements
 		player.reset();
 		player.release();
 		player = null;
-		currentTrack = null;
 
 		broadcastEvent(PlayerEvent.STOP, message);
 	}
@@ -447,10 +443,11 @@ public class PlayerService extends Service implements
 			return;
 		}
 
-		if (getPosition() / SEC > PREV_RESTART_LIMIT || currentTrackId == 0) {
+		if (getPosition() / SEC > PREV_RESTART_LIMIT || !trackIterator.hasPrevious()) {
 			seekTo(0);
 		} else {
-			start(currentTrackId - 1);
+			trackIterator.previous();
+			start();
 		}
 
 	}
@@ -463,8 +460,9 @@ public class PlayerService extends Service implements
 		if (!isPrepared) {
 			Log.w("Player", "Can't go to next: player not prepared.");
 			return;
-		} else if (currentTrackId < trackIds.length - 1) {
-			start(currentTrackId + 1);
+		} else if (trackIterator.hasNext()) {
+			trackIterator.next();
+			start();
 		} else {
 			stop();
 		}

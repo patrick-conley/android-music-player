@@ -1,38 +1,32 @@
-package pconley.vamp.model;
+package pconley.vamp.util;
 
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.NoSuchElementException;
+
+import pconley.vamp.model.Track;
 
 /**
  * A collection of tracks, supporting the operations needed for a music player.
- * A PlayQueue is similar to a List plus ListIterator, but can return the
- * current element without advancing the cursor.
+ * A PlayListIterator is similar to a ListIterator, but can return the current
+ * element without advancing the cursor.
  * 
  * @author pconley
  */
-public class PlayQueue implements ListIterator<Track> {
+public class PlaylistIterator implements Iterator<Track> {
 
-	private List<Track> contents;
-	private int position;
-
-	/**
-	 * Constructs a new, empty PlayQueue.
-	 */
-	public PlayQueue() {
-		contents = new ArrayList<Track>();
-		position = 0;
-	}
+	private List<Track> playlist;
+	private int position = -1;
 
 	/**
-	 * Adds the specified track to the list.
-	 * 
-	 * @param track
-	 *            the track to add
+	 * Constructs a new iterator.
 	 */
-	public void add(Track track) {
-		contents.add(track);
+	public PlaylistIterator(List<Track> playlist) {
+		if (playlist == null) {
+			throw new NullPointerException();
+		}
+
+		this.playlist = playlist;
 	}
 
 	/**
@@ -40,11 +34,15 @@ public class PlayQueue implements ListIterator<Track> {
 	 * 
 	 * @param location
 	 *            New position in the list.
+	 * @throws NoSuchElementException
+	 *             if the list is empty.
 	 * @throws IndexOutOfBoundsException
 	 *             if {@code location < 0 || location >= size}
 	 */
-	public void position(int location) throws IndexOutOfBoundsException {
-		if (location < 0 || location > contents.size()) {
+	public void setPosition(int location) throws IndexOutOfBoundsException {
+		if (playlist.isEmpty()) {
+			throw new NoSuchElementException();
+		} else if (location < 0 || location >= playlist.size()) {
 			throw new IndexOutOfBoundsException();
 		}
 
@@ -55,7 +53,7 @@ public class PlayQueue implements ListIterator<Track> {
 	 * @return Whether there are more elements to iterate
 	 */
 	public boolean hasNext() {
-		return position < contents.size();
+		return position < playlist.size() - 1;
 	}
 
 	/**
@@ -76,28 +74,29 @@ public class PlayQueue implements ListIterator<Track> {
 	 */
 	public Track next() throws NoSuchElementException,
 			IndexOutOfBoundsException {
-		if (contents.isEmpty()) {
+		if (playlist.isEmpty()) {
 			throw new NoSuchElementException();
-		} else if (position == contents.size() - 1) {
+		} else if (position == playlist.size() - 1) {
 			throw new IndexOutOfBoundsException();
 		}
 
 		position++;
 
-		return contents.get(position);
+		return playlist.get(position);
 	}
 
 	/**
 	 * @return The track under the cursor. The cursor is not advanced.
-	 * @throws NoSuchElementException
-	 *             if the PlayQueue is empty.
+	 * @throws IllegalStateException
+	 *             if neither {@link #next()} nor {@link #setPosition(int)} has
+	 *             been called.
 	 */
 	public Track current() throws NoSuchElementException {
-		if (contents.isEmpty()) {
-			throw new NoSuchElementException();
+		if (position == -1) {
+			throw new IllegalStateException();
 		}
 
-		return contents.get(position);
+		return playlist.get(position);
 	}
 
 	/**
@@ -111,7 +110,7 @@ public class PlayQueue implements ListIterator<Track> {
 	 */
 	public Track previous() throws NoSuchElementException,
 			IndexOutOfBoundsException {
-		if (contents.isEmpty()) {
+		if (playlist.isEmpty()) {
 			throw new NoSuchElementException();
 		} else if (position == 0) {
 			throw new IndexOutOfBoundsException();
@@ -119,37 +118,16 @@ public class PlayQueue implements ListIterator<Track> {
 
 		position--;
 
-		return contents.get(position);
+		return playlist.get(position);
 	}
 
 	/**
-	 * @see java.util.ListIterator#nextIndex()
+	 * @throws UnsupportedOperationException
+	 *             whenever called.
 	 */
 	@Override
-	public int nextIndex() {
-		return position + 1;
-	}
-
-	/**
-	 * @see java.util.ListIterator#previousIndex()
-	 */
-	@Override
-	public int previousIndex() {
-		return position - 1;
-	}
-
-	/**
-	 * Unimplemented
-	 */
-	@Override
-	public void remove() throws IndexOutOfBoundsException {
-	}
-
-	/**
-	 * Unimplemented
-	 */
-	@Override
-	public void set(Track object) {
+	public void remove() throws UnsupportedOperationException {
+		throw new UnsupportedOperationException();
 	}
 
 }
