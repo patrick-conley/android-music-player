@@ -25,8 +25,8 @@ import android.util.Log;
 
 public class PlayerService extends Service implements
 		MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener,
-		MediaPlayer.OnInfoListener, AudioManager.OnAudioFocusChangeListener {
-	
+		AudioManager.OnAudioFocusChangeListener {
+
 	/**
 	 * ID used for this service's notifications.
 	 */
@@ -159,11 +159,13 @@ public class PlayerService extends Service implements
 					playlist.add(dao.getTrack(id));
 				}
 				trackIterator = new PlaylistIterator(playlist);
-				trackIterator.setPosition(intent.getIntExtra(EXTRA_START_POSITION, 0));
+				trackIterator.setPosition(intent.getIntExtra(
+						EXTRA_START_POSITION, 0));
 
 				dao.close();
 
-				start();
+				start(true);
+
 				break;
 
 			case ACTION_PAUSE:
@@ -191,7 +193,7 @@ public class PlayerService extends Service implements
 	public void onCompletion(MediaPlayer mp) {
 		if (isPrepared && trackIterator.hasNext()) {
 			trackIterator.next();
-			start();
+			start(true);
 		}
 	}
 
@@ -205,29 +207,9 @@ public class PlayerService extends Service implements
 		// FIXME: broadcasts do little if we're between activities
 		// FIXME: use actual messages rather than codes (as I figure out what
 		// messages mean)
-		String error = String.valueOf(what) + "," + String.valueOf(extra);
+		String error = "Info: " + String.valueOf(what) + ","
+				+ String.valueOf(extra);
 		stop(error);
-
-		return true;
-	}
-
-	@Override
-	public boolean onInfo(MediaPlayer mp, int what, int extra) {
-		Log.e("Player",
-				"Info " + String.valueOf(what) + "," + String.valueOf(extra));
-		// FIXME: use actual messages rather than codes (as I figure out what
-		// messages mean)
-
-		String message = String.valueOf(what) + "," + String.valueOf(extra);
-
-		if (isPlaying) {
-			broadcastEvent(PlayerEvent.PLAY, message);
-		} else if (isPrepared) {
-			broadcastEvent(PlayerEvent.PAUSE, message);
-		} else {
-			// Don't need to call stop(): player is already stopped.
-			broadcastEvent(PlayerEvent.STOP, message);
-		}
 
 		return true;
 	}
@@ -285,8 +267,12 @@ public class PlayerService extends Service implements
 	/**
 	 * Begin playing the selected track from the queue. Changing the queue
 	 * requires restarting the service with a new intent.
+	 * 
+	 * @param beginPlayback
+	 *            Begin playing the new track immediately, or load the track and
+	 *            remain paused.
 	 */
-	private void start() {
+	private void start(boolean beginPlayback) {
 		Track current = trackIterator.current();
 
 		// Set or reset the player
@@ -300,7 +286,6 @@ public class PlayerService extends Service implements
 			player.setAudioStreamType(AudioManager.STREAM_MUSIC);
 			player.setOnCompletionListener(PlayerService.this);
 			player.setOnErrorListener(PlayerService.this);
-			player.setOnInfoListener(PlayerService.this);
 			player.setWakeMode(getApplicationContext(),
 					PowerManager.PARTIAL_WAKE_LOCK);
 		}
@@ -314,7 +299,9 @@ public class PlayerService extends Service implements
 
 			broadcastEvent(PlayerEvent.NEW_TRACK);
 
-			play();
+			if (beginPlayback) {
+				play();
+			}
 
 		} catch (IOException e) {
 			stop("Track " + current.getUri() + " could not be read.");
@@ -323,6 +310,7 @@ public class PlayerService extends Service implements
 			Log.e("Player", e.getMessage());
 			stop("Internal error " + e.getMessage());
 		}
+
 	}
 
 	/**
@@ -443,11 +431,12 @@ public class PlayerService extends Service implements
 			return;
 		}
 
-		if (getPosition() / SEC > PREV_RESTART_LIMIT || !trackIterator.hasPrevious()) {
+		if (getPosition() / SEC > PREV_RESTART_LIMIT
+				|| !trackIterator.hasPrevious()) {
 			seekTo(0);
 		} else {
 			trackIterator.previous();
-			start();
+			start(isPlaying);
 		}
 
 	}
@@ -462,7 +451,7 @@ public class PlayerService extends Service implements
 			return;
 		} else if (trackIterator.hasNext()) {
 			trackIterator.next();
-			start();
+			start(isPlaying);
 		} else {
 			stop();
 		}
