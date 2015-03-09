@@ -1,5 +1,6 @@
 package pconley.vamp.util.test;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -78,11 +79,13 @@ public class PlaylistTest extends AndroidTestCase {
 		Playlist z = new Playlist();
 
 		Playlist d = new Playlist();
+		List<Track> list = new ArrayList<Track>();
 
 		for (Track track : tracks) {
 			x.add(track);
 			y.add(track);
 			z.add(track);
+			list.add(track);
 		}
 
 		d.add(tracks.get(0));
@@ -96,6 +99,7 @@ public class PlaylistTest extends AndroidTestCase {
 		assertFalse("(x,d) are not equal", x.equals(d));
 		assertFalse("(y,d) are not equal", y.equals(d));
 		assertFalse("(z,d) are not equal", z.equals(d));
+		assertFalse("Different types are not equal", x.equals(list));
 
 		assertFalse("Null is never equal (x,null)", x.equals(null));
 		assertFalse("Null is never equal (d,null)", d.equals(null));

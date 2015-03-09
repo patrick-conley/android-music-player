@@ -157,10 +157,9 @@ public class PlayerService extends Service implements
 				for (long id : intent.getLongArrayExtra(EXTRA_TRACKS)) {
 					playlist.add(dao.getTrack(id));
 				}
-				trackIterator = playlist.playlistIterator(intent
-						.getIntExtra(EXTRA_START_POSITION, 0));
+				trackIterator = playlist.playlistIterator(intent.getIntExtra(
+						EXTRA_START_POSITION, 0));
 				trackIterator.next();
-
 
 				dao.close();
 
@@ -202,13 +201,13 @@ public class PlayerService extends Service implements
 	 */
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
-		Log.e("Player",
-				"Error " + String.valueOf(what) + "," + String.valueOf(extra));
+		String error = "Error " + String.valueOf(what) + ","
+				+ String.valueOf(extra);
+
 		// FIXME: broadcasts do little if we're between activities
 		// FIXME: use actual messages rather than codes (as I figure out what
 		// messages mean)
-		String error = "Info: " + String.valueOf(what) + ","
-				+ String.valueOf(extra);
+		Log.e("Player", error);
 		stop(error);
 
 		return true;
