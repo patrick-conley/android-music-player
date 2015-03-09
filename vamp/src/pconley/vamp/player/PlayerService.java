@@ -6,6 +6,8 @@ import pconley.vamp.PlayerActivity;
 import pconley.vamp.R;
 import pconley.vamp.db.TrackDAO;
 import pconley.vamp.model.Track;
+import pconley.vamp.util.Playlist;
+import pconley.vamp.util.PlaylistIterator;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -22,7 +24,7 @@ import android.util.Log;
 
 public class PlayerService extends Service implements
 		MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener,
-		MediaPlayer.OnInfoListener, AudioManager.OnAudioFocusChangeListener {
+		AudioManager.OnAudioFocusChangeListener {
 
 	/**
 	 * ID used for this service's notifications.
@@ -60,9 +62,8 @@ public class PlayerService extends Service implements
 
 	private static final int SEC = 1000;
 
-	private long[] trackIds = null;
-	private int currentTrackId = -1;
-	private Track currentTrack = null;
+	private Playlist playlist;
+	private PlaylistIterator trackIterator;
 
 	private boolean isPlaying = false;
 	private boolean isPrepared = false;
@@ -71,8 +72,6 @@ public class PlayerService extends Service implements
 	private AudioManager audioManager;
 	private MediaPlayer player = null;
 	private LocalBroadcastManager broadcastManager;
-
-	private TrackDAO trackDao;
 
 	// Constant content of the notification displayed while a track plays.
 	// Content that changes with the track needs to be added in playPause()
@@ -120,13 +119,8 @@ public class PlayerService extends Service implements
 	@Override
 	public void onDestroy() {
 		if (player != null) {
-			player.reset();
-			player.release();
-			player = null;
-			currentTrack = null;
+			stop();
 		}
-		
-		trackDao.close();
 
 		super.onDestroy();
 	}
@@ -157,9 +151,20 @@ public class PlayerService extends Service implements
 							"Play action given with no tracks");
 				}
 
-				trackIds = intent.getLongArrayExtra(EXTRA_TRACKS);
+				TrackDAO dao = new TrackDAO(this);
 
-				beginTrack(intent.getIntExtra(EXTRA_START_POSITION, 0));
+				playlist = new Playlist();
+				for (long id : intent.getLongArrayExtra(EXTRA_TRACKS)) {
+					playlist.add(dao.getTrack(id));
+				}
+				trackIterator = playlist.playlistIterator(intent.getIntExtra(
+						EXTRA_START_POSITION, 0));
+				trackIterator.next();
+
+				dao.close();
+
+				start(true);
+
 				break;
 
 			case ACTION_PAUSE:
@@ -179,56 +184,31 @@ public class PlayerService extends Service implements
 		return Service.START_STICKY;
 	}
 
+	/**
+	 * When a track completes normally and more tracks are available, start the
+	 * next one.
+	 */
 	@Override
 	public void onCompletion(MediaPlayer mp) {
-		stopForeground(true);
-
-		isPlaying = false;
-		isPrepared = false;
-
-		player.reset();
-		player.release();
-		player = null;
-		currentTrack = null;
-
-		broadcastEvent(PlayerEvent.STOP);
+		if (isPrepared && trackIterator.hasNext()) {
+			trackIterator.next();
+			start(true);
+		}
 	}
 
 	/**
-	 * Catch errors, then release the player through the
-	 * MediaPlayer.OnCompletionListener.
+	 * Catch errors, then release the player.
 	 */
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
-		Log.e("Player",
-				"Error " + String.valueOf(what) + "," + String.valueOf(extra));
+		String error = "Error " + String.valueOf(what) + ","
+				+ String.valueOf(extra);
+
 		// FIXME: broadcasts do little if we're between activities
 		// FIXME: use actual messages rather than codes (as I figure out what
 		// messages mean)
-
-		broadcast(PlayerEvent.STOP,
-				String.valueOf(what) + "," + String.valueOf(extra));
-
-		// Return false in order to call onCompletion
-		return false;
-	}
-
-	@Override
-	public boolean onInfo(MediaPlayer mp, int what, int extra) {
-		Log.e("Player",
-				"Info " + String.valueOf(what) + "," + String.valueOf(extra));
-		// FIXME: use actual messages rather than codes (as I figure out what
-		// messages mean)
-
-		String message = String.valueOf(what) + "," + String.valueOf(extra);
-
-		if (isPlaying) {
-			broadcast(PlayerEvent.PLAY, message);
-		} else if (isPrepared) {
-			broadcast(PlayerEvent.PAUSE, message);
-		} else {
-			broadcast(PlayerEvent.STOP, message);
-		}
+		Log.e("Player", error);
+		stop(error);
 
 		return true;
 	}
@@ -240,8 +220,7 @@ public class PlayerService extends Service implements
 		case AudioManager.AUDIOFOCUS_LOSS:
 
 			Log.w("Player", "Audio focus lost");
-			pause();
-			onCompletion(player);
+			stop("Audio focus lost");
 			break;
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
@@ -258,7 +237,7 @@ public class PlayerService extends Service implements
 	 *         prepared by the MediaPlayer. Returns null otherwise.
 	 */
 	public Track getCurrentTrack() {
-		return isPrepared ? currentTrack : null;
+		return isPrepared ? trackIterator.current() : null;
 	}
 
 	/**
@@ -285,13 +264,17 @@ public class PlayerService extends Service implements
 	}
 
 	/**
-	 * Begin playing a new track from the current collection. Changing the
-	 * collection requires restarting the service with a new intent.
+	 * Begin playing the selected track from the queue. Changing the queue
+	 * requires restarting the service with a new intent.
 	 * 
-	 * @param position
+	 * @param beginPlayback
+	 *            Begin playing the new track immediately, or load the track and
+	 *            remain paused.
 	 */
-	public void beginTrack(int position) {
+	private void start(boolean beginPlayback) {
+		Track current = trackIterator.current();
 
+		// Set or reset the player
 		if (player != null) {
 			player.reset();
 			isPrepared = false;
@@ -302,40 +285,58 @@ public class PlayerService extends Service implements
 			player.setAudioStreamType(AudioManager.STREAM_MUSIC);
 			player.setOnCompletionListener(PlayerService.this);
 			player.setOnErrorListener(PlayerService.this);
-			player.setOnInfoListener(PlayerService.this);
 			player.setWakeMode(getApplicationContext(),
 					PowerManager.PARTIAL_WAKE_LOCK);
 		}
 
 		try {
 
-			if (trackDao == null) {
-				trackDao = new TrackDAO(this);
-			}
-
-			currentTrackId = position;
-			currentTrack = trackDao.getTrack(trackIds[position]);
-
-			Log.d("Player", "Preparing track " + currentTrack);
-			player.setDataSource(getApplicationContext(), currentTrack.getUri());
+			Log.d("Player", "Preparing track " + current);
+			player.setDataSource(getApplicationContext(), current.getUri());
 			player.prepare();
 			isPrepared = true;
 
 			broadcastEvent(PlayerEvent.NEW_TRACK);
 
-			play();
+			if (beginPlayback) {
+				play();
+			}
 
 		} catch (IOException e) {
-			broadcast(PlayerEvent.STOP, "Track " + currentTrack.getUri()
-					+ " could not be read.");
-
-			onCompletion(player);
+			stop("Track " + current.getUri() + " could not be read.");
 		} catch (IllegalArgumentException | SecurityException
 				| IllegalStateException e) {
 			Log.e("Player", e.getMessage());
-
-			onCompletion(player);
+			stop("Internal error " + e.getMessage());
 		}
+
+	}
+
+	/**
+	 * See {@link #stop(String)}
+	 */
+	private void stop() {
+		stop(null);
+	}
+
+	/**
+	 * Stop playback and clean up the player. Use this function instead of an
+	 * explicit call to onCompletion if the player can't continue.
+	 * 
+	 * @param message
+	 *            Reason for stopping.
+	 */
+	private void stop(String message) {
+		stopForeground(true);
+
+		isPlaying = false;
+		isPrepared = false;
+
+		player.reset();
+		player.release();
+		player = null;
+
+		broadcastEvent(PlayerEvent.STOP, message);
 	}
 
 	/**
@@ -361,10 +362,10 @@ public class PlayerService extends Service implements
 			audioManager.abandonAudioFocus(this);
 
 			Log.d("Player", "paused");
-			broadcast(PlayerEvent.PAUSE, message);
+			broadcastEvent(PlayerEvent.PAUSE, message);
 
 		} else if (!isPrepared && message != null) {
-			broadcast(PlayerEvent.STOP, message);
+			broadcastEvent(PlayerEvent.STOP, message);
 		}
 	}
 
@@ -394,7 +395,7 @@ public class PlayerService extends Service implements
 			broadcastEvent(PlayerEvent.PLAY);
 
 		} else {
-			broadcast(PlayerEvent.PAUSE, "Could not obtain audio focus");
+			broadcastEvent(PlayerEvent.PAUSE, "Could not obtain audio focus");
 		}
 	}
 
@@ -429,10 +430,12 @@ public class PlayerService extends Service implements
 			return;
 		}
 
-		if (getPosition() / SEC > PREV_RESTART_LIMIT || currentTrackId == 0) {
+		if (getPosition() / SEC > PREV_RESTART_LIMIT
+				|| !trackIterator.hasPrevious()) {
 			seekTo(0);
 		} else {
-			beginTrack(currentTrackId - 1);
+			trackIterator.previous();
+			start(isPlaying);
 		}
 
 	}
@@ -445,12 +448,11 @@ public class PlayerService extends Service implements
 		if (!isPrepared) {
 			Log.w("Player", "Can't go to next: player not prepared.");
 			return;
-		}
-
-		if (currentTrackId < trackIds.length - 1) {
-			beginTrack(currentTrackId + 1);
+		} else if (trackIterator.hasNext()) {
+			trackIterator.next();
+			start(isPlaying);
 		} else {
-			onCompletion(player);
+			stop();
 		}
 
 	}
@@ -462,7 +464,7 @@ public class PlayerService extends Service implements
 	 * @param event
 	 */
 	private void broadcastEvent(PlayerEvent event) {
-		broadcast(event, null);
+		broadcastEvent(event, null);
 	}
 
 	/**
@@ -472,7 +474,7 @@ public class PlayerService extends Service implements
 	 * @param event
 	 * @param message
 	 */
-	private void broadcast(PlayerEvent event, String message) {
+	private void broadcastEvent(PlayerEvent event, String message) {
 		Intent intent = new Intent(PlayerEvent.FILTER_PLAYER_EVENT).putExtra(
 				PlayerEvent.EXTRA_EVENT, event);
 

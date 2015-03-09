@@ -29,10 +29,16 @@ public final class Track {
 		this.tags = tags;
 	}
 
+	/**
+	 * @return The track ID. Used internally.
+	 */
 	public long getId() {
 		return id;
 	}
 
+	/**
+	 * @return The path to the track.
+	 */
 	public Uri getUri() {
 		return uri;
 	}
@@ -51,14 +57,17 @@ public final class Track {
 	 *         in the this track. The values' ordering is in no way guaranteed.
 	 */
 	public Set<Tag> getTags(String name) {
-		// Check if the key exists, as unmodifiableSet doesn't accept null input
+		// Check if the key exists: unmodifiableSet doesn't accept null input
 		if (!tags.containsKey(name)) {
 			return null;
+		} else {
+			return Collections.unmodifiableSet(tags.get(name));
 		}
-
-		return Collections.unmodifiableSet(tags.get(name));
 	}
 
+	/**
+	 * @return A formatted string representation of the tags.
+	 */
 	public String tagsToString() {
 		StringBuilder sb = new StringBuilder();
 
