@@ -1,13 +1,12 @@
 package pconley.vamp.player;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import pconley.vamp.PlayerActivity;
 import pconley.vamp.R;
 import pconley.vamp.db.TrackDAO;
 import pconley.vamp.model.Track;
+import pconley.vamp.util.Playlist;
 import pconley.vamp.util.PlaylistIterator;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -63,7 +62,7 @@ public class PlayerService extends Service implements
 
 	private static final int SEC = 1000;
 
-	private List<Track> playlist;
+	private Playlist playlist;
 	private PlaylistIterator trackIterator;
 
 	private boolean isPlaying = false;
@@ -154,13 +153,14 @@ public class PlayerService extends Service implements
 
 				TrackDAO dao = new TrackDAO(this);
 
-				playlist = new ArrayList<Track>();
+				playlist = new Playlist();
 				for (long id : intent.getLongArrayExtra(EXTRA_TRACKS)) {
 					playlist.add(dao.getTrack(id));
 				}
-				trackIterator = new PlaylistIterator(playlist);
-				trackIterator.setPosition(intent.getIntExtra(
-						EXTRA_START_POSITION, 0));
+				trackIterator = playlist.playlistIterator(intent
+						.getIntExtra(EXTRA_START_POSITION, 0));
+				trackIterator.next();
+
 
 				dao.close();
 
