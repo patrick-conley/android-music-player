@@ -5,6 +5,7 @@ import java.util.List;
 import pconley.vamp.db.TrackDAO;
 import pconley.vamp.player.PlayerEvent;
 import pconley.vamp.player.PlayerService;
+import pconley.vamp.preferences.SettingsActivity;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -13,7 +14,6 @@ import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -47,8 +47,7 @@ public class LibraryActivity extends Activity {
 			public void onReceive(Context context, Intent intent) {
 
 				if (intent.hasExtra(PlayerEvent.EXTRA_MESSAGE)) {
-					Toast.makeText(
-							LibraryActivity.this,
+					Toast.makeText(LibraryActivity.this,
 							intent.getStringExtra(PlayerEvent.EXTRA_MESSAGE),
 							Toast.LENGTH_LONG).show();
 				}
@@ -114,22 +113,12 @@ public class LibraryActivity extends Activity {
 		case R.id.action_player:
 			startActivity(new Intent(this, PlayerActivity.class));
 			return true;
+		case R.id.action_settings:
+			startActivity(new Intent(this, SettingsActivity.class));
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
-	}
-
-	/**
-	 * Delete the contents of the library and replace it with sample contents.
-	 *
-	 * TODO: delete this (and the contents of the library) when I can read the
-	 * real thing.
-	 *
-	 * @param view
-	 *            The origin of the rebuild request
-	 */
-	public void createLibrary(View view) {
-		new LoadTrackListTask().execute(true);
 	}
 
 	/*
@@ -144,16 +133,6 @@ public class LibraryActivity extends Activity {
 
 		@Override
 		protected List<Long> doInBackground(Boolean... params) {
-			// Create a sample library.
-			if (params.length > 0 && params[0] == true) {
-				try {
-					Log.i("Library", "Rebuilding library");
-					TrackDAO.createSampleLibrary(LibraryActivity.this);
-				} catch (Exception e) {
-					Log.w("Library", e.getMessage());
-				}
-			}
-
 			return new TrackDAO(LibraryActivity.this).getIds();
 		}
 
