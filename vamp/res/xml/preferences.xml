@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <EditTextPreference
+        android:key="library path"
+        android:title="@string/setting_library_path_title"
+        android:defaultValue=""
+        android:summary="@string/setting_library_path_summary"
+        />
+
+</PreferenceScreen>

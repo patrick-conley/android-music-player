@@ -34,13 +34,18 @@
                 android:value="pconley.vamp.LibraryActivity" />
         </activity>
 
-        <receiver android:name="pconley.vamp.player.AudioNoisyReceiver" >
+        <receiver android:name=".player.AudioNoisyReceiver" >
             <intent-filter>
                 <action android:name="android.media.AUDIO_BECOMING_NOISY" />
             </intent-filter>
         </receiver>
 
-        <service android:name="pconley.vamp.player.PlayerService" />
+        <service android:name=".player.PlayerService" />
+
+        <activity
+            android:name=".preferences.SettingsActivity"
+            android:label="@string/title_activity_settings" >
+        </activity>
     </application>
 
 </manifest>

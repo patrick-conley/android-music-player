@@ -5,6 +5,7 @@ import java.util.List;
 import pconley.vamp.db.TrackDAO;
 import pconley.vamp.player.PlayerEvent;
 import pconley.vamp.player.PlayerService;
+import pconley.vamp.preferences.SettingsActivity;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -113,6 +114,9 @@ public class LibraryActivity extends Activity {
 		switch (item.getItemId()) {
 		case R.id.action_player:
 			startActivity(new Intent(this, PlayerActivity.class));
+			return true;
+		case R.id.action_settings:
+			startActivity(new Intent(this, SettingsActivity.class));
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);

@@ -8,6 +8,7 @@ import java.util.TimeZone;
 import pconley.vamp.model.Track;
 import pconley.vamp.player.PlayerEvent;
 import pconley.vamp.player.PlayerService;
+import pconley.vamp.preferences.SettingsActivity;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -89,6 +90,9 @@ public class PlayerActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
+		case R.id.action_settings:
+			startActivity(new Intent(this, SettingsActivity.class));
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
