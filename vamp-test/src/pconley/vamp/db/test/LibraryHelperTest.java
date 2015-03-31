@@ -1,16 +1,18 @@
 package pconley.vamp.db.test;
 
-import pconley.vamp.db.LibraryHelper;
 import pconley.vamp.db.LibraryContract.TrackEntry;
+import pconley.vamp.db.LibraryHelper;
 import android.content.ContentValues;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.preference.PreferenceManager;
 import android.test.AndroidTestCase;
 import android.test.RenamingDelegatingContext;
 
 /**
- * Test that the database helper class works correctly. Detailed tests are to
- * be reserved for DAOs.
+ * Test that the database helper class works correctly. Detailed tests are to be
+ * reserved for DAOs.
  */
 public class LibraryHelperTest extends AndroidTestCase {
 
@@ -22,8 +24,14 @@ public class LibraryHelperTest extends AndroidTestCase {
 	public void setUp() throws Exception {
 		super.setUp();
 
+		// TODO: instead, mock the call to PreferenceManager in LibraryHelper so
+		// settings aren't reset.
+		SharedPreferences preferences = PreferenceManager
+				.getDefaultSharedPreferences(getContext());
+		preferences.edit().clear().commit();
+
 		library = new LibraryHelper(new RenamingDelegatingContext(getContext(),
-					namePrefix)).getWritableDatabase();
+				namePrefix)).getWritableDatabase();
 	}
 
 	public void tearDown() throws Exception {
@@ -57,6 +65,5 @@ public class LibraryHelperTest extends AndroidTestCase {
 						.getColumnIndexOrThrow(TrackEntry.COLUMN_URI)));
 		contents.close();
 	}
-
 
 }

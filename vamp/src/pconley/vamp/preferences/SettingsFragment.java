@@ -13,6 +13,7 @@ import android.widget.Toast;
 public class SettingsFragment extends PreferenceFragment {
 
 	public static final String KEY_LIBRARY_PATH = "library path";
+	public static final String KEY_DEBUG = "debug mode";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

@@ -13,9 +13,11 @@ import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.test.AndroidTestCase;
 import android.test.RenamingDelegatingContext;
 
@@ -42,6 +44,12 @@ public class TrackDAOTest extends AndroidTestCase {
 
 		Context context = new RenamingDelegatingContext(getContext(),
 				namePrefix);
+
+		// TODO: instead, mock the call to PreferenceManager in LibraryHelper so
+		// settings aren't reset.
+		SharedPreferences preferences = PreferenceManager
+				.getDefaultSharedPreferences(getContext());
+		preferences.edit().clear().commit();
 
 		library = new LibraryHelper(context).getWritableDatabase();
 		dao = new TrackDAO(context);

@@ -12,5 +12,7 @@
     <string name="next">next</string>
     <string name="setting_library_path_title">Music Folder</string>
     <string name="setting_library_path_summary">Set the folder to scan for music</string>
+    <string name="setting_debug_title">Use Sample Library</string>
+    <string name="setting_debug_summary">Use a small library of sample tracks to aid debugging</string>
 
 </resources>
