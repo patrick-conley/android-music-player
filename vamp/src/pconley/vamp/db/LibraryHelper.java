@@ -3,13 +3,12 @@ package pconley.vamp.db;
 import pconley.vamp.db.LibraryContract.TagEntry;
 import pconley.vamp.db.LibraryContract.TrackEntry;
 import pconley.vamp.db.LibraryContract.TrackTagRelation;
-import pconley.vamp.preferences.SettingsFragment;
+import pconley.vamp.preferences.SettingsHelper;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.preference.PreferenceManager;
 
 public class LibraryHelper extends SQLiteOpenHelper {
 
@@ -29,8 +28,7 @@ public class LibraryHelper extends SQLiteOpenHelper {
 	public LibraryHelper(Context context) {
 		super(
 				context,
-				PreferenceManager.getDefaultSharedPreferences(context)
-						.getBoolean(SettingsFragment.KEY_DEBUG, false) ? DEBUG_DATABASE_NAME
+				new SettingsHelper(context).getDebugMode() ? DEBUG_DATABASE_NAME
 						: DATABASE_NAME, null, DATABASE_VERSION);
 
 		this.context = context;
@@ -41,8 +39,7 @@ public class LibraryHelper extends SQLiteOpenHelper {
 		db.execSQL(TagEntry.SQL_CREATE);
 		db.execSQL(TrackTagRelation.SQL_CREATE);
 
-		if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
-				SettingsFragment.KEY_DEBUG, false)) {
+		if (new SettingsHelper(context).getDebugMode()) {
 			populateSampleLibrary(db);
 		}
 	}

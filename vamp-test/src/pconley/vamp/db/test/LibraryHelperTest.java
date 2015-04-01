@@ -2,11 +2,11 @@ package pconley.vamp.db.test;
 
 import pconley.vamp.db.LibraryContract.TrackEntry;
 import pconley.vamp.db.LibraryHelper;
+import pconley.vamp.preferences.SettingsHelper;
 import android.content.ContentValues;
-import android.content.SharedPreferences;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.preference.PreferenceManager;
 import android.test.AndroidTestCase;
 import android.test.RenamingDelegatingContext;
 
@@ -24,14 +24,13 @@ public class LibraryHelperTest extends AndroidTestCase {
 	public void setUp() throws Exception {
 		super.setUp();
 
-		// TODO: instead, mock the call to PreferenceManager in LibraryHelper so
-		// settings aren't reset.
-		SharedPreferences preferences = PreferenceManager
-				.getDefaultSharedPreferences(getContext());
-		preferences.edit().clear().commit();
+		Context context = new RenamingDelegatingContext(getContext(),
+				namePrefix);
 
-		library = new LibraryHelper(new RenamingDelegatingContext(getContext(),
-				namePrefix)).getWritableDatabase();
+		SettingsHelper.setPreferences(context.getSharedPreferences(
+				"pconley.vamp-test", Context.MODE_PRIVATE));
+
+		library = new LibraryHelper(context).getWritableDatabase();
 	}
 
 	public void tearDown() throws Exception {
