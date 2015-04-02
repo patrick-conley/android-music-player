@@ -123,8 +123,8 @@ public class TrackDAO {
 
 	/**
 	 * Insert a tag, and associate it with a track that uses it. If the tag
-	 * given by the parameters (tag, value) is a duplicate, then the original
-	 * tag will be used.
+	 * given by the parameters (tag, value) is a duplicate, then return the
+	 * original tag's ID.
 	 * 
 	 * @param trackId
 	 *            ID of a track in the database.
@@ -133,7 +133,7 @@ public class TrackDAO {
 	 * @param value
 	 *            Value of the tag
 	 * @throws SQLException
-	 *             If the tag is a duplicate, or if the track doesn't exist
+	 *             If the track doesn't exist
 	 */
 	public void insertTag(long trackId, String tag, String value)
 			throws SQLException {

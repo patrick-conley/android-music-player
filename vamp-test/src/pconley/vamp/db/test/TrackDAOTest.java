@@ -313,7 +313,7 @@ public class TrackDAOTest extends AndroidTestCase {
 		}
 
 		if (results.isAfterLast()) {
-			fail("Database contains the insert track");
+			fail("Database contains the inserted track");
 		}
 
 	}
