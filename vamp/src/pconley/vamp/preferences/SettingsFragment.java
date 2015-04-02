@@ -3,6 +3,7 @@ package pconley.vamp.preferences;
 import java.io.File;
 
 import pconley.vamp.R;
+import pconley.vamp.util.FileUtils;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -37,24 +38,8 @@ public class SettingsFragment extends PreferenceFragment {
 					public boolean onPreferenceChange(Preference preference,
 							Object newValue) {
 
-						File path = new File((String) newValue);
-
-						String error = null;
-						if (!path.exists()) {
-							error = "Path does not exist";
-						} else if (!path.isDirectory()) {
-							error = "Path doesn't point to a folder";
-						} else if (!path.canExecute()) {
-							error = "Directory contents aren't readable";
-						}
-
-						if (error != null) {
-							Toast.makeText(getActivity(), error,
-									Toast.LENGTH_LONG).show();
-							return false;
-						}
-
-						return true;
+						return FileUtils.validateDirectory(new File(
+								(String) newValue), getActivity());
 					}
 				});
 	}
