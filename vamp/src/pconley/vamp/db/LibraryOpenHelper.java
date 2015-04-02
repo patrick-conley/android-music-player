@@ -10,7 +10,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-public class LibraryHelper extends SQLiteOpenHelper {
+public class LibraryOpenHelper extends SQLiteOpenHelper {
 
 	private static final String DATABASE_NAME = "library.db";
 	private static final String DEBUG_DATABASE_NAME = "sample.db";
@@ -25,7 +25,7 @@ public class LibraryHelper extends SQLiteOpenHelper {
 	 * 
 	 * @param context
 	 */
-	public LibraryHelper(Context context) {
+	public LibraryOpenHelper(Context context) {
 		super(
 				context,
 				new SettingsHelper(context).getDebugMode() ? DEBUG_DATABASE_NAME
