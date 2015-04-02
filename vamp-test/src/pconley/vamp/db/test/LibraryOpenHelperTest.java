@@ -1,7 +1,7 @@
 package pconley.vamp.db.test;
 
 import pconley.vamp.db.LibraryContract.TrackEntry;
-import pconley.vamp.db.LibraryHelper;
+import pconley.vamp.db.LibraryOpenHelper;
 import pconley.vamp.preferences.SettingsHelper;
 import android.content.ContentValues;
 import android.content.Context;
@@ -14,7 +14,7 @@ import android.test.RenamingDelegatingContext;
  * Test that the database helper class works correctly. Detailed tests are to be
  * reserved for DAOs.
  */
-public class LibraryHelperTest extends AndroidTestCase {
+public class LibraryOpenHelperTest extends AndroidTestCase {
 
 	private static final String namePrefix = "test_";
 
@@ -30,7 +30,7 @@ public class LibraryHelperTest extends AndroidTestCase {
 		SettingsHelper.setPreferences(context.getSharedPreferences(
 				"pconley.vamp-test", Context.MODE_PRIVATE));
 
-		library = new LibraryHelper(context).getWritableDatabase();
+		library = new LibraryOpenHelper(context).getWritableDatabase();
 	}
 
 	public void tearDown() throws Exception {

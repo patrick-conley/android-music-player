@@ -8,8 +8,10 @@ import pconley.vamp.db.LibraryContract.TrackEntry;
 import pconley.vamp.db.LibraryContract.TrackTagRelation;
 import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
@@ -32,7 +34,7 @@ public class TrackDAO {
 	 *            Activity context
 	 */
 	public TrackDAO(Context context) {
-		library = new LibraryHelper(context).getReadableDatabase();
+		library = new LibraryOpenHelper(context).getReadableDatabase();
 	}
 
 	/**
@@ -42,6 +44,9 @@ public class TrackDAO {
 		library.close();
 	}
 
+	/**
+	 * @return Every track ID in the database.
+	 */
 	public List<Long> getIds() {
 		Cursor results = library.query(TrackEntry.NAME,
 				new String[] { TrackEntry.COLUMN_ID }, null, null, null, null,
@@ -96,6 +101,82 @@ public class TrackDAO {
 		results.close();
 
 		return builder.build();
+	}
+
+	/**
+	 * Insert a track. This method is only to be used when populating a database
+	 * from scratch: inserting a duplicate track URI is an error.
+	 * 
+	 * @param uri
+	 *            URI of a new track.
+	 * @return The inserted track's ID.
+	 * @throws SQLException
+	 *             If the database already contains this track.
+	 */
+	public long insertTrack(Uri uri) throws SQLException {
+
+		ContentValues values = new ContentValues();
+		values.put(TrackEntry.COLUMN_URI, uri.toString());
+
+		return library.insertOrThrow(TrackEntry.NAME, null, values);
+	}
+
+	/**
+	 * Insert a tag, and associate it with a track that uses it. If the tag
+	 * given by the parameters (tag, value) is a duplicate, then return the
+	 * original tag's ID.
+	 * 
+	 * @param trackId
+	 *            ID of a track in the database.
+	 * @param tag
+	 *            Name of a tag ("title", "composer", etc.)
+	 * @param value
+	 *            Value of the tag
+	 * @throws SQLException
+	 *             If the track doesn't exist
+	 */
+	public void insertTag(long trackId, String tag, String value)
+			throws SQLException {
+
+		long tagId = -1;
+
+		// Check whether the tag exists already
+		Cursor results = library.query(TagEntry.NAME,
+				new String[] { TagEntry.COLUMN_ID }, String.format(
+						"%s = ? AND %s = ?", TagEntry.COLUMN_TAG,
+						TagEntry.COLUMN_VAL), new String[] { tag, value },
+				null, null, null);
+
+		if (results.getCount() > 0) {
+			results.moveToFirst();
+			tagId = results.getLong(results.getColumnIndex(TagEntry.COLUMN_ID));
+		}
+
+		library.beginTransaction();
+		try {
+			ContentValues values;
+
+			// Insert the tag
+			if (tagId == -1) {
+				values = new ContentValues();
+				values.put(TagEntry.COLUMN_TAG, tag);
+				values.put(TagEntry.COLUMN_VAL, value);
+
+				tagId = library.insertOrThrow(TagEntry.NAME, null, values);
+			}
+
+			// Relate it to its track
+			values = new ContentValues();
+			values.put(TrackTagRelation.TRACK_ID, trackId);
+			values.put(TrackTagRelation.TAG_ID, tagId);
+
+			library.insertOrThrow(TrackTagRelation.NAME, null, values);
+
+			library.setTransactionSuccessful();
+		} finally {
+			library.endTransaction();
+		}
+
 	}
 
 }
