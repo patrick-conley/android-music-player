@@ -151,7 +151,7 @@ public class PlayerService extends Service implements
 							"Play action given with no tracks");
 				}
 
-				TrackDAO dao = new TrackDAO(this);
+				TrackDAO dao = new TrackDAO(this).openReadableDatabase();
 
 				playlist = new Playlist();
 				for (long id : intent.getLongArrayExtra(EXTRA_TRACKS)) {

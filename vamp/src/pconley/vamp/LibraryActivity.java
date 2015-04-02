@@ -133,7 +133,7 @@ public class LibraryActivity extends Activity {
 
 		@Override
 		protected List<Long> doInBackground(Boolean... params) {
-			return new TrackDAO(LibraryActivity.this).getIds();
+			return new TrackDAO(LibraryActivity.this).openReadableDatabase().getIds();
 		}
 
 		protected void onPostExecute(List<Long> ids) {
