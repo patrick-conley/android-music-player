@@ -66,6 +66,8 @@ public class FilesystemScanner {
 	 * Scan for music files, starting at the directory given by the Music Folder
 	 * preference item. Abort (displaying a warning if the app is in the
 	 * foreground) if the Music Folder isn't a readable directory.
+	 * 
+	 * Don't call this from the UI thread.
 	 */
 	public void scanMediaFolder() {
 		dao.openWritableDatabase();

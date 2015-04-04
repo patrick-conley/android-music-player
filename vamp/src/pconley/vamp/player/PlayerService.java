@@ -16,12 +16,22 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+/**
+ * Handler for the media player. PlayerService provides controls for interacting
+ * with the active track and playlist directly (play/pause, next/previous,
+ * scan). When the player changes state automatically (beginning the next track,
+ * end of the playlist), a broadcast notifies activities using it. See
+ * {@link PlayerService#broadcastEvent(PlayerEvent)}
+ * 
+ * @author pconley
+ */
 public class PlayerService extends Service implements
 		MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener,
 		AudioManager.OnAudioFocusChangeListener {
@@ -151,19 +161,7 @@ public class PlayerService extends Service implements
 							"Play action given with no tracks");
 				}
 
-				TrackDAO dao = new TrackDAO(this).openReadableDatabase();
-
-				playlist = new Playlist();
-				for (long id : intent.getLongArrayExtra(EXTRA_TRACKS)) {
-					playlist.add(dao.getTrack(id));
-				}
-				trackIterator = playlist.playlistIterator(intent.getIntExtra(
-						EXTRA_START_POSITION, 0));
-				trackIterator.next();
-
-				dao.close();
-
-				start(true);
+				new LoadPlaylistTask().execute(intent);
 
 				break;
 
@@ -483,6 +481,41 @@ public class PlayerService extends Service implements
 		}
 
 		broadcastManager.sendBroadcast(intent);
+	}
+
+	/**
+	 * Launch a background thread to load metadata for each track in the
+	 * playlist defined by the intent sent to
+	 * {@link PlayerService#onStartCommand(Intent, int, int)}, then start
+	 * playing from the intent's start position.
+	 * 
+	 * @author pconley
+	 */
+	private class LoadPlaylistTask extends AsyncTask<Intent, Void, Void> {
+
+		@Override
+		protected Void doInBackground(Intent... params) {
+			Intent intent = params[0];
+
+			TrackDAO dao = new TrackDAO(PlayerService.this)
+					.openReadableDatabase();
+
+			playlist = new Playlist();
+			for (long id : intent.getLongArrayExtra(EXTRA_TRACKS)) {
+				playlist.add(dao.getTrack(id));
+			}
+			trackIterator = playlist.playlistIterator(intent.getIntExtra(
+					EXTRA_START_POSITION, 0));
+
+			dao.close();
+
+			return null;
+		}
+
+		protected void onPostExecute(Void result) {
+			trackIterator.next();
+			start(true);
+		};
 	}
 
 }
