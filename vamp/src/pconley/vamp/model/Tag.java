@@ -44,6 +44,10 @@ public final class Tag {
 		return result;
 	}
 
+	/**
+	 * Compare this instance with the specified object. Assuming both objects
+	 * are non-null Tags, they are equal if the have the same name and value.
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

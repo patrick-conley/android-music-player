@@ -9,7 +9,6 @@ import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.text.InputType;
-import android.widget.Toast;
 
 public class SettingsFragment extends PreferenceFragment {
 

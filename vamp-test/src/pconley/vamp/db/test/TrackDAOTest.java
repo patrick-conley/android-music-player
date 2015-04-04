@@ -12,6 +12,7 @@ import pconley.vamp.db.TrackDAO;
 import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
 import pconley.vamp.preferences.SettingsHelper;
+import pconley.vamp.util.Constants;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -23,7 +24,6 @@ import android.test.RenamingDelegatingContext;
 
 public class TrackDAOTest extends AndroidTestCase {
 
-	private static final String namePrefix = "test_";
 	private static final Uri uri = Uri.parse("file:///track.ogg");
 
 	private static final Uri sampleUri = Uri.parse("file:///sample.ogg");
@@ -38,10 +38,10 @@ public class TrackDAOTest extends AndroidTestCase {
 		super.setUp();
 
 		Context context = new RenamingDelegatingContext(getContext(),
-				namePrefix);
+				Constants.DB_PREFIX);
 
 		SettingsHelper.setPreferences(context.getSharedPreferences(
-				"pconley.vamp-test", Context.MODE_PRIVATE));
+				Constants.PREFERENCES_NAME, Context.MODE_PRIVATE));
 
 		library = new LibraryOpenHelper(context).getWritableDatabase();
 		dao = new TrackDAO(context);

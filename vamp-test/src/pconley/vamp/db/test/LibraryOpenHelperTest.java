@@ -3,6 +3,7 @@ package pconley.vamp.db.test;
 import pconley.vamp.db.LibraryContract.TrackEntry;
 import pconley.vamp.db.LibraryOpenHelper;
 import pconley.vamp.preferences.SettingsHelper;
+import pconley.vamp.util.Constants;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -16,8 +17,6 @@ import android.test.RenamingDelegatingContext;
  */
 public class LibraryOpenHelperTest extends AndroidTestCase {
 
-	private static final String namePrefix = "test_";
-
 	private SQLiteDatabase library;
 
 	// Get a reference to the database
@@ -25,10 +24,10 @@ public class LibraryOpenHelperTest extends AndroidTestCase {
 		super.setUp();
 
 		Context context = new RenamingDelegatingContext(getContext(),
-				namePrefix);
+				Constants.DB_PREFIX);
 
 		SettingsHelper.setPreferences(context.getSharedPreferences(
-				"pconley.vamp-test", Context.MODE_PRIVATE));
+				Constants.PREFERENCES_NAME, Context.MODE_PRIVATE));
 
 		library = new LibraryOpenHelper(context).getWritableDatabase();
 	}
