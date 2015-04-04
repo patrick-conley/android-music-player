@@ -5,7 +5,7 @@ import java.io.File;
 import android.content.Context;
 import android.widget.Toast;
 
-public class FileUtils {
+public final class FileUtils {
 
 	/**
 	 * Private constructor: static methods only.

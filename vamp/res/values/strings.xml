@@ -14,5 +14,7 @@
     <string name="setting_library_path_summary">Set the folder to scan for music</string>
     <string name="setting_debug_title">Use Sample Library</string>
     <string name="setting_debug_summary">Use a small library of sample tracks to aid debugging</string>
+    <string name="library_rescan">Rebuild library</string>
+    <string name="library_scan_finished">Scan complete</string>
 
 </resources>

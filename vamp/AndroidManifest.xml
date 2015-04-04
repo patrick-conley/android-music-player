@@ -6,7 +6,7 @@
 
     <uses-sdk
         android:minSdkVersion="16"
-        android:targetSdkVersion="20" />
+        android:targetSdkVersion="21" />
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -41,6 +41,7 @@
         </receiver>
 
         <service android:name=".player.PlayerService" />
+        <service android:name=".scanner.ScannerService" />
 
         <activity
             android:name=".preferences.SettingsActivity"

@@ -12,9 +12,6 @@ import android.text.InputType;
 
 public class SettingsFragment extends PreferenceFragment {
 
-	public static final String KEY_LIBRARY_PATH = "library path";
-	public static final String KEY_DEBUG = "debug mode";
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -24,13 +21,13 @@ public class SettingsFragment extends PreferenceFragment {
 		// Configure the library path preference item. Input is a single line of
 		// possibly non-English text, which must point to a valid, readable
 		// directory.
-		EditTextPreference libraryPathPref = (EditTextPreference) getPreferenceScreen()
-				.findPreference(KEY_LIBRARY_PATH);
+		EditTextPreference musicFolderPathPref = (EditTextPreference) getPreferenceScreen()
+				.findPreference(SettingsHelper.KEY_MUSIC_FOLDER);
 
-		libraryPathPref.getEditText().setInputType(
+		musicFolderPathPref.getEditText().setInputType(
 				InputType.TYPE_CLASS_TEXT
 						| InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-		libraryPathPref
+		musicFolderPathPref
 				.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
 
 					@Override

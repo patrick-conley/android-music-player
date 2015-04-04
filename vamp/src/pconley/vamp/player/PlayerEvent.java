@@ -31,23 +31,6 @@ public enum PlayerEvent {
 	 * The player has finished all tracks or encountered an error. If the
 	 * latter, EXTRA_MESSAGE will have an explanation.
 	 */
-	STOP;
-
-	/**
-	 * Filter for broadcast receivers.
-	 */
-	public static final String FILTER_PLAYER_EVENT = "pconley.vamp.player.event";
-
-	/**
-	 * Extra used in broadcasts about player state changes. Value is one of
-	 * NEW_TRACK, PLAY, PAUSE, or STOP.
-	 */
-	public static final String EXTRA_EVENT = "pconley.vamp.player.event";
-
-	/**
-	 * Reason for an unexpected stop/pause event. Probably given as an
-	 * unreadable error code.
-	 */
-	public static final String EXTRA_MESSAGE = "pconley.vamp.player.event.message";
+	STOP
 
 }

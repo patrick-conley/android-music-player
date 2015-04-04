@@ -6,6 +6,7 @@ import pconley.vamp.PlayerActivity;
 import pconley.vamp.R;
 import pconley.vamp.db.TrackDAO;
 import pconley.vamp.model.Track;
+import pconley.vamp.util.BroadcastConstants;
 import pconley.vamp.util.Playlist;
 import pconley.vamp.util.PlaylistIterator;
 import android.app.Notification;
@@ -473,11 +474,11 @@ public class PlayerService extends Service implements
 	 * @param message
 	 */
 	private void broadcastEvent(PlayerEvent event, String message) {
-		Intent intent = new Intent(PlayerEvent.FILTER_PLAYER_EVENT).putExtra(
-				PlayerEvent.EXTRA_EVENT, event);
+		Intent intent = new Intent(BroadcastConstants.FILTER_PLAYER_EVENT).putExtra(
+				BroadcastConstants.EXTRA_EVENT, event);
 
 		if (message != null) {
-			intent.putExtra(PlayerEvent.EXTRA_MESSAGE, message);
+			intent.putExtra(BroadcastConstants.EXTRA_MESSAGE, message);
 		}
 
 		broadcastManager.sendBroadcast(intent);
