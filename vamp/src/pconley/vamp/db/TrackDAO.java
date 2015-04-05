@@ -15,8 +15,14 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
+/**
+ * Methods to read and write track data from the database.
+ * 
+ * @author pconley
+ */
 public class TrackDAO {
 
+	private LibraryOpenHelper libraryOpenHelper;
 	private SQLiteDatabase library;
 
 	private static final String GET_TRACK_QUERY = String
@@ -27,14 +33,33 @@ public class TrackDAO {
 					TrackTagRelation.TRACK_ID, TagEntry.NAME,
 					TrackTagRelation.TAG_ID, TagEntry.COLUMN_ID);
 
-	/**
-	 * Open a database connection. Should not be called from the UI thread.
-	 *
-	 * @param context
-	 *            Activity context
-	 */
 	public TrackDAO(Context context) {
-		library = new LibraryOpenHelper(context).getReadableDatabase();
+		libraryOpenHelper = new LibraryOpenHelper(context);
+	}
+
+	/**
+	 * Open a database connection, which may or may not be read-only. Do not run
+	 * from the UI thread.
+	 * 
+	 * @return The current TrackDAO object, for method chaining.
+	 */
+	public TrackDAO openReadableDatabase() {
+		library = libraryOpenHelper.getReadableDatabase();
+
+		return this;
+	}
+
+	/**
+	 * Open a writable database connection. Do not run from the UI thread.
+	 * 
+	 * @return The current TrackDAO object, for method chaining.
+	 * @throws SQLException
+	 *             If the database cannot be opened for writing.
+	 */
+	public TrackDAO openWritableDatabase() throws SQLException {
+		library = libraryOpenHelper.getWritableDatabase();
+
+		return this;
 	}
 
 	/**

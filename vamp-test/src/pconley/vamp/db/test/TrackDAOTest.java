@@ -12,6 +12,7 @@ import pconley.vamp.db.TrackDAO;
 import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
 import pconley.vamp.preferences.SettingsHelper;
+import pconley.vamp.util.Constants;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -23,7 +24,6 @@ import android.test.RenamingDelegatingContext;
 
 public class TrackDAOTest extends AndroidTestCase {
 
-	private static final String namePrefix = "test_";
 	private static final Uri uri = Uri.parse("file:///track.ogg");
 
 	private static final Uri sampleUri = Uri.parse("file:///sample.ogg");
@@ -38,10 +38,10 @@ public class TrackDAOTest extends AndroidTestCase {
 		super.setUp();
 
 		Context context = new RenamingDelegatingContext(getContext(),
-				namePrefix);
+				Constants.DB_PREFIX);
 
 		SettingsHelper.setPreferences(context.getSharedPreferences(
-				"pconley.vamp-test", Context.MODE_PRIVATE));
+				Constants.PREFERENCES_NAME, Context.MODE_PRIVATE));
 
 		library = new LibraryOpenHelper(context).getWritableDatabase();
 		dao = new TrackDAO(context);
@@ -50,12 +50,14 @@ public class TrackDAOTest extends AndroidTestCase {
 		library.execSQL("DELETE FROM " + TrackTagRelation.NAME);
 		library.execSQL("DELETE FROM " + TagEntry.NAME);
 	}
-
+	
 	/**
 	 * Given I have nothing in the database, when I try to retrieve tracks, then
 	 * I get nothing, successfully.
 	 */
 	public void testGetTracksOnEmptyDatabase() {
+		dao.openReadableDatabase();
+	
 		List<Long> tracks = dao.getIds();
 
 		assertEquals("DAO retrieves nothing from an empty database", 0,
@@ -67,7 +69,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * then I get an exception.
 	 */
 	public void testReadOnClosedDatabase() {
-		dao.close();
+		dao.openReadableDatabase().close();
 
 		try {
 			dao.getIds();
@@ -83,6 +85,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * then I get all of them.
 	 */
 	public void testGetTracksOnNonemptyDatabase() {
+		dao.openReadableDatabase();
 
 		// Insert some tracks. No associated tags are needed.
 		Set<Long> expected = new HashSet<Long>();
@@ -106,8 +109,9 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * track not in the database, then I get null, successfully.
 	 */
 	public void testGetTrackOnMissingTrack() {
+		dao.openReadableDatabase();
+		
 		Track sample = insertSampleTrack();
-
 		Track actual = dao.getTrack(sample.getId() + 1);
 
 		assertNull(sample.toString()
@@ -119,6 +123,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * tags, then I get a Track with no tags.
 	 */
 	public void testGetTrackOnNoTags() {
+		dao.openReadableDatabase();
 		insertSampleTrack();
 
 		Track expected = insertTrack(uri, new String[] {}, new String[] {});
@@ -134,6 +139,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * then I get all of them.
 	 */
 	public void testGetTrackOneTrack() {
+		dao.openReadableDatabase();
 		insertSampleTrack();
 
 		String[] expectedNames = { "a", "b", "c" };
@@ -151,6 +157,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * same name, when I try to retrieve its tags, then I get both of them.
 	 */
 	public void testGetTrackWithSameName() {
+		dao.openReadableDatabase();
 		insertSampleTrack();
 
 		Track expected = insertTrack(uri, new String[] { "a", "b", "a" },
@@ -167,6 +174,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * correct ones.
 	 */
 	public void testGetTrackTwoTracksWithSameTagName() {
+		dao.openReadableDatabase();
 		insertSampleTrack();
 
 		Track expected = insertTrack(uri, new String[] { "a",
@@ -184,6 +192,8 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * when I try to retrieve tags from each, then I get the correct ones.
 	 */
 	public void testGetTrackTwoTracksWithIdenticalTags() {
+		dao.openReadableDatabase();
+	
 		Track sample = insertSampleTrack();
 		Track expected = insertTrack(uri, sampleTagNames, sampleTagValues);
 		Track actual = dao.getTrack(expected.getId());
@@ -225,6 +235,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * ones.
 	 */
 	public void testGetTrackTwoTracksWithSomeSharedTags() {
+		dao.openReadableDatabase();
 		Track sample = insertSampleTrack();
 
 		Track expected = insertTrack(uri, new String[] { "a",
@@ -249,6 +260,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * track exists.
 	 */
 	public void testInsertTrack() {
+		dao.openWritableDatabase();
 
 		// Given
 		Cursor results = library.query(TrackEntry.NAME,
@@ -280,6 +292,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * correct track exists.
 	 */
 	public void testInsertSecondTrack() {
+		dao.openWritableDatabase();
 
 		// Given
 		insertTrack(sampleUri, null, null);
@@ -323,6 +336,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * exception is thrown.
 	 */
 	public void testInsertDuplicateTrack() {
+		dao.openWritableDatabase();
 
 		// Given
 		insertTrack(uri, null, null);
@@ -346,6 +360,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * correct track/tag exists.
 	 */
 	public void testInsertTag() {
+		dao.openWritableDatabase();
 
 		// Given
 		long trackId = insertTrack(uri, null, null).getId();
@@ -392,6 +407,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * both, then the correct tracks exist.
 	 */
 	public void testInsertTagOnTwoTracks() {
+		dao.openWritableDatabase();
 
 		// Given
 		long id1 = insertTrack(uri, null, null).getId();
@@ -435,6 +451,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * then an exception is thrown.
 	 */
 	public void testInsertDuplicateTag() {
+		dao.openWritableDatabase();
 
 		// Given
 		long trackId = insertSampleTrack().getId();
@@ -453,6 +470,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * nonexistent track, then an exception is thrown.
 	 */
 	public void testInsertTagOnMissingTrack() {
+		dao.openWritableDatabase();
 
 		// Given
 		long trackId = insertSampleTrack().getId();

@@ -2,17 +2,37 @@
 <resources>
 
     <string name="app_name">Android Music Player</string>
-    <string name="title_activity_library">Library</string>
-    <string name="title_activity_player">Player</string>
-    <string name="title_activity_settings">Settings</string>
-    <string name="create_library_text">Rebuild library</string>
-    <string name="blank_time">0:00</string>
-    <string name="play_pause">play/pause</string>
-    <string name="previous">prev</string>
-    <string name="next">next</string>
+    <string name="activity_library_name">Library</string>
+    <string name="activity_player_name">Player</string>
+    <string name="activity_settings_name">Settings</string>
+
+    <!-- Player -->
+    <string name="activity_player_blank_time">0:00</string>
+    <string name="player_play_pause">play/pause</string>
+    <string name="player_previous">prev</string>
+    <string name="player_next">next</string>
+    <string name="player_now_playing">Now playing…</string>
+    <string name="player_cant_focus">Could not obtain audio focus</string>
+    <string name="player_lost_focus">Lost audio focus</string>
+    <string name="player_temp_lost_focus">Lost audio focus temporarily</string>
+    <string name="player_MediaPlayer_error">Error %d,d</string>
+    <string name="player_read_error">Track %s could not be read</string>
+    <string name="player_internal_error">Internal error %s</string>
+
+    <!-- Settings -->
     <string name="setting_library_path_title">Music Folder</string>
     <string name="setting_library_path_summary">Set the folder to scan for music</string>
     <string name="setting_debug_title">Use Sample Library</string>
     <string name="setting_debug_summary">Use a small library of sample tracks to aid debugging</string>
+
+    <!-- Library -->
+    <string name="activity_library_scan">Rebuild library</string>
+    <string name="activity_library_scan_done">Scan complete</string>
+    <string name="activity_library_scanning">Scanning media folders</string>
+
+    <!-- Media scanner -->
+    <string name="scan_error_no_such_path">Path does not exist</string>
+    <string name="scan_error_not_a_folder">Path doesn\'t point to a folder</string>
+    <string name="scan_error_not_readable">Directory contents are not readable</string>
 
 </resources>

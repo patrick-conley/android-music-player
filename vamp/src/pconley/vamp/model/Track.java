@@ -102,6 +102,13 @@ public final class Track {
 		return result;
 	}
 
+	/**
+	 * Compare this instance with the specified object. Assuming both objects
+	 * are non-null Tracks, they are equal if they have the same URI and
+	 * tags.
+	 * 
+	 * @see Tag#equals(Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -141,7 +148,7 @@ public final class Track {
 			tags = new HashMap<String, Set<Tag>>();
 		}
 
-		public void add(Tag tag) {
+		public Builder add(Tag tag) {
 			String name = tag.getName();
 
 			if (!tags.containsKey(name)) {
@@ -149,6 +156,8 @@ public final class Track {
 			}
 
 			tags.get(name).add(tag);
+			
+			return this;
 		}
 
 		public Track build() {
