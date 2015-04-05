@@ -303,11 +303,20 @@ public class PlayerService extends Service implements
 			}
 
 		} catch (IOException e) {
-			stop(String.format(getString(R.string.player_read_error), current.getUri()));
+			Log.e(TAG, String.format(getString(R.string.player_read_error),
+					current.getUri()));
+
+			// Skip to next track on error
+			if (trackIterator.hasNext()) {
+				trackIterator.next();
+			}
+			start(beginPlayback);
+
 		} catch (IllegalArgumentException | SecurityException
 				| IllegalStateException e) {
 			Log.e(TAG, e.getMessage());
-			stop(String.format(getString(R.string.player_internal_error), e.getMessage()));
+			stop(String.format(getString(R.string.player_internal_error),
+					e.getMessage()));
 		}
 
 	}
