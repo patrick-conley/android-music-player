@@ -40,7 +40,7 @@ public final class FileUtils {
 			Toast.makeText(context, error, Toast.LENGTH_LONG).show();
 		}
 
-		return error >= 0;
+		return error < 0;
 	}
 
 }

@@ -84,6 +84,7 @@ public class FilesystemScanner {
 
 		// Check the directory is readable
 		if (!FileUtils.validateDirectory(path, context.getApplicationContext())) {
+			Log.w(TAG, "Media directory is invalid");
 			return;
 		}
 
