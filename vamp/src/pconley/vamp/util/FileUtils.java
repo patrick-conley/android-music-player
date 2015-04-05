@@ -2,6 +2,7 @@ package pconley.vamp.util;
 
 import java.io.File;
 
+import pconley.vamp.R;
 import android.content.Context;
 import android.widget.Toast;
 
@@ -26,20 +27,20 @@ public final class FileUtils {
 	 */
 	public static boolean validateDirectory(File dir, Context context) {
 
-		String error = null;
+		int error = -1;
 		if (!dir.exists()) {
-			error = "Path does not exist";
+			error = R.string.scan_error_no_such_path;
 		} else if (!dir.isDirectory()) {
-			error = "Path doesn't point to a folder";
+			error = R.string.scan_error_not_a_folder;
 		} else if (!dir.canExecute()) {
-			error = "Directory contents aren't readable";
+			error = R.string.scan_error_not_readable;
 		}
 
-		if (error != null && context != null) {
+		if (error >= 0 && context != null) {
 			Toast.makeText(context, error, Toast.LENGTH_LONG).show();
 		}
 
-		return error == null;
+		return error >= 0;
 	}
 
 }

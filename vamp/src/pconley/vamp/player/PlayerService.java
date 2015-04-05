@@ -36,6 +36,7 @@ import android.util.Log;
 public class PlayerService extends Service implements
 		MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener,
 		AudioManager.OnAudioFocusChangeListener {
+	private static final String TAG = "Player";
 
 	/**
 	 * ID used for this service's notifications.
@@ -108,7 +109,7 @@ public class PlayerService extends Service implements
 
 		notificationBase = new Notification.Builder(getApplicationContext())
 				.setContentTitle(getString(R.string.app_name))
-				.setContentText("Now playing...")
+				.setContentText(getString(R.string.player_now_playing))
 				.setSmallIcon(android.R.drawable.ic_media_play)
 				.setOngoing(true)
 				.setLargeIcon(
@@ -147,12 +148,12 @@ public class PlayerService extends Service implements
 		if (intent != null) {
 
 			if (intent.getAction() == null) {
-				Log.e("Player",
+				Log.e(TAG,
 						"Intent to start the player missing a required action");
 				return START_NOT_STICKY;
 			}
 
-			Log.i("Player", "Received control action " + intent.getAction());
+			Log.i(TAG, "Received control action " + intent.getAction());
 
 			switch (intent.getAction()) {
 			case ACTION_PLAY:
@@ -175,7 +176,7 @@ public class PlayerService extends Service implements
 				break;
 
 			default:
-				Log.w("Player", "Invalid action " + intent.getAction());
+				Log.w(TAG, "Invalid action " + intent.getAction());
 				break;
 			}
 		}
@@ -200,13 +201,13 @@ public class PlayerService extends Service implements
 	 */
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
-		String error = "Error " + String.valueOf(what) + ","
-				+ String.valueOf(extra);
+		String error = String.format(
+				getString(R.string.player_MediaPlayer_error), what, extra);
 
 		// FIXME: broadcasts do little if we're between activities
 		// FIXME: use actual messages rather than codes (as I figure out what
 		// messages mean)
-		Log.e("Player", error);
+		Log.e(TAG, error);
 		stop(error);
 
 		return true;
@@ -218,13 +219,13 @@ public class PlayerService extends Service implements
 		switch (focusChange) {
 		case AudioManager.AUDIOFOCUS_LOSS:
 
-			Log.w("Player", "Audio focus lost");
-			stop("Audio focus lost");
+			Log.w(TAG, getString(R.string.player_lost_focus));
+			stop(getString(R.string.player_lost_focus));
 			break;
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
 
-			Log.i("Player", "Audio focus lost temporarily");
+			Log.i(TAG, getString(R.string.player_temp_lost_focus));
 			pause();
 			break;
 		}
@@ -290,7 +291,7 @@ public class PlayerService extends Service implements
 
 		try {
 
-			Log.d("Player", "Preparing track " + current);
+			Log.d(TAG, "Preparing track " + current);
 			player.setDataSource(getApplicationContext(), current.getUri());
 			player.prepare();
 			isPrepared = true;
@@ -302,11 +303,11 @@ public class PlayerService extends Service implements
 			}
 
 		} catch (IOException e) {
-			stop("Track " + current.getUri() + " could not be read.");
+			stop(String.format(getString(R.string.player_read_error), current.getUri()));
 		} catch (IllegalArgumentException | SecurityException
 				| IllegalStateException e) {
-			Log.e("Player", e.getMessage());
-			stop("Internal error " + e.getMessage());
+			Log.e(TAG, e.getMessage());
+			stop(String.format(getString(R.string.player_internal_error), e.getMessage()));
 		}
 
 	}
@@ -360,7 +361,7 @@ public class PlayerService extends Service implements
 			stopForeground(true);
 			audioManager.abandonAudioFocus(this);
 
-			Log.d("Player", "paused");
+			Log.d(TAG, "paused");
 			broadcastEvent(PlayerEvent.PAUSE, message);
 
 		} else if (!isPrepared && message != null) {
@@ -375,7 +376,7 @@ public class PlayerService extends Service implements
 	 */
 	public void play() {
 		if (!isPrepared) {
-			Log.w("Player", "Can't play: player not prepared.");
+			Log.w(TAG, "Can't play: player not prepared.");
 			return;
 		} else if (isPlaying) {
 			return; // nothing to do
@@ -389,12 +390,13 @@ public class PlayerService extends Service implements
 
 			player.start();
 			isPlaying = true;
-			Log.d("Player", "started");
+			Log.d(TAG, "started");
 
 			broadcastEvent(PlayerEvent.PLAY);
 
 		} else {
-			broadcastEvent(PlayerEvent.PAUSE, "Could not obtain audio focus");
+			broadcastEvent(PlayerEvent.PAUSE,
+					getString(R.string.player_cant_focus));
 		}
 	}
 
@@ -407,7 +409,7 @@ public class PlayerService extends Service implements
 	 */
 	public void seekTo(int time) {
 		if (!isPrepared) {
-			Log.w("Player", "Can't seek: player not prepared.");
+			Log.w(TAG, "Can't seek: player not prepared.");
 			return;
 		}
 
@@ -425,7 +427,7 @@ public class PlayerService extends Service implements
 	 */
 	public void previous() {
 		if (!isPrepared) {
-			Log.w("Player", "Can't go to previous: player not prepared.");
+			Log.w(TAG, "Can't go to previous: player not prepared.");
 			return;
 		}
 
@@ -445,7 +447,7 @@ public class PlayerService extends Service implements
 	 */
 	public void next() {
 		if (!isPrepared) {
-			Log.w("Player", "Can't go to next: player not prepared.");
+			Log.w(TAG, "Can't go to next: player not prepared.");
 			return;
 		} else if (trackIterator.hasNext()) {
 			trackIterator.next();
@@ -474,8 +476,8 @@ public class PlayerService extends Service implements
 	 * @param message
 	 */
 	private void broadcastEvent(PlayerEvent event, String message) {
-		Intent intent = new Intent(BroadcastConstants.FILTER_PLAYER_EVENT).putExtra(
-				BroadcastConstants.EXTRA_EVENT, event);
+		Intent intent = new Intent(BroadcastConstants.FILTER_PLAYER_EVENT)
+				.putExtra(BroadcastConstants.EXTRA_EVENT, event);
 
 		if (message != null) {
 			intent.putExtra(BroadcastConstants.EXTRA_MESSAGE, message);

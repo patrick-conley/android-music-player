@@ -211,8 +211,8 @@ public class PlayerActivity extends Activity {
 			progressBar.setProgress(0);
 			progressBar.setMax(0);
 
-			positionView.setText(getString(R.string.blank_time));
-			durationView.setText(getString(R.string.blank_time));
+			positionView.setText(getString(R.string.activity_player_blank_time));
+			durationView.setText(getString(R.string.activity_player_blank_time));
 		}
 
 	}

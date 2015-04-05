@@ -43,15 +43,9 @@ public class ScannerService extends IntentService {
 		// Prohibit scanning into the sample library
 		if (settings.getDebugMode()) {
 			Log.w(TAG, "Abort scan to debug library");
-//			Toast.makeText(getApplicationContext(),
-//					"Can't scan to the debug library", Toast.LENGTH_LONG)
-//					.show();
 			return;
 		} else if (settings.getMusicFolder() == null) {
 			Log.w(TAG, "Abort scan: no music folder set");
-//			Toast.makeText(getApplicationContext(),
-//					"Set the music folder in Settings", Toast.LENGTH_LONG)
-//					.show();
 			return;
 		}
 

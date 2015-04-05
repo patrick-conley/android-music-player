@@ -72,7 +72,7 @@ public class LibraryActivity extends Activity {
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				Toast.makeText(LibraryActivity.this,
-						R.string.library_scan_finished, Toast.LENGTH_LONG)
+						R.string.activity_library_scan_done, Toast.LENGTH_LONG)
 						.show();
 				new LoadTrackListTask().execute();
 			}
