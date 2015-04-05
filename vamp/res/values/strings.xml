@@ -28,6 +28,7 @@
     <!-- Library -->
     <string name="activity_library_scan">Rebuild library</string>
     <string name="activity_library_scan_done">Scan complete</string>
+    <string name="activity_library_scanning">Scanning media folders</string>
 
     <!-- Media scanner -->
     <string name="scan_error_no_such_path">Path does not exist</string>

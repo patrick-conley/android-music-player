@@ -32,6 +32,8 @@ public class LibraryActivity extends Activity {
 
 	private ListView trackListView;
 	private long[] trackIds;
+	
+	private ProgressDialog scanningDialog;
 
 	private LocalBroadcastManager broadcastManager;
 
@@ -74,6 +76,7 @@ public class LibraryActivity extends Activity {
 				Toast.makeText(LibraryActivity.this,
 						R.string.activity_library_scan_done, Toast.LENGTH_LONG)
 						.show();
+				scanningDialog.dismiss();
 				new LoadTrackListTask().execute();
 			}
 		};
@@ -117,6 +120,10 @@ public class LibraryActivity extends Activity {
 	protected void onPause() {
 		broadcastManager.unregisterReceiver(playerEventReceiver);
 		broadcastManager.unregisterReceiver(scannerReceiver);
+		
+		if (scanningDialog != null) {
+			scanningDialog.dismiss();
+		}
 
 		super.onPause();
 	}
@@ -141,7 +148,13 @@ public class LibraryActivity extends Activity {
 			startActivity(new Intent(this, SettingsActivity.class));
 			return true;
 		case R.id.action_rescan:
+			scanningDialog = new ProgressDialog(this);
+			scanningDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			scanningDialog.setTitle(R.string.activity_library_scanning);
+			scanningDialog.setCanceledOnTouchOutside(false);
+			scanningDialog.setIndeterminate(true);
 			startService(new Intent(this, ScannerService.class));
+			scanningDialog.show();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
