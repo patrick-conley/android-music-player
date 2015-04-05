@@ -3,9 +3,12 @@ package pconley.vamp;
 import java.util.List;
 
 import pconley.vamp.db.TrackDAO;
-import pconley.vamp.player.PlayerEvent;
 import pconley.vamp.player.PlayerService;
+import pconley.vamp.preferences.SettingsActivity;
+import pconley.vamp.scanner.ScannerService;
+import pconley.vamp.util.BroadcastConstants;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -13,7 +16,6 @@ import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,35 +32,58 @@ public class LibraryActivity extends Activity {
 
 	private ListView trackListView;
 	private long[] trackIds;
+	
+	private ProgressDialog scanningDialog;
+
+	private LocalBroadcastManager broadcastManager;
 
 	/*
 	 * Receive status messages from the player. Only necessary to show errors.
 	 */
 	private BroadcastReceiver playerEventReceiver;
 
+	/*
+	 * Receiver completion notice from the media scanner.
+	 */
+	private BroadcastReceiver scannerReceiver;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_library);
+
+		broadcastManager = LocalBroadcastManager.getInstance(this);
 
 		playerEventReceiver = new BroadcastReceiver() {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
 
-				if (intent.hasExtra(PlayerEvent.EXTRA_MESSAGE)) {
+				if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
 					Toast.makeText(
 							LibraryActivity.this,
-							intent.getStringExtra(PlayerEvent.EXTRA_MESSAGE),
+							intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
 							Toast.LENGTH_LONG).show();
 				}
 
 			}
 		};
 
+		scannerReceiver = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				Toast.makeText(LibraryActivity.this,
+						R.string.activity_library_scan_done, Toast.LENGTH_LONG)
+						.show();
+				scanningDialog.dismiss();
+				new LoadTrackListTask().execute();
+			}
+		};
+
 		// Get the list of tracks in the library. If one is clicked, play it and
 		// open the Now Playing screen.
-		new LoadTrackListTask().execute(false);
+		new LoadTrackListTask().execute();
 
 		trackListView = (ListView) findViewById(R.id.track_list);
 		trackListView.setOnItemClickListener(new OnItemClickListener() {
@@ -84,16 +109,21 @@ public class LibraryActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 
-		LocalBroadcastManager.getInstance(this).registerReceiver(
-				playerEventReceiver,
-				new IntentFilter(PlayerEvent.FILTER_PLAYER_EVENT));
+		broadcastManager.registerReceiver(playerEventReceiver,
+				new IntentFilter(BroadcastConstants.FILTER_PLAYER_EVENT));
+		broadcastManager.registerReceiver(scannerReceiver, new IntentFilter(
+				BroadcastConstants.FILTER_SCANNER));
 
 	}
 
 	@Override
 	protected void onPause() {
-		LocalBroadcastManager.getInstance(this).unregisterReceiver(
-				playerEventReceiver);
+		broadcastManager.unregisterReceiver(playerEventReceiver);
+		broadcastManager.unregisterReceiver(scannerReceiver);
+		
+		if (scanningDialog != null) {
+			scanningDialog.dismiss();
+		}
 
 		super.onPause();
 	}
@@ -114,47 +144,45 @@ public class LibraryActivity extends Activity {
 		case R.id.action_player:
 			startActivity(new Intent(this, PlayerActivity.class));
 			return true;
+		case R.id.action_settings:
+			startActivity(new Intent(this, SettingsActivity.class));
+			return true;
+		case R.id.action_rescan:
+			scanningDialog = new ProgressDialog(this);
+			scanningDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			scanningDialog.setTitle(R.string.activity_library_scanning);
+			scanningDialog.setCanceledOnTouchOutside(false);
+			scanningDialog.setIndeterminate(true);
+			startService(new Intent(this, ScannerService.class));
+			scanningDialog.show();
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
 
-	/**
-	 * Delete the contents of the library and replace it with sample contents.
-	 *
-	 * TODO: delete this (and the contents of the library) when I can read the
-	 * real thing.
-	 *
-	 * @param view
-	 *            The origin of the rebuild request
-	 */
-	public void createLibrary(View view) {
-		new LoadTrackListTask().execute(true);
-	}
-
 	/*
 	 * Load the contents of the library into a TextView with execute(). Work is
 	 * done in a background thread.
-	 * 
-	 * The library is first deleted and rebuilt if
-	 * `LoadTrackListTask.execute(true)` is called.
 	 */
-	private class LoadTrackListTask extends
-			AsyncTask<Boolean, Void, List<Long>> {
+	private class LoadTrackListTask extends AsyncTask<Void, Void, List<Long>> {
+
+		private ProgressDialog dialog;
 
 		@Override
-		protected List<Long> doInBackground(Boolean... params) {
-			// Create a sample library.
-			if (params.length > 0 && params[0] == true) {
-				try {
-					Log.i("Library", "Rebuilding library");
-					TrackDAO.createSampleLibrary(LibraryActivity.this);
-				} catch (Exception e) {
-					Log.w("Library", e.getMessage());
-				}
-			}
+		protected void onPreExecute() {
+			super.onPreExecute();
 
-			return new TrackDAO(LibraryActivity.this).getIds();
+			dialog = new ProgressDialog(LibraryActivity.this);
+			dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			dialog.setIndeterminate(true);
+			dialog.show();
+		}
+
+		@Override
+		protected List<Long> doInBackground(Void... params) {
+			return new TrackDAO(LibraryActivity.this).openReadableDatabase()
+					.getIds();
 		}
 
 		protected void onPostExecute(List<Long> ids) {
@@ -171,6 +199,8 @@ public class LibraryActivity extends Activity {
 			for (int i = 0; i < trackIds.length; i++) {
 				trackIds[i] = ids.get(i);
 			}
+
+			dialog.dismiss();
 		}
 
 	}

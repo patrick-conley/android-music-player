@@ -6,6 +6,16 @@
         android:id="@+id/action_player"
         android:orderInCategory="1"
         android:showAsAction="ifRoom"
-        android:title="@string/title_activity_player"/>
+        android:title="@string/activity_player_name"/>
+    <item
+        android:id="@+id/action_rescan"
+        android:orderInCategory="99"
+        android:showAsAction="never"
+        android:title="@string/activity_library_scan"/>
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/activity_settings_name"/>
 
 </menu>

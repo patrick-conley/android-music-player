@@ -6,7 +6,7 @@
 
     <uses-sdk
         android:minSdkVersion="16"
-        android:targetSdkVersion="20" />
+        android:targetSdkVersion="21" />
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -26,7 +26,7 @@
         </activity>
         <activity
             android:name=".PlayerActivity"
-            android:label="@string/title_activity_player"
+            android:label="@string/activity_player_name"
             android:launchMode="singleTop"
             android:parentActivityName=".LibraryActivity" >
             <meta-data
@@ -34,13 +34,19 @@
                 android:value="pconley.vamp.LibraryActivity" />
         </activity>
 
-        <receiver android:name="pconley.vamp.player.AudioNoisyReceiver" >
+        <receiver android:name=".player.AudioNoisyReceiver" >
             <intent-filter>
                 <action android:name="android.media.AUDIO_BECOMING_NOISY" />
             </intent-filter>
         </receiver>
 
-        <service android:name="pconley.vamp.player.PlayerService" />
+        <service android:name=".player.PlayerService" />
+        <service android:name=".scanner.ScannerService" />
+
+        <activity
+            android:name=".preferences.SettingsActivity"
+            android:label="@string/activity_settings_name" >
+        </activity>
     </application>
 
 </manifest>

@@ -8,6 +8,8 @@ import java.util.TimeZone;
 import pconley.vamp.model.Track;
 import pconley.vamp.player.PlayerEvent;
 import pconley.vamp.player.PlayerService;
+import pconley.vamp.preferences.SettingsActivity;
+import pconley.vamp.util.BroadcastConstants;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -89,6 +91,9 @@ public class PlayerActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
+		case R.id.action_settings:
+			startActivity(new Intent(this, SettingsActivity.class));
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -206,8 +211,8 @@ public class PlayerActivity extends Activity {
 			progressBar.setProgress(0);
 			progressBar.setMax(0);
 
-			positionView.setText(getString(R.string.blank_time));
-			durationView.setText(getString(R.string.blank_time));
+			positionView.setText(getString(R.string.activity_player_blank_time));
+			durationView.setText(getString(R.string.activity_player_blank_time));
 		}
 
 	}
@@ -304,7 +309,7 @@ public class PlayerActivity extends Activity {
 
 			LocalBroadcastManager.getInstance(PlayerActivity.this)
 					.registerReceiver(playerReceiver,
-							new IntentFilter(PlayerEvent.FILTER_PLAYER_EVENT));
+							new IntentFilter(BroadcastConstants.FILTER_PLAYER_EVENT));
 		}
 
 		/**
@@ -350,7 +355,7 @@ public class PlayerActivity extends Activity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 
-			if (!intent.hasExtra(PlayerEvent.EXTRA_EVENT)) {
+			if (!intent.hasExtra(BroadcastConstants.EXTRA_EVENT)) {
 				Log.e("Active track",
 						"Broadcast from Player missing required event.");
 				finish();
@@ -359,10 +364,10 @@ public class PlayerActivity extends Activity {
 			Log.i("Active track",
 					"Received player event "
 							+ (PlayerEvent) intent
-									.getSerializableExtra(PlayerEvent.EXTRA_EVENT));
+									.getSerializableExtra(BroadcastConstants.EXTRA_EVENT));
 
 			switch ((PlayerEvent) intent
-					.getSerializableExtra(PlayerEvent.EXTRA_EVENT)) {
+					.getSerializableExtra(BroadcastConstants.EXTRA_EVENT)) {
 			case NEW_TRACK:
 				displayTrackDetails();
 
@@ -370,9 +375,9 @@ public class PlayerActivity extends Activity {
 			case PAUSE:
 				stopCountdown();
 
-				if (intent.hasExtra(PlayerEvent.EXTRA_MESSAGE)) {
+				if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
 					Toast.makeText(PlayerActivity.this,
-							intent.getStringExtra(PlayerEvent.EXTRA_MESSAGE),
+							intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
 							Toast.LENGTH_LONG).show();
 				}
 
@@ -386,9 +391,9 @@ public class PlayerActivity extends Activity {
 			case STOP:
 				clearCountdown();
 
-				if (intent.hasExtra(PlayerEvent.EXTRA_MESSAGE)) {
+				if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
 					Toast.makeText(PlayerActivity.this,
-							intent.getStringExtra(PlayerEvent.EXTRA_MESSAGE),
+							intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
 							Toast.LENGTH_LONG).show();
 				}
 

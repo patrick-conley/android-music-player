@@ -7,13 +7,16 @@ import java.util.Set;
 import pconley.vamp.db.LibraryContract.TagEntry;
 import pconley.vamp.db.LibraryContract.TrackEntry;
 import pconley.vamp.db.LibraryContract.TrackTagRelation;
-import pconley.vamp.db.LibraryHelper;
+import pconley.vamp.db.LibraryOpenHelper;
 import pconley.vamp.db.TrackDAO;
 import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
+import pconley.vamp.preferences.SettingsHelper;
+import pconley.vamp.util.Constants;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.test.AndroidTestCase;
@@ -21,18 +24,12 @@ import android.test.RenamingDelegatingContext;
 
 public class TrackDAOTest extends AndroidTestCase {
 
-	private static final String namePrefix = "test_";
 	private static final Uri uri = Uri.parse("file:///track.ogg");
 
 	private static final Uri sampleUri = Uri.parse("file:///sample.ogg");
 	private static final String[] sampleTagNames = { "title", "album", "artist" };
 	private static final String[] sampleTagValues = { "SampleTrack",
 			"SampleAlbum", "SampleArtist" };
-
-	private static final String duplicateTrackSelection = TrackEntry.COLUMN_ID
-			+ " = ?";
-	private static final String duplicateTagSelection = TagEntry.COLUMN_TAG
-			+ " = ? AND " + TagEntry.COLUMN_VAL + " = ?";
 
 	private SQLiteDatabase library;
 	private TrackDAO dao;
@@ -41,21 +38,26 @@ public class TrackDAOTest extends AndroidTestCase {
 		super.setUp();
 
 		Context context = new RenamingDelegatingContext(getContext(),
-				namePrefix);
+				Constants.DB_PREFIX);
 
-		library = new LibraryHelper(context).getWritableDatabase();
+		SettingsHelper.setPreferences(context.getSharedPreferences(
+				Constants.PREFERENCES_NAME, Context.MODE_PRIVATE));
+
+		library = new LibraryOpenHelper(context).getWritableDatabase();
 		dao = new TrackDAO(context);
 
 		library.execSQL("DELETE FROM " + TrackEntry.NAME);
 		library.execSQL("DELETE FROM " + TrackTagRelation.NAME);
 		library.execSQL("DELETE FROM " + TagEntry.NAME);
 	}
-
+	
 	/**
 	 * Given I have nothing in the database, when I try to retrieve tracks, then
 	 * I get nothing, successfully.
 	 */
 	public void testGetTracksOnEmptyDatabase() {
+		dao.openReadableDatabase();
+	
 		List<Long> tracks = dao.getIds();
 
 		assertEquals("DAO retrieves nothing from an empty database", 0,
@@ -67,7 +69,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * then I get an exception.
 	 */
 	public void testReadOnClosedDatabase() {
-		dao.close();
+		dao.openReadableDatabase().close();
 
 		try {
 			dao.getIds();
@@ -83,6 +85,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * then I get all of them.
 	 */
 	public void testGetTracksOnNonemptyDatabase() {
+		dao.openReadableDatabase();
 
 		// Insert some tracks. No associated tags are needed.
 		Set<Long> expected = new HashSet<Long>();
@@ -106,8 +109,9 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * track not in the database, then I get null, successfully.
 	 */
 	public void testGetTrackOnMissingTrack() {
+		dao.openReadableDatabase();
+		
 		Track sample = insertSampleTrack();
-
 		Track actual = dao.getTrack(sample.getId() + 1);
 
 		assertNull(sample.toString()
@@ -119,6 +123,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * tags, then I get a Track with no tags.
 	 */
 	public void testGetTrackOnNoTags() {
+		dao.openReadableDatabase();
 		insertSampleTrack();
 
 		Track expected = insertTrack(uri, new String[] {}, new String[] {});
@@ -134,6 +139,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * then I get all of them.
 	 */
 	public void testGetTrackOneTrack() {
+		dao.openReadableDatabase();
 		insertSampleTrack();
 
 		String[] expectedNames = { "a", "b", "c" };
@@ -151,6 +157,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * same name, when I try to retrieve its tags, then I get both of them.
 	 */
 	public void testGetTrackWithSameName() {
+		dao.openReadableDatabase();
 		insertSampleTrack();
 
 		Track expected = insertTrack(uri, new String[] { "a", "b", "a" },
@@ -167,6 +174,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * correct ones.
 	 */
 	public void testGetTrackTwoTracksWithSameTagName() {
+		dao.openReadableDatabase();
 		insertSampleTrack();
 
 		Track expected = insertTrack(uri, new String[] { "a",
@@ -184,6 +192,8 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * when I try to retrieve tags from each, then I get the correct ones.
 	 */
 	public void testGetTrackTwoTracksWithIdenticalTags() {
+		dao.openReadableDatabase();
+	
 		Track sample = insertSampleTrack();
 		Track expected = insertTrack(uri, sampleTagNames, sampleTagValues);
 		Track actual = dao.getTrack(expected.getId());
@@ -225,6 +235,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 * ones.
 	 */
 	public void testGetTrackTwoTracksWithSomeSharedTags() {
+		dao.openReadableDatabase();
 		Track sample = insertSampleTrack();
 
 		Track expected = insertTrack(uri, new String[] { "a",
@@ -244,6 +255,235 @@ public class TrackDAOTest extends AndroidTestCase {
 				sample, actual);
 	}
 
+	/**
+	 * Given the database is empty, when I insert a new track, then the correct
+	 * track exists.
+	 */
+	public void testInsertTrack() {
+		dao.openWritableDatabase();
+
+		// Given
+		Cursor results = library.query(TrackEntry.NAME,
+				new String[] { TrackEntry.COLUMN_ID }, null, null, null, null,
+				null);
+
+		assertEquals("Database is initially empty", 0, results.getCount());
+
+		// When
+		dao.insertTrack(uri);
+
+		// Then
+		results = library.query(TrackEntry.NAME,
+				new String[] { TrackEntry.COLUMN_URI }, null, null, null, null,
+				null);
+
+		assertEquals("Database contains one inserted track", 1,
+				results.getCount());
+
+		results.moveToFirst();
+		assertEquals(
+				"Inserted track is correct",
+				uri.toString(),
+				results.getString(results.getColumnIndex(TrackEntry.COLUMN_URI)));
+	}
+
+	/**
+	 * Given the database is not empty, when I insert a new track, then the
+	 * correct track exists.
+	 */
+	public void testInsertSecondTrack() {
+		dao.openWritableDatabase();
+
+		// Given
+		insertTrack(sampleUri, null, null);
+		Cursor results = library.query(TrackEntry.NAME,
+				new String[] { TrackEntry.COLUMN_ID }, null, null, null, null,
+				null);
+
+		assertEquals("Database is initially not empty", 1, results.getCount());
+
+		// When
+		long id = dao.insertTrack(uri);
+
+		// Then
+		results = library.query(TrackEntry.NAME, new String[] {
+				TrackEntry.COLUMN_ID, TrackEntry.COLUMN_URI }, null, null,
+				null, null, null);
+
+		// A track has been inserted
+		assertEquals("Database contains two inserted tracks", 2,
+				results.getCount());
+
+		// The correct track has been inserted
+		for (results.moveToFirst(); !results.isAfterLast(); results
+				.moveToNext()) {
+			if (results.getLong(results.getColumnIndex(TrackEntry.COLUMN_ID)) == id) {
+				assertEquals("Inserted track has the correct URI",
+						uri.toString(), results.getString(results
+								.getColumnIndex(TrackEntry.COLUMN_URI)));
+				break;
+			}
+		}
+
+		if (results.isAfterLast()) {
+			fail("Database contains the inserted track");
+		}
+
+	}
+
+	/**
+	 * Given the database is not empty, when I insert a duplicate track, then an
+	 * exception is thrown.
+	 */
+	public void testInsertDuplicateTrack() {
+		dao.openWritableDatabase();
+
+		// Given
+		insertTrack(uri, null, null);
+		Cursor results = library.query(TrackEntry.NAME,
+				new String[] { TrackEntry.COLUMN_ID }, null, null, null, null,
+				null);
+
+		assertEquals("Database is initially not empty", 1, results.getCount());
+
+		// When
+		try {
+			dao.insertTrack(uri);
+			fail("Inserting a duplicate track throws an exception");
+		} catch (SQLException e) {
+
+		}
+	}
+
+	/**
+	 * Given the database contains a track, when I insert a tag, then the
+	 * correct track/tag exists.
+	 */
+	public void testInsertTag() {
+		dao.openWritableDatabase();
+
+		// Given
+		long trackId = insertTrack(uri, null, null).getId();
+
+		// When
+		dao.insertTag(trackId, sampleTagNames[0], sampleTagValues[0]);
+
+		// Then
+
+		// Check the correct tag exists
+		Cursor results = library.query(TagEntry.NAME, new String[] {
+				TagEntry.COLUMN_ID, TagEntry.COLUMN_TAG, TagEntry.COLUMN_VAL },
+				null, null, null, null, null);
+
+		assertEquals("Tag table has one tag", 1, results.getCount());
+
+		results.moveToFirst();
+		long tagId = results
+				.getLong(results.getColumnIndex(TagEntry.COLUMN_ID));
+		assertEquals("Inserted tag has the right name", sampleTagNames[0],
+				results.getString(results.getColumnIndex(TagEntry.COLUMN_TAG)));
+		assertEquals("Inserted tag has the right value", sampleTagValues[0],
+				results.getString(results.getColumnIndex(TagEntry.COLUMN_VAL)));
+
+		// Check the track has this tag
+		results = library.query(TrackTagRelation.NAME, new String[] {
+				TrackTagRelation.TRACK_ID, TrackTagRelation.TAG_ID }, null,
+				null, null, null, null);
+
+		assertEquals("A track has a tag", 1, results.getCount());
+
+		results.moveToFirst();
+		assertEquals("Track in relation is correct", trackId,
+				results.getLong(results
+						.getColumnIndex(TrackTagRelation.TRACK_ID)));
+		assertEquals(
+				"Tag in relation is correct",
+				tagId,
+				results.getLong(results.getColumnIndex(TrackTagRelation.TAG_ID)));
+	}
+
+	/**
+	 * Given the database contains two tracks, when I insert the same tag for
+	 * both, then the correct tracks exist.
+	 */
+	public void testInsertTagOnTwoTracks() {
+		dao.openWritableDatabase();
+
+		// Given
+		long id1 = insertTrack(uri, null, null).getId();
+		long id2 = insertTrack(sampleUri, null, null).getId();
+
+		// When
+		dao.insertTag(id1, sampleTagNames[0], sampleTagValues[0]);
+		dao.insertTag(id2, sampleTagNames[0], sampleTagValues[0]);
+
+		// Then
+
+		// Check the correct tag exists
+		// Don't bother checking the tag itself is correct - that's done by
+		// testInsertTag()
+		Cursor results = library.query(TagEntry.NAME,
+				new String[] { TagEntry.COLUMN_ID }, null, null, null, null,
+				null);
+
+		assertEquals("Tag table has one tag", 1, results.getCount());
+		results.moveToFirst();
+		long tagId = results
+				.getLong(results.getColumnIndex(TagEntry.COLUMN_ID));
+
+		// Check the correct relations exist
+		results = library.query(TrackTagRelation.NAME,
+				new String[] { TrackTagRelation.TAG_ID }, null, null, null,
+				null, null);
+
+		assertEquals("Two tracks have tags", 2, results.getCount());
+		for (results.moveToFirst(); !results.isAfterLast(); results
+				.moveToNext()) {
+			assertEquals("Track has the correct tag", tagId,
+					results.getLong(results
+							.getColumnIndex(TrackTagRelation.TAG_ID)));
+		}
+
+	}
+
+	/**
+	 * Given the database contains a track and tag, when I insert the same tag,
+	 * then an exception is thrown.
+	 */
+	public void testInsertDuplicateTag() {
+		dao.openWritableDatabase();
+
+		// Given
+		long trackId = insertSampleTrack().getId();
+
+		// When
+		try {
+			dao.insertTag(trackId, sampleTagNames[0], sampleTagValues[0]);
+			fail("Inserting a duplicate tag on one track is an exception");
+		} catch (SQLException e) {
+
+		}
+	}
+
+	/**
+	 * Given the database contains a track, when I insert a tag for a
+	 * nonexistent track, then an exception is thrown.
+	 */
+	public void testInsertTagOnMissingTrack() {
+		dao.openWritableDatabase();
+
+		// Given
+		long trackId = insertSampleTrack().getId();
+
+		// When
+		try {
+			dao.insertTag(trackId + 1, sampleTagNames[0], sampleTagValues[0]);
+			fail("Inserting a tag without a corresponding track is an exception");
+		} catch (SQLException e) {
+
+		}
+	}
+
 	/*
 	 * Add a track to the database to ensure there are unrelated tags floating
 	 * around
@@ -258,9 +498,11 @@ public class TrackDAOTest extends AndroidTestCase {
 	private Track insertTrack(Uri uri, String[] tagNames, String[] tagValues) {
 		long trackId;
 
+		final String duplicateTrackSelect = TrackEntry.COLUMN_ID + " = ?";
+
 		// Check if the track already exists; get its ID or insert it
 		Cursor dupes = library.query(TrackEntry.NAME,
-				new String[] { TrackEntry.COLUMN_ID }, duplicateTrackSelection,
+				new String[] { TrackEntry.COLUMN_ID }, duplicateTrackSelect,
 				new String[] { uri.toString() }, null, null, null);
 
 		if (dupes.getCount() > 0) {
@@ -277,9 +519,11 @@ public class TrackDAOTest extends AndroidTestCase {
 
 		Track.Builder builder = new Track.Builder(trackId, uri);
 
-		for (int i = 0; i < tagNames.length; i++) {
-			builder.add(new Tag(insertTag(tagNames[i], tagValues[i], trackId),
-					tagNames[i], tagValues[i]));
+		if (tagNames != null) {
+			for (int i = 0; i < tagNames.length; i++) {
+				builder.add(new Tag(insertTag(tagNames[i], tagValues[i],
+						trackId), tagNames[i], tagValues[i]));
+			}
 		}
 
 		return builder.build();
@@ -292,9 +536,12 @@ public class TrackDAOTest extends AndroidTestCase {
 	private long insertTag(String name, String value, long relatedTrackId) {
 		long tagId;
 
+		final String duplicateTagSelect = TagEntry.COLUMN_TAG + " = ? AND "
+				+ TagEntry.COLUMN_VAL + " = ?";
+
 		// Check if the tag already exists; get its ID or insert it
 		Cursor dupes = library.query(TagEntry.NAME,
-				new String[] { TagEntry.COLUMN_ID }, duplicateTagSelection,
+				new String[] { TagEntry.COLUMN_ID }, duplicateTagSelect,
 				new String[] { name, value }, null, null, null);
 
 		if (dupes.getCount() > 0) {
