@@ -17,26 +17,27 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 
 	private PlaylistIterator iter;
 	private PlaylistIterator emptyIter;
-	
+
 	/*
 	 * Create a list of simple tracks.
 	 */
 	public PlaylistIteratorTest() {
 		tracks = new ArrayList<Track>();
 		playlist = new Playlist();
-		
+
 		for (int i = 0; i < 5; i++) {
-			Track track = new Track.Builder(i, Uri.parse(String.valueOf(i))).build();
-			
+			Track track = new Track.Builder(i, Uri.parse(String.valueOf(i)))
+					.build();
+
 			tracks.add(track);
 			playlist.add(track);
 		}
 	}
-	
+
 	public void setUp() {
 		emptyIter = new Playlist().playlistIterator();
 		iter = playlist.playlistIterator();
-		
+
 	}
 
 	/**
@@ -126,7 +127,7 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 	 * exception.
 	 */
 	public void testNextAtEnd() {
-		iter = playlist.playlistIterator(playlist.size()-1);
+		iter = playlist.playlistIterator(playlist.size() - 1);
 		iter.next(); // Get the last item
 
 		assertTrue("Iterator has a previous item", iter.hasPrevious());
@@ -195,8 +196,7 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 			iter = playlist.playlistIterator(i);
 
 			assertEquals("Item " + String.valueOf(i)
-					+ " of iterator is correct", tracks.get(i),
-					iter.next());
+					+ " of iterator is correct", tracks.get(i), iter.next());
 		}
 	}
 

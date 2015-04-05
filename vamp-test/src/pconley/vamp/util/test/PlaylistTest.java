@@ -1,5 +1,9 @@
 package pconley.vamp.util.test;
 
+import static android.test.MoreAsserts.assertEmpty;
+import static android.test.MoreAsserts.assertNotEmpty;
+import static android.test.MoreAsserts.checkEqualsAndHashCodeMethods;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -34,7 +38,7 @@ public class PlaylistTest extends AndroidTestCase {
 	public void testEmptyPlaylistSize() {
 		playlist = new Playlist();
 
-		assertTrue("Playlist is empty.", playlist.isEmpty());
+		assertEmpty(playlist);
 		assertEquals("Playlist has 0 tracks.", 0, playlist.size());
 	}
 
@@ -65,9 +69,9 @@ public class PlaylistTest extends AndroidTestCase {
 	 * empty.
 	 */
 	public void testClear() {
-		assertFalse("Playlist is not empty", playlist.isEmpty());
+		assertNotEmpty(playlist);
 		playlist.clear();
-		assertTrue("Playlist is empty", playlist.isEmpty());
+		assertEmpty("Playlist is empty after clearing it", playlist);
 	}
 
 	/**
@@ -90,51 +94,33 @@ public class PlaylistTest extends AndroidTestCase {
 
 		d.add(tracks.get(0));
 
-		/*
-		 * Equals is correct
-		 */
-		assertEquals("(x,y) are equal", x, y);
-		assertEquals("(x,z) are equal", x, z);
-		assertEquals("(z,y) are equal", z, y);
-		assertFalse("(x,d) are not equal", x.equals(d));
-		assertFalse("(y,d) are not equal", y.equals(d));
-		assertFalse("(z,d) are not equal", z.equals(d));
-		assertFalse("Different types are not equal", x.equals(list));
-
-		assertFalse("Null is never equal (x,null)", x.equals(null));
-		assertFalse("Null is never equal (d,null)", d.equals(null));
+		checkEqualsAndHashCodeMethods("Different types are not equal", x, list,
+				false);
+		checkEqualsAndHashCodeMethods("Null is never equal (x,null)", x, null,
+				false);
+		checkEqualsAndHashCodeMethods("Null is never equal (d,null)", d, null,
+				false);
 
 		/*
 		 * Equals is reflexive
 		 */
-		assertTrue("Equals is reflexive (x)", x.equals(x));
-		assertTrue("Equals is reflexive (d)", d.equals(d));
-		assertEquals("HashCode is equal when equals is true (x,x)",
-				x.hashCode(), x.hashCode());
-		assertEquals("HashCode is equal when equals is true (d,d)",
-				d.hashCode(), d.hashCode());
+		checkEqualsAndHashCodeMethods("Equals is reflexive (x)", x, x, true);
+		checkEqualsAndHashCodeMethods("Equals is reflexive (d)", d, d, true);
 
 		/*
 		 * Equals is symmetric
 		 */
-		assertEquals("Equals is symmetric (x,y)", x.equals(y), y.equals(y));
-		assertEquals("Equals is symmetric (x,d)", x.equals(d), d.equals(x));
-		assertEquals("HashCode is equal when equals is true (x,y)",
-				x.hashCode(), y.hashCode());
+		checkEqualsAndHashCodeMethods("Equals is symmetric (x,y)", x, y, true);
+		checkEqualsAndHashCodeMethods("Equals is symmetric (x,z)", x, z, true);
+		checkEqualsAndHashCodeMethods("Equals is symmetric (x,d)", x, d, false);
 
 		/*
 		 * Equals is transitive
 		 */
-		assertEquals("Equals is transitive (x,y),(y,z),(x,z)", x.equals(z),
-				x.equals(y) && y.equals(z));
-		assertEquals("Equals is transitive (x,y),(y,d),(x,d)", x.equals(d),
-				x.equals(y) && y.equals(d));
-		assertEquals("HashCode is equal when equals is true (x,y)",
-				x.hashCode(), y.hashCode());
-		assertEquals("HashCode is equal when equals is true (y,z)",
-				z.hashCode(), y.hashCode());
-		assertEquals("HashCode is equal when equals is true (x,z)",
-				x.hashCode(), z.hashCode());
+		assertEquals("Equals is transitive (x,y,z)", x.equals(z), x.equals(y)
+				&& y.equals(z));
+		assertEquals("Equals is transitive (x,y,d)", x.equals(d), x.equals(y)
+				&& y.equals(d));
 
 	}
 }
