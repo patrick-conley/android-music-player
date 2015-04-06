@@ -6,7 +6,6 @@ import java.util.Map;
 
 import pconley.vamp.db.TrackDAO;
 import pconley.vamp.preferences.SettingsHelper;
-import pconley.vamp.util.FileUtils;
 import wseemann.media.FFmpegMediaMetadataRetriever;
 import android.content.Context;
 import android.net.Uri;
@@ -26,7 +25,6 @@ public class FilesystemScanner {
 
 	private SettingsHelper settings;
 	private TrackDAO dao;
-	private Context context;
 
 	// I use this instead of MediaMetadataRetriever as that class doesn't return
 	// any tags for the MP3 files I've tested against.
@@ -35,8 +33,6 @@ public class FilesystemScanner {
 	private Map<String, String> metadataKeys;
 
 	public FilesystemScanner(Context context) {
-		this.context = context;
-
 		settings = new SettingsHelper(context);
 		dao = new TrackDAO(context);
 
@@ -83,8 +79,8 @@ public class FilesystemScanner {
 	private void scanDir(File path) {
 
 		// Check the directory is readable
-		if (!FileUtils.validateDirectory(path, context.getApplicationContext())) {
-			Log.w(TAG, "Media directory is invalid");
+		if (!(path.exists() && path.isDirectory() && path.canExecute())) {
+			Log.w(TAG, "Directory is invalid");
 			return;
 		}
 

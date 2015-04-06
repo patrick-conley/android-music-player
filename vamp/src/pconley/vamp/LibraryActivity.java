@@ -3,6 +3,7 @@ package pconley.vamp;
 import java.util.List;
 
 import pconley.vamp.db.TrackDAO;
+import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.preferences.SettingsActivity;
 import pconley.vamp.scanner.ScannerService;
@@ -32,7 +33,7 @@ public class LibraryActivity extends Activity {
 
 	private ListView trackListView;
 	private long[] trackIds;
-	
+
 	private ProgressDialog scanningDialog;
 
 	private LocalBroadcastManager broadcastManager;
@@ -73,9 +74,10 @@ public class LibraryActivity extends Activity {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				Toast.makeText(LibraryActivity.this,
-						R.string.activity_library_scan_done, Toast.LENGTH_LONG)
-						.show();
+				Toast.makeText(
+						LibraryActivity.this,
+						intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
+						Toast.LENGTH_LONG).show();
 				scanningDialog.dismiss();
 				new LoadTrackListTask().execute();
 			}
@@ -120,7 +122,7 @@ public class LibraryActivity extends Activity {
 	protected void onPause() {
 		broadcastManager.unregisterReceiver(playerEventReceiver);
 		broadcastManager.unregisterReceiver(scannerReceiver);
-		
+
 		if (scanningDialog != null) {
 			scanningDialog.dismiss();
 		}

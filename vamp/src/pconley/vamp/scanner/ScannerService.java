@@ -1,5 +1,6 @@
 package pconley.vamp.scanner;
 
+import pconley.vamp.R;
 import pconley.vamp.db.LibraryContract.TagEntry;
 import pconley.vamp.db.LibraryContract.TrackEntry;
 import pconley.vamp.db.LibraryContract.TrackTagRelation;
@@ -26,12 +27,8 @@ import android.util.Log;
 public class ScannerService extends IntentService {
 	private static final String TAG = "Scanner Service";
 
-	private boolean isRunningScan = false;
-
 	/**
 	 * Constructor. Do not call this explicitly.
-	 * 
-	 * @param name
 	 */
 	public ScannerService() {
 		super("ScannerService");
@@ -41,20 +38,16 @@ public class ScannerService extends IntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		// Ignore intents sent while a scan is in progress
-		if (isRunningScan) {
-			return;
-		}
-		isRunningScan = true;
-
 		SettingsHelper settings = new SettingsHelper(getApplicationContext());
 
 		// Prohibit scanning into the sample library
 		if (settings.getDebugMode()) {
-			Log.w(TAG, "Abort scan to debug library");
+			Log.w(TAG, "Abort scan: debug mode is set");
+			broadcastScanStatus(R.string.scan_error_debug_mode);
 			return;
 		} else if (settings.getMusicFolder() == null) {
 			Log.w(TAG, "Abort scan: no music folder set");
+			broadcastScanStatus(R.string.scan_error_no_music_folder);
 			return;
 		}
 
@@ -67,11 +60,19 @@ public class ScannerService extends IntentService {
 		db.close();
 
 		new FilesystemScanner(getApplicationContext()).scanMediaFolder();
-		isRunningScan = false;
 
+		Log.i(TAG, "Scan complete");
+		broadcastScanStatus(R.string.scan_done);
+	}
+
+	private void broadcastScanStatus(int scanStatus) {
 		Intent broadcastIntent = new Intent(BroadcastConstants.FILTER_SCANNER);
+
+		broadcastIntent.putExtra(BroadcastConstants.EXTRA_MESSAGE,
+				getString(scanStatus));
 
 		LocalBroadcastManager.getInstance(getApplicationContext())
 				.sendBroadcast(broadcastIntent);
 	}
+
 }

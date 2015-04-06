@@ -2,7 +2,6 @@ package pconley.vamp.player;
 
 import java.io.IOException;
 
-import pconley.vamp.PlayerActivity;
 import pconley.vamp.R;
 import pconley.vamp.db.TrackDAO;
 import pconley.vamp.model.Track;
@@ -47,7 +46,7 @@ public class PlayerService extends Service implements
 	 * If a "previous" action is used after this time, the current track should
 	 * be restarted instead of beginning the previous track.
 	 */
-	public static final int PREV_RESTART_LIMIT = 2;
+	public static final int PREV_RESTART_LIMIT = 3;
 
 	/**
 	 * Action for incoming intents. Start playing a new track.

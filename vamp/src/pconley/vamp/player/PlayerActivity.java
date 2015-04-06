@@ -1,13 +1,12 @@
-package pconley.vamp;
+package pconley.vamp.player;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import pconley.vamp.R;
 import pconley.vamp.model.Track;
-import pconley.vamp.player.PlayerEvent;
-import pconley.vamp.player.PlayerService;
 import pconley.vamp.preferences.SettingsActivity;
 import pconley.vamp.util.BroadcastConstants;
 import android.app.Activity;

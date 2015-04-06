@@ -65,7 +65,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 
 	public void setUp() throws Exception {
 		super.setUp();
-
+		
 		Context context = new RenamingDelegatingContext(getInstrumentation()
 				.getTargetContext(), Constants.DB_PREFIX);
 

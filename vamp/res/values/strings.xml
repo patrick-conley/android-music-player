@@ -27,12 +27,14 @@
 
     <!-- Library -->
     <string name="activity_library_scan">Rebuild library</string>
-    <string name="activity_library_scan_done">Scan complete</string>
     <string name="activity_library_scanning">Scanning media folders</string>
 
     <!-- Media scanner -->
+    <string name="scan_done">Scan complete</string>
     <string name="scan_error_no_such_path">Path does not exist</string>
     <string name="scan_error_not_a_folder">Path doesn\'t point to a folder</string>
     <string name="scan_error_not_readable">Directory contents are not readable</string>
+    <string name="scan_error_debug_mode">Scan aborted: prohibited in debug mode</string>
+    <string name="scan_error_no_music_folder">Scan aborted: Music folder has not been set</string>
 
 </resources>
