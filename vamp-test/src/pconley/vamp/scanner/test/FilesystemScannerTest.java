@@ -1,10 +1,7 @@
 package pconley.vamp.scanner.test;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -14,15 +11,12 @@ import pconley.vamp.db.LibraryContract.TrackEntry;
 import pconley.vamp.db.LibraryContract.TrackTagRelation;
 import pconley.vamp.db.LibraryOpenHelper;
 import pconley.vamp.db.TrackDAO;
-import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
-import pconley.vamp.preferences.SettingsHelper;
 import pconley.vamp.scanner.FilesystemScanner;
+import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.Constants;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.test.InstrumentationTestCase;
 import android.test.RenamingDelegatingContext;
 
@@ -53,39 +47,25 @@ import android.test.RenamingDelegatingContext;
  */
 public class FilesystemScannerTest extends InstrumentationTestCase {
 
-	private File mediaFolder;
+	private File musicFolder;
 	private FilesystemScanner scanner;
 	private TrackDAO dao;
 	private SQLiteDatabase library;
 
-	// Note: these have faked extensions because the APK recompresses media
-	// files.
-	private static final String MP3 = "sample.mp3_";
-	private static final String OGG = "sample.ogg_";
+	Context testContext;
 
 	public void setUp() throws Exception {
 		super.setUp();
-		
-		Context context = new RenamingDelegatingContext(getInstrumentation()
-				.getTargetContext(), Constants.DB_PREFIX);
 
-		// Make a folder for music
-		mediaFolder = new File(context.getCacheDir(), "media");
-		FileUtils.deleteDirectory(mediaFolder);
-		mediaFolder.mkdir();
+		testContext = getInstrumentation().getContext();
+		Context renamingContext = new RenamingDelegatingContext(
+				getInstrumentation().getTargetContext(), Constants.DB_PREFIX);
 
-		SharedPreferences preferences = context.getSharedPreferences(
-				Constants.PREFERENCES_NAME, Context.MODE_PRIVATE);
-		preferences
-				.edit()
-				.putString(SettingsHelper.KEY_MUSIC_FOLDER,
-						mediaFolder.getAbsolutePath()).commit();
+		musicFolder = AssetUtils.setupMusicFolder(renamingContext);
 
-		SettingsHelper.setPreferences(preferences);
-
-		scanner = new FilesystemScanner(context);
-		dao = new TrackDAO(context).openReadableDatabase();
-		library = new LibraryOpenHelper(context).getWritableDatabase();
+		scanner = new FilesystemScanner(renamingContext);
+		dao = new TrackDAO(renamingContext).openReadableDatabase();
+		library = new LibraryOpenHelper(renamingContext).getWritableDatabase();
 	}
 
 	public void tearDown() throws Exception {
@@ -95,7 +75,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		library.close();
 
 		dao.close();
-		FileUtils.deleteDirectory(mediaFolder);
+		FileUtils.deleteDirectory(musicFolder);
 
 		super.tearDown();
 	}
@@ -119,7 +99,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	 */
 	public void testSingleNonMediaFile() throws IOException {
 		// Given
-		File.createTempFile("sample", null, mediaFolder);
+		File.createTempFile("sample", null, musicFolder);
 
 		// When
 		scanner.scanMediaFolder();
@@ -136,9 +116,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	 */
 	public void testSingleMP3() throws IOException {
 		// Given
-		File destination = new File(mediaFolder, "sample.mp3");
-		destination.delete();
-		copyAsset(MP3, destination);
+		Track expected = AssetUtils.copyMusicAsset(testContext, AssetUtils.MP3,
+				new File(musicFolder, "sample.mp3"));
 
 		// When
 		scanner.scanMediaFolder();
@@ -148,8 +127,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		assertEquals("One file has been found", 1, ids.size());
 
 		Track track = dao.getTrack(ids.get(0));
-		assertEquals("The MP3 file was scanned", buildExpected(destination),
-				track);
+		assertEquals("The MP3 file was scanned", expected, track);
 
 	}
 
@@ -159,8 +137,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	 */
 	public void testSingleOgg() throws IOException {
 		// Given
-		File destination = new File(mediaFolder, "sample.ogg");
-		copyAsset(OGG, destination);
+		Track expected = AssetUtils.copyMusicAsset(testContext, AssetUtils.OGG,
+				new File(musicFolder, "sample.ogg"));
 
 		// When
 		scanner.scanMediaFolder();
@@ -170,8 +148,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		assertEquals("One file has been found", 1, ids.size());
 
 		Track track = dao.getTrack(ids.get(0));
-		assertEquals("The Ogg Vorbis file was scanned",
-				buildExpected(destination), track);
+		assertEquals("The Ogg Vorbis file was scanned", expected, track);
 	}
 
 	/**
@@ -181,9 +158,9 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	 */
 	public void testMixedFiles() throws IOException {
 		// Given
-		File.createTempFile("sample", null, mediaFolder);
-		File destination = new File(mediaFolder, "sample.ogg");
-		copyAsset(OGG, destination);
+		File.createTempFile("sample", null, musicFolder);
+		Track expected = AssetUtils.copyMusicAsset(testContext, AssetUtils.OGG,
+				new File(musicFolder, "sample.ogg"));
 
 		// When
 		scanner.scanMediaFolder();
@@ -193,8 +170,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		assertEquals("One file has been found", 1, ids.size());
 
 		Track track = dao.getTrack(ids.get(0));
-		assertEquals("The Ogg Vorbis file was scanned",
-				buildExpected(destination), track);
+		assertEquals("The Ogg Vorbis file was scanned", expected, track);
 	}
 
 	/**
@@ -203,10 +179,10 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	 */
 	public void testTwoFiles() throws IOException {
 		// Given
-		File mp3Dest = new File(mediaFolder, "sample.mp3");
-		copyAsset(MP3, mp3Dest);
-		File oggDest = new File(mediaFolder, "sample.ogg");
-		copyAsset(OGG, oggDest);
+		Track mp3Expected = AssetUtils.copyMusicAsset(testContext,
+				AssetUtils.MP3, new File(musicFolder, "sample.mp3"));
+		Track oggExpected = AssetUtils.copyMusicAsset(testContext,
+				AssetUtils.OGG, new File(musicFolder, "sample.ogg"));
 
 		// When
 		scanner.scanMediaFolder();
@@ -217,14 +193,12 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 
 		Track track = dao.getTrack(ids.get(0));
 		if (track.getUri().toString().endsWith(".mp3")) {
-			assertEquals("The MP3 file was scanned", buildExpected(mp3Dest),
-					track);
-			assertEquals("The Ogg Vorbis file was scanned",
-					buildExpected(oggDest), dao.getTrack(ids.get(1)));
+			assertEquals("The MP3 file was scanned", mp3Expected, track);
+			assertEquals("The Ogg Vorbis file was scanned", oggExpected,
+					dao.getTrack(ids.get(1)));
 		} else {
-			assertEquals("The Ogg Vorbis file was scanned",
-					buildExpected(oggDest), track);
-			assertEquals("The MP3 file was scanned", buildExpected(mp3Dest),
+			assertEquals("The Ogg Vorbis file was scanned", oggExpected, track);
+			assertEquals("The MP3 file was scanned", mp3Expected,
 					dao.getTrack(ids.get(1)));
 		}
 	}
@@ -235,7 +209,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	 */
 	public void testEmptyChildDirectory() {
 		// Given
-		new File(mediaFolder, "sample").mkdir();
+		new File(musicFolder, "sample").mkdir();
 
 		// When
 		scanner.scanMediaFolder();
@@ -252,10 +226,10 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	 */
 	public void testSingleFileInChildDirectory() throws IOException {
 		// Given
-		File folder = new File(mediaFolder, "sample");
+		File folder = new File(musicFolder, "sample");
 		folder.mkdir();
-		File destination = new File(folder, "sample.ogg");
-		copyAsset(OGG, destination);
+		Track expected = AssetUtils.copyMusicAsset(testContext, AssetUtils.OGG,
+				new File(folder, "sample.ogg"));
 
 		// When
 		scanner.scanMediaFolder();
@@ -265,8 +239,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		assertEquals("One file has been found", 1, ids.size());
 
 		Track track = dao.getTrack(ids.get(0));
-		assertEquals("The Ogg Vorbis file was scanned",
-				buildExpected(destination), track);
+		assertEquals("The Ogg Vorbis file was scanned", expected, track);
 	}
 
 	/**
@@ -276,15 +249,15 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	 */
 	public void testNoMedia() throws IOException {
 		// Given
-		File folder = new File(mediaFolder, "sample");
+		File folder = new File(musicFolder, "sample");
 		folder.mkdir();
 
-		new File(mediaFolder, ".nomedia").createNewFile();
+		new File(musicFolder, ".nomedia").createNewFile();
 
-		File oggDest = new File(mediaFolder, "sample.ogg");
-		copyAsset(OGG, oggDest);
-		File mp3Dest = new File(folder, "sample.mp3");
-		copyAsset(MP3, mp3Dest);
+		AssetUtils.copyMusicAsset(testContext, AssetUtils.OGG, new File(
+				musicFolder, "sample.ogg"));
+		AssetUtils.copyMusicAsset(testContext, AssetUtils.MP3, new File(folder,
+				"sample.mp3"));
 
 		// When
 		scanner.scanMediaFolder();
@@ -301,15 +274,15 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	 */
 	public void testNoMediaInChild() throws IOException {
 		// Given
-		File folder = new File(mediaFolder, "sample");
+		File folder = new File(musicFolder, "sample");
 		folder.mkdir();
 
 		new File(folder, ".NOMEDIA").createNewFile();
 
-		File oggDest = new File(mediaFolder, "sample.ogg");
-		copyAsset(OGG, oggDest);
-		File mp3Dest = new File(folder, "sample.mp3");
-		copyAsset(MP3, mp3Dest);
+		Track expected = AssetUtils.copyMusicAsset(testContext, AssetUtils.OGG,
+				new File(musicFolder, "sample.ogg"));
+		AssetUtils.copyMusicAsset(testContext, AssetUtils.MP3, new File(folder,
+				"sample.mp3"));
 
 		// When
 		scanner.scanMediaFolder();
@@ -319,50 +292,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		assertEquals("One file has been found", 1, ids.size());
 
 		Track track = dao.getTrack(ids.get(0));
-		assertEquals("The Ogg Vorbis file was scanned",
-				buildExpected(oggDest), track);
+		assertEquals("The Ogg Vorbis file was scanned", expected, track);
 	}
 
-	/**
-	 * Build a Track with URI of the given File and with hard-coded tags
-	 * corresponding to the included sample files.
-	 * 
-	 * @param location
-	 * @return
-	 */
-	private Track buildExpected(File location) {
-		return new Track.Builder(0, Uri.fromFile(location))
-				.add(new Tag(0, "album", "MyAlbum"))
-				.add(new Tag(0, "artist", "MyArtist"))
-				.add(new Tag(0, "composer", "MyComposer"))
-				.add(new Tag(0, "genre", "Silence"))
-				.add(new Tag(0, "title", "MyTitle"))
-				.add(new Tag(0, "tracknumber", "03")).build();
-	}
-
-	/**
-	 * Copy an asset file from the .apk into the filesystem.
-	 * 
-	 * @param asset
-	 * @param destination
-	 * @throws IOException
-	 */
-	private void copyAsset(String asset, File destination) throws IOException {
-		destination.createNewFile();
-
-		InputStream inStream = getInstrumentation().getContext().getAssets()
-				.open(asset);
-		OutputStream outStream = new FileOutputStream(destination);
-
-		byte[] buffer = new byte[1024];
-		int length;
-
-		while ((length = inStream.read(buffer)) > 0) {
-			outStream.write(buffer, 0, length);
-		}
-
-		outStream.flush();
-		inStream.close();
-		outStream.close();
-	}
 }

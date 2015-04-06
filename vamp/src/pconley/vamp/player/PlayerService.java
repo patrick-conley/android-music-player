@@ -200,8 +200,7 @@ public class PlayerService extends Service implements
 	 */
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
-		String error = String.format(
-				getString(R.string.player_MediaPlayer_error), what, extra);
+		String error = getString(R.string.player_MediaPlayer_error, what, extra);
 
 		// FIXME: broadcasts do little if we're between activities
 		// FIXME: use actual messages rather than codes (as I figure out what
@@ -302,8 +301,7 @@ public class PlayerService extends Service implements
 			}
 
 		} catch (IOException e) {
-			Log.e(TAG, String.format(getString(R.string.player_read_error),
-					current.getUri()));
+			Log.e(TAG, getString(R.string.player_read_error, current.getUri()));
 
 			// Skip to next track on error
 			if (trackIterator.hasNext()) {
@@ -314,8 +312,7 @@ public class PlayerService extends Service implements
 		} catch (IllegalArgumentException | SecurityException
 				| IllegalStateException e) {
 			Log.e(TAG, e.getMessage());
-			stop(String.format(getString(R.string.player_internal_error),
-					e.getMessage()));
+			stop(getString(R.string.player_internal_error, e.getMessage()));
 		}
 
 	}
