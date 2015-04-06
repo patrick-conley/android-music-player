@@ -8,18 +8,14 @@ import java.io.OutputStream;
 
 import org.apache.commons.io.FileUtils;
 
-import pconley.vamp.db.LibraryContract.TagEntry;
-import pconley.vamp.db.LibraryContract.TrackEntry;
-import pconley.vamp.db.LibraryContract.TrackTagRelation;
-import pconley.vamp.db.LibraryOpenHelper;
 import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
 import pconley.vamp.preferences.SettingsHelper;
 import pconley.vamp.test.R;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.test.InstrumentationTestCase;
 
 public final class AssetUtils {
 
@@ -112,19 +108,4 @@ public final class AssetUtils {
 				.add(new Tag(0, "tracknumber", "03")).build();
 	}
 
-	/**
-	 * Delete all tracks and tags from the database.
-	 * 
-	 * @param context
-	 */
-	public static void clearDatabase(Context context) {
-		SQLiteDatabase library = new LibraryOpenHelper(context)
-				.getWritableDatabase();
-
-		library.execSQL("DELETE FROM " + TrackTagRelation.NAME);
-		library.execSQL("DELETE FROM " + TrackEntry.NAME);
-		library.execSQL("DELETE FROM " + TagEntry.NAME);
-		library.close();
-
-	}
 }

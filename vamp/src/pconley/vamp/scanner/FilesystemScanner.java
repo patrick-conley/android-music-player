@@ -61,12 +61,15 @@ public class FilesystemScanner {
 	/**
 	 * Scan for music files, starting at the directory given by the Music Folder
 	 * preference item. Abort (displaying a warning if the app is in the
-	 * foreground) if the Music Folder isn't a readable directory.
+	 * foreground) if the Music Folder isn't a readable directory. If the
+	 * database already contains tracks, then those will first be deleted.
 	 * 
 	 * Don't call this from the UI thread.
 	 */
 	public void scanMediaFolder() {
 		dao.openWritableDatabase();
+		dao.wipeDatabase();
+
 		metadataRetriever = new FFmpegMediaMetadataRetriever();
 
 		scanDir(new File(settings.getMusicFolder()));

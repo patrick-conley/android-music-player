@@ -1,22 +1,16 @@
 package pconley.vamp.scanner;
 
 import pconley.vamp.R;
-import pconley.vamp.db.LibraryContract.TagEntry;
-import pconley.vamp.db.LibraryContract.TrackEntry;
-import pconley.vamp.db.LibraryContract.TrackTagRelation;
-import pconley.vamp.db.LibraryOpenHelper;
 import pconley.vamp.preferences.SettingsHelper;
 import pconley.vamp.util.BroadcastConstants;
 import android.app.IntentService;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 /**
  * Scan the media folder defined in the app's preferences. Work is performed in
- * a worker thread. If scan Intents are sent while a scan is in progress, they
- * will be quietly ignored.
+ * a worker thread.
  * 
  * When a scan is complete a broadcast message with
  * {@link BroadcastConstants#FILTER_SCANNER} will be sent.
@@ -38,7 +32,7 @@ public class ScannerService extends IntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		SettingsHelper settings = new SettingsHelper(getApplicationContext());
+		SettingsHelper settings = new SettingsHelper(getBaseContext());
 
 		// Prohibit scanning into the sample library
 		if (settings.getDebugMode()) {
@@ -50,16 +44,8 @@ public class ScannerService extends IntentService {
 			broadcastScanStatus(R.string.scan_error_no_music_folder);
 			return;
 		}
-
-		// Clear the database
-		SQLiteDatabase db = new LibraryOpenHelper(getApplicationContext())
-				.getWritableDatabase();
-		db.execSQL("DELETE FROM " + TrackTagRelation.NAME);
-		db.execSQL("DELETE FROM " + TrackEntry.NAME);
-		db.execSQL("DELETE FROM " + TagEntry.NAME);
-		db.close();
-
-		new FilesystemScanner(getApplicationContext()).scanMediaFolder();
+		
+		new FilesystemScanner(getBaseContext()).scanMediaFolder();
 
 		Log.i(TAG, "Scan complete");
 		broadcastScanStatus(R.string.scan_done);
@@ -71,7 +57,7 @@ public class ScannerService extends IntentService {
 		broadcastIntent.putExtra(BroadcastConstants.EXTRA_MESSAGE,
 				getString(scanStatus));
 
-		LocalBroadcastManager.getInstance(getApplicationContext())
+		LocalBroadcastManager.getInstance(getBaseContext())
 				.sendBroadcast(broadcastIntent);
 	}
 

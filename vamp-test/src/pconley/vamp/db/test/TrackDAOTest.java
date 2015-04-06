@@ -1,5 +1,7 @@
 package pconley.vamp.db.test;
 
+import static android.test.MoreAsserts.assertEmpty;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,18 +52,17 @@ public class TrackDAOTest extends AndroidTestCase {
 		library.execSQL("DELETE FROM " + TrackTagRelation.NAME);
 		library.execSQL("DELETE FROM " + TagEntry.NAME);
 	}
-	
+
 	/**
 	 * Given I have nothing in the database, when I try to retrieve tracks, then
 	 * I get nothing, successfully.
 	 */
 	public void testGetTracksOnEmptyDatabase() {
 		dao.openReadableDatabase();
-	
+
 		List<Long> tracks = dao.getIds();
 
-		assertEquals("DAO retrieves nothing from an empty database", 0,
-				tracks.size());
+		assertEmpty("DAO retrieves nothing from an empty database", tracks);
 	}
 
 	/**
@@ -78,6 +79,15 @@ public class TrackDAOTest extends AndroidTestCase {
 		}
 
 		fail("DAO throws an exception on read-after-close.");
+	}
+
+	/**
+	 * Given that the database has been closed, when I try to close the
+	 * database, then I do not get any exception.
+	 */
+	public void testCloseOnClosedDatabase() {
+		dao.openReadableDatabase().close();
+		dao.close();
 	}
 
 	/**
@@ -110,7 +120,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 */
 	public void testGetTrackOnMissingTrack() {
 		dao.openReadableDatabase();
-		
+
 		Track sample = insertSampleTrack();
 		Track actual = dao.getTrack(sample.getId() + 1);
 
@@ -130,8 +140,8 @@ public class TrackDAOTest extends AndroidTestCase {
 		Track actual = dao.getTrack(expected.getId());
 
 		assertEquals("DAO returns the correct track", expected, actual);
-		assertEquals("DAO returns no tags for an empty track", 0, actual
-				.getTagNames().size());
+		assertEmpty("DAO returns no tags for an empty track",
+				actual.getTagNames());
 	}
 
 	/**
@@ -193,7 +203,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	 */
 	public void testGetTrackTwoTracksWithIdenticalTags() {
 		dao.openReadableDatabase();
-	
+
 		Track sample = insertSampleTrack();
 		Track expected = insertTrack(uri, sampleTagNames, sampleTagValues);
 		Track actual = dao.getTrack(expected.getId());
@@ -482,6 +492,37 @@ public class TrackDAOTest extends AndroidTestCase {
 		} catch (SQLException e) {
 
 		}
+	}
+
+	/**
+	 * Given the database contains tracks and tags, when I try to empty the
+	 * database, then it contains nothing.
+	 */
+	public void testWipeDatabase() {
+		dao.openWritableDatabase();
+
+		// Given
+		insertTrack(sampleUri, sampleTagNames, sampleTagValues);
+
+		// When
+		dao.wipeDatabase();
+
+		// Then
+		Cursor results = library.query(TrackEntry.NAME,
+				new String[] { TrackEntry.COLUMN_ID }, null, null, null, null,
+				null);
+		assertEquals("Track table is empty", 0, results.getCount());
+
+		results = library.query(TagEntry.NAME,
+				new String[] { TagEntry.COLUMN_ID }, null, null, null, null,
+				null);
+		assertEquals("Tag table is empty", 0, results.getCount());
+
+		results = library.query(TrackTagRelation.NAME,
+				new String[] { TrackTagRelation.TAG_ID }, null, null, null,
+				null, null);
+		assertEquals("Relation is empty", 0, results.getCount());
+
 	}
 
 	/*

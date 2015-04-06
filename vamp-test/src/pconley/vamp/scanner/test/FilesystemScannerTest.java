@@ -12,8 +12,11 @@ import pconley.vamp.scanner.FilesystemScanner;
 import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.Constants;
 import android.content.Context;
+import android.net.Uri;
 import android.test.InstrumentationTestCase;
 import android.test.RenamingDelegatingContext;
+
+import static android.test.MoreAsserts.*;
 
 /**
  * Tests against the FilesystemScanner:
@@ -53,8 +56,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		super.setUp();
 
 		testContext = getInstrumentation().getContext();
-		targetContext = new RenamingDelegatingContext(
-				getInstrumentation().getTargetContext(), Constants.DB_PREFIX);
+		targetContext = new RenamingDelegatingContext(getInstrumentation()
+				.getTargetContext(), Constants.DB_PREFIX);
 
 		musicFolder = AssetUtils.setupMusicFolder(targetContext);
 
@@ -63,7 +66,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	}
 
 	public void tearDown() throws Exception {
-		AssetUtils.clearDatabase(targetContext);
+		dao.wipeDatabase();
 		dao.close();
 		FileUtils.deleteDirectory(musicFolder);
 
@@ -79,8 +82,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		scanner.scanMediaFolder();
 
 		// Then
-		assertEquals("No files are found in an empty directory", 0, dao
-				.getIds().size());
+		assertEmpty("No files are found in an empty directory", dao.getIds());
 	}
 
 	/**
@@ -95,8 +97,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		scanner.scanMediaFolder();
 
 		// Then
-		assertEquals("No files are found in a directory with no media files",
-				0, dao.getIds().size());
+		assertEmpty("No files are found in a directory with no media files",
+				dao.getIds());
 
 	}
 
@@ -142,6 +144,24 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	}
 
 	/**
+	 * Given the database contains data, when I scan media, then the database is
+	 * first emptied.
+	 */
+	public void testDatabaseIsCleared() throws InterruptedException,
+			IOException {
+		// Given
+		dao.openWritableDatabase();
+		dao.insertTrack(Uri.fromFile(new File(musicFolder, "sample.ogg")));
+
+		// When
+		scanner.scanMediaFolder();
+
+		// Then
+		assertEmpty("Database is emptied before scanning", dao.getIds());
+
+	}
+
+	/**
 	 * Given a media directory containing a media and a non-media file, when I
 	 * try to scan media, then the database contains the media file and its
 	 * tags.
@@ -179,7 +199,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 
 		// Then
 		List<Long> ids = dao.getIds();
-		assertEquals("One file has been found", 2, ids.size());
+		assertEquals("Two files have been found", 2, ids.size());
 
 		Track track = dao.getTrack(ids.get(0));
 		if (track.getUri().toString().endsWith(".mp3")) {
@@ -205,8 +225,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		scanner.scanMediaFolder();
 
 		// Then
-		assertEquals("No files are found in an empty directory", 0, dao
-				.getIds().size());
+		assertEmpty("No files are found in an empty directory", dao.getIds());
 	}
 
 	/**
@@ -253,8 +272,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		scanner.scanMediaFolder();
 
 		// Then
-		assertEquals("No files are found in an empty directory", 0, dao
-				.getIds().size());
+		assertEmpty("No files are found in an empty directory", dao.getIds());
 	}
 
 	/**

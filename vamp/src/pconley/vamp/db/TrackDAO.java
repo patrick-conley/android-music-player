@@ -66,7 +66,9 @@ public class TrackDAO {
 	 * Close this DAO's reference to the database.
 	 */
 	public void close() {
-		library.close();
+		if (library != null) {
+			library.close();
+		}
 	}
 
 	/**
@@ -202,6 +204,15 @@ public class TrackDAO {
 			library.endTransaction();
 		}
 
+	}
+	
+	/**
+	 * Remove all tracks, tags, and relations
+	 */
+	public void wipeDatabase() {
+		library.execSQL("DELETE FROM " + TrackTagRelation.NAME);
+		library.execSQL("DELETE FROM " + TrackEntry.NAME);
+		library.execSQL("DELETE FROM " + TagEntry.NAME);
 	}
 
 }
