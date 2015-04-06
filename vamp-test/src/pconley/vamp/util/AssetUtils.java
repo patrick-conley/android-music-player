@@ -8,19 +8,28 @@ import java.io.OutputStream;
 
 import org.apache.commons.io.FileUtils;
 
+import pconley.vamp.db.LibraryContract.TagEntry;
+import pconley.vamp.db.LibraryContract.TrackEntry;
+import pconley.vamp.db.LibraryContract.TrackTagRelation;
+import pconley.vamp.db.LibraryOpenHelper;
 import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
 import pconley.vamp.preferences.SettingsHelper;
+import pconley.vamp.test.R;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
 public final class AssetUtils {
 
 	// Note: these have faked extensions because the APK recompresses media
 	// files.
-	public static final String MP3 = "sample.mp3_";
-	public static final String OGG = "sample.ogg_";
+	public static final int MP3 = R.raw.sample_mp3;
+	public static final int OGG = R.raw.sample_ogg;
+
+	// public static final String MP3 = "sample.mp3_";
+	// public static final String OGG = "sample.ogg_";
 
 	/**
 	 * Private constructor: static members only
@@ -62,7 +71,12 @@ public final class AssetUtils {
 	 * Copy an asset file from the .apk into the filesystem.
 	 * 
 	 * @param context
-	 *            The test's context
+	 *            The test's context. Unless the test is built around
+	 *            {@link InstrumentationTestCase}, then getContext() will not
+	 *            return the test's context. You can get this context
+	 *            introspectively:
+	 *            {@code (Context) getClass().getMethod("getTestContext").invoke(this)}
+	 *            .
 	 * @param asset
 	 *            The asset to copy
 	 * @param destination
@@ -71,11 +85,11 @@ public final class AssetUtils {
 	 * @throws IOException
 	 *             In case of any file read/write errors.
 	 */
-	public static Track copyMusicAsset(Context context, String asset,
+	public static Track copyMusicAsset(Context context, int asset,
 			File destination) throws IOException {
 		destination.createNewFile();
 
-		InputStream inStream = context.getAssets().open(asset);
+		InputStream inStream = context.getResources().openRawResource(asset);
 		OutputStream outStream = new FileOutputStream(destination);
 
 		byte[] buffer = new byte[1024];
@@ -96,5 +110,21 @@ public final class AssetUtils {
 				.add(new Tag(0, "genre", "Silence"))
 				.add(new Tag(0, "title", "MyTitle"))
 				.add(new Tag(0, "tracknumber", "03")).build();
+	}
+
+	/**
+	 * Delete all tracks and tags from the database.
+	 * 
+	 * @param context
+	 */
+	public static void clearDatabase(Context context) {
+		SQLiteDatabase library = new LibraryOpenHelper(context)
+				.getWritableDatabase();
+
+		library.execSQL("DELETE FROM " + TrackTagRelation.NAME);
+		library.execSQL("DELETE FROM " + TrackEntry.NAME);
+		library.execSQL("DELETE FROM " + TagEntry.NAME);
+		library.close();
+
 	}
 }

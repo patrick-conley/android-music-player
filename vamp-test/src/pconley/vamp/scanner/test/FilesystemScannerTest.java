@@ -6,17 +6,12 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
-import pconley.vamp.db.LibraryContract.TagEntry;
-import pconley.vamp.db.LibraryContract.TrackEntry;
-import pconley.vamp.db.LibraryContract.TrackTagRelation;
-import pconley.vamp.db.LibraryOpenHelper;
 import pconley.vamp.db.TrackDAO;
 import pconley.vamp.model.Track;
 import pconley.vamp.scanner.FilesystemScanner;
 import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.Constants;
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.test.InstrumentationTestCase;
 import android.test.RenamingDelegatingContext;
 
@@ -50,30 +45,25 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	private File musicFolder;
 	private FilesystemScanner scanner;
 	private TrackDAO dao;
-	private SQLiteDatabase library;
 
 	Context testContext;
+	Context targetContext;
 
 	public void setUp() throws Exception {
 		super.setUp();
 
 		testContext = getInstrumentation().getContext();
-		Context renamingContext = new RenamingDelegatingContext(
+		targetContext = new RenamingDelegatingContext(
 				getInstrumentation().getTargetContext(), Constants.DB_PREFIX);
 
-		musicFolder = AssetUtils.setupMusicFolder(renamingContext);
+		musicFolder = AssetUtils.setupMusicFolder(targetContext);
 
-		scanner = new FilesystemScanner(renamingContext);
-		dao = new TrackDAO(renamingContext).openReadableDatabase();
-		library = new LibraryOpenHelper(renamingContext).getWritableDatabase();
+		scanner = new FilesystemScanner(targetContext);
+		dao = new TrackDAO(targetContext).openReadableDatabase();
 	}
 
 	public void tearDown() throws Exception {
-		library.execSQL("DELETE FROM " + TrackTagRelation.NAME);
-		library.execSQL("DELETE FROM " + TrackEntry.NAME);
-		library.execSQL("DELETE FROM " + TagEntry.NAME);
-		library.close();
-
+		AssetUtils.clearDatabase(targetContext);
 		dao.close();
 		FileUtils.deleteDirectory(musicFolder);
 
