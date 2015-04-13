@@ -74,8 +74,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	}
 
 	/**
-	 * Given an empty media directory, when I try to scan media, then the
-	 * database is unmodified
+	 * Given an empty media directory, when I scan media, then the database is
+	 * unmodified
 	 */
 	public void testEmptyDirectory() {
 		// When
@@ -86,8 +86,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	}
 
 	/**
-	 * Given a media directory containing a single non-media file, when I try to
-	 * scan media, then the database is unmodified.
+	 * Given a media directory containing a single non-media file, when I scan
+	 * media, then the database is unmodified.
 	 */
 	public void testSingleNonMediaFile() throws IOException {
 		// Given
@@ -103,8 +103,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	}
 
 	/**
-	 * Given a media directory containing a single MP3 file, when I try to scan
-	 * media, then the database contains the file and its tags.
+	 * Given a media directory containing a single MP3 file, when I scan media,
+	 * then the database contains the file and its tags.
 	 */
 	public void testSingleMP3() throws IOException {
 		// Given
@@ -124,8 +124,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	}
 
 	/**
-	 * Given a media directory containing a single Ogg Vorbis file, when I try
-	 * to scan media, then the database contains the file and its tags.
+	 * Given a media directory containing a single Ogg Vorbis file, when I scan
+	 * media, then the database contains the file and its tags.
 	 */
 	public void testSingleOgg() throws IOException {
 		// Given
@@ -163,8 +163,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 
 	/**
 	 * Given a media directory containing a media and a non-media file, when I
-	 * try to scan media, then the database contains the media file and its
-	 * tags.
+	 * scan media, then the database contains the media file and its tags.
 	 */
 	public void testMixedFiles() throws IOException {
 		// Given
@@ -184,8 +183,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	}
 
 	/**
-	 * Given a media directory containing two media files, when I try to scan
-	 * media, then the database contains both files and their tags.
+	 * Given a media directory containing two media files, when I scan media,
+	 * then the database contains both files and their tags.
 	 */
 	public void testTwoFiles() throws IOException {
 		// Given
@@ -214,8 +213,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	}
 
 	/**
-	 * Given a media directory containing a single, empty directory, when I try
-	 * to scan media, then the database is unmodified.
+	 * Given a media directory containing a single, empty directory, when I scan
+	 * media, then the database is unmodified.
 	 */
 	public void testEmptyChildDirectory() {
 		// Given
@@ -230,8 +229,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 
 	/**
 	 * Given a media directory containing a single media file inside a
-	 * directory, when I try to scan media, then the database contains the file
-	 * and its tags.
+	 * directory, when I scan media, then the database contains the file and its
+	 * tags.
 	 */
 	public void testSingleFileInChildDirectory() throws IOException {
 		// Given
@@ -253,8 +252,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 
 	/**
 	 * Given a media directory containing a media file and .nomedia file, and a
-	 * child directory containing another media file, when I try to scan media,
-	 * then the database is unmodified.
+	 * child directory containing another media file, when I scan media, then
+	 * the database is unmodified.
 	 */
 	public void testNoMedia() throws IOException {
 		// Given
@@ -277,8 +276,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 
 	/**
 	 * Given a media directory containing a media file, and a child directory
-	 * containing another media file and a .nomedia file, when I try to scan
-	 * media, then the database contains the first file and its tags.
+	 * containing another media file and a .nomedia file, when I scan media,
+	 * then the database contains the first file and its tags.
 	 */
 	public void testNoMediaInChild() throws IOException {
 		// Given

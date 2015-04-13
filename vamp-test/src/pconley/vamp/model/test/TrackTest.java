@@ -32,11 +32,9 @@ public class TrackTest extends AndroidTestCase {
 
 		try {
 			tags.remove(tag.getName());
+			fail("Tag names can't be removed");
 		} catch (UnsupportedOperationException e) {
-			return;
 		}
-
-		fail("Tag names can't be removed");
 	}
 
 	/**
@@ -47,11 +45,9 @@ public class TrackTest extends AndroidTestCase {
 
 		try {
 			tags.remove(tag);
+			fail("Tags can't be removed");
 		} catch (UnsupportedOperationException e) {
-			return;
 		}
-
-		fail("Tags can't be removed");
 	}
 
 	/**

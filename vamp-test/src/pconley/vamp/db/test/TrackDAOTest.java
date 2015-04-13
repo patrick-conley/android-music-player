@@ -54,8 +54,8 @@ public class TrackDAOTest extends AndroidTestCase {
 	}
 
 	/**
-	 * Given I have nothing in the database, when I try to retrieve tracks, then
-	 * I get nothing, successfully.
+	 * Given I have nothing in the database, when I retrieve tracks, then I get
+	 * nothing, successfully.
 	 */
 	public void testGetTracksOnEmptyDatabase() {
 		dao.openReadableDatabase();
@@ -66,24 +66,22 @@ public class TrackDAOTest extends AndroidTestCase {
 	}
 
 	/**
-	 * Given that the database has been closed, when I try to retrieve tracks,
-	 * then I get an exception.
+	 * Given that the database has been closed, when I retrieve tracks, then I
+	 * get an exception.
 	 */
 	public void testReadOnClosedDatabase() {
 		dao.openReadableDatabase().close();
 
 		try {
 			dao.getIds();
+			fail("DAO throws an exception on read-after-close.");
 		} catch (IllegalStateException e) {
-			return;
 		}
-
-		fail("DAO throws an exception on read-after-close.");
 	}
 
 	/**
-	 * Given that the database has been closed, when I try to close the
-	 * database, then I do not get any exception.
+	 * Given that the database has been closed, when I close the database, then
+	 * I do not get any exception.
 	 */
 	public void testCloseOnClosedDatabase() {
 		dao.openReadableDatabase().close();
@@ -91,8 +89,8 @@ public class TrackDAOTest extends AndroidTestCase {
 	}
 
 	/**
-	 * Given there are tracks in the database, when I try to retrieve tracks,
-	 * then I get all of them.
+	 * Given there are tracks in the database, when I retrieve tracks, then I
+	 * get all of them.
 	 */
 	public void testGetTracksOnNonemptyDatabase() {
 		dao.openReadableDatabase();
@@ -115,8 +113,8 @@ public class TrackDAOTest extends AndroidTestCase {
 	}
 
 	/**
-	 * Given there are tracks in the database, when I try to retrieve tags for a
-	 * track not in the database, then I get null, successfully.
+	 * Given there are tracks in the database, when I retrieve tags for a track
+	 * not in the database, then I get null, successfully.
 	 */
 	public void testGetTrackOnMissingTrack() {
 		dao.openReadableDatabase();
@@ -129,8 +127,8 @@ public class TrackDAOTest extends AndroidTestCase {
 	}
 
 	/**
-	 * Given a track with no tags in the database, when I try to retrieve its
-	 * tags, then I get a Track with no tags.
+	 * Given a track with no tags in the database, when I retrieve its tags,
+	 * then I get a Track with no tags.
 	 */
 	public void testGetTrackOnNoTags() {
 		dao.openReadableDatabase();
@@ -145,8 +143,8 @@ public class TrackDAOTest extends AndroidTestCase {
 	}
 
 	/**
-	 * Given a track with tags in the database, when I try to retrieve its tags,
-	 * then I get all of them.
+	 * Given a track with tags in the database, when I retrieve its tags, then I
+	 * get all of them.
 	 */
 	public void testGetTrackOneTrack() {
 		dao.openReadableDatabase();
@@ -164,7 +162,7 @@ public class TrackDAOTest extends AndroidTestCase {
 
 	/**
 	 * Given a track with tags in the database, and two of its tags have the
-	 * same name, when I try to retrieve its tags, then I get both of them.
+	 * same name, when I retrieve its tags, then I get both of them.
 	 */
 	public void testGetTrackWithSameName() {
 		dao.openReadableDatabase();
@@ -180,8 +178,8 @@ public class TrackDAOTest extends AndroidTestCase {
 
 	/**
 	 * Given there are two tracks in the database, and they have distinct tags
-	 * with the same name, when I try to retrieve tags from one, then I get the
-	 * correct ones.
+	 * with the same name, when I retrieve tags from one, then I get the correct
+	 * ones.
 	 */
 	public void testGetTrackTwoTracksWithSameTagName() {
 		dao.openReadableDatabase();
@@ -199,7 +197,7 @@ public class TrackDAOTest extends AndroidTestCase {
 
 	/**
 	 * Given there are two tracks in the database, and they have the same tags,
-	 * when I try to retrieve tags from each, then I get the correct ones.
+	 * when I retrieve tags from each, then I get the correct ones.
 	 */
 	public void testGetTrackTwoTracksWithIdenticalTags() {
 		dao.openReadableDatabase();
@@ -241,8 +239,7 @@ public class TrackDAOTest extends AndroidTestCase {
 
 	/**
 	 * Given there are two tracks in the database, and they have the some tags
-	 * in common, when I try to retrieve tags from each, then I get the correct
-	 * ones.
+	 * in common, when I retrieve tags from each, then I get the correct ones.
 	 */
 	public void testGetTrackTwoTracksWithSomeSharedTags() {
 		dao.openReadableDatabase();

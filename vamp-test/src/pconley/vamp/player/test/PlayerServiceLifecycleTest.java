@@ -8,7 +8,7 @@ import android.content.Intent;
 import android.test.ServiceTestCase;
 
 /**
- * Tests against the lifecycle methods of ScannerService: ensure onCreate,
+ * Tests against the lifecycle methods of PlayerService: ensure onCreate,
  * onHandleIntent, onDestroy are called at the appropriate times.
  * 
  * Note that because the normal Android instrumentation is not in place,
@@ -16,9 +16,9 @@ import android.test.ServiceTestCase;
  * service (for example stopSelf) will not call onDestroy and increment its
  * counter.
  * 
- * Because neither ScannerService nor ServiceTestCase contain any means of
+ * Because neither PlayerService nor ServiceTestCase contain any means of
  * ensuring that these methods are called, I run these tests against a wrapper
- * around ScannerService which increments counters each time the lifecycle
+ * around PlayerService which increments counters each time the lifecycle
  * methods are completed. Tests on business logic are run in a separate test
  * class to ensure bugs in the wrapper can't affect them.
  * 
@@ -49,7 +49,6 @@ public class PlayerServiceLifecycleTest extends
 		timesDestroyed = 0;
 
 		serviceIntent = new Intent(getContext(), PlayerServiceWrapper.class);
-//		serviceIntent.setAction(PlayerService.ACTION_PAUSE);
 	}
 
 	/**

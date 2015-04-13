@@ -2,30 +2,31 @@
 <resources>
 
     <string name="app_name">Android Music Player</string>
-    <string name="activity_library_name">Library</string>
-    <string name="activity_player_name">Player</string>
-    <string name="activity_settings_name">Settings</string>
 
     <!-- Player -->
+    <string name="activity_player_name">Player</string>
     <string name="activity_player_blank_time">0:00</string>
-    <string name="player_play_pause">play/pause</string>
-    <string name="player_previous">prev</string>
-    <string name="player_next">next</string>
-    <string name="player_now_playing">Now playing…</string>
-    <string name="player_cant_focus">Could not obtain audio focus</string>
-    <string name="player_lost_focus">Lost audio focus</string>
-    <string name="player_temp_lost_focus">Lost audio focus temporarily</string>
-    <string name="player_MediaPlayer_error">Error %d,d</string>
-    <string name="player_read_error">Track %s could not be read</string>
-    <string name="player_internal_error">Internal error %s</string>
+    <string name="player_button_play_pause">play/pause</string>
+    <string name="player_button_previous">prev</string>
+    <string name="player_button_next">next</string>
+    <string name="player_notification_playing">Now playing…</string>
+    <string name="player_focus_failed">Could not obtain audio focus</string>
+    <string name="player_focus_lost">Lost audio focus</string>
+    <string name="player_focus_lost_transient">Lost audio focus temporarily</string>
+    <string name="player_error_MediaPlayer">Error %d,d</string>
+    <string name="player_error_read">Track %s could not be read</string>
+    <string name="player_error_internal">Internal error %s</string>
+    <string name="player_error_invalid_playlist">Can\'t start: playlist has errors</string>
 
     <!-- Settings -->
+    <string name="activity_settings_name">Settings</string>
     <string name="setting_library_path_title">Music Folder</string>
     <string name="setting_library_path_summary">Set the folder to scan for music</string>
     <string name="setting_debug_title">Use Sample Library</string>
     <string name="setting_debug_summary">Use a small library of sample tracks to aid debugging</string>
 
     <!-- Library -->
+    <string name="activity_library_name">Library</string>
     <string name="activity_library_scan">Rebuild library</string>
     <string name="activity_library_scanning">Scanning media folders</string>
 

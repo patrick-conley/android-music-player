@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:onClick="onPrevClick"
-            android:text="@string/player_previous"
+            android:text="@string/player_button_previous"
             android:textSize="@dimen/large_text_size" />
 
         <Button
@@ -50,7 +50,7 @@
             android:layout_toLeftOf="@+id/button_next"
             android:layout_toRightOf="@+id/button_prev"
             android:onClick="onPlayPauseClick"
-            android:text="@string/player_play_pause"
+            android:text="@string/player_button_play_pause"
             android:textSize="@dimen/large_text_size" />
 
         <Button
@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:onClick="onNextClick"
-            android:text="@string/player_next"
+            android:text="@string/player_button_next"
             android:textSize="@dimen/large_text_size" />
     </RelativeLayout>
 

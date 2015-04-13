@@ -41,24 +41,22 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 	}
 
 	/**
-	 * Given I have an iterator to an empty list, when I try to advance to the
-	 * next item, then it throws an exception.
+	 * Given I have an iterator to an empty list, when I advance to the next
+	 * item, then it throws an exception.
 	 */
 	public void testNextOnEmptyList() {
 		assertFalse("hasNext() is false on empty input", emptyIter.hasNext());
 
 		try {
 			emptyIter.next();
+			fail("next() fails on empty input");
 		} catch (NoSuchElementException e) {
-			return;
 		}
-
-		fail("next() fails on empty input");
 	}
 
 	/**
-	 * Given I have an iterator to an empty list, when I try to reverse to the
-	 * previous item, then it throws an exception.
+	 * Given I have an iterator to an empty list, when I reverse to the previous
+	 * item, then it throws an exception.
 	 */
 	public void testPreviousOnEmptyList() {
 		assertFalse("hasPrevious() is false on empty input",
@@ -66,45 +64,39 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 
 		try {
 			emptyIter.previous();
+			fail("previous() fails on empty input");
 		} catch (NoSuchElementException e) {
-			return;
 		}
-
-		fail("previous() fails on empty input");
 	}
 
 	/**
-	 * Given I have an iterator to a populated list, when I try to select a
-	 * position outside the list, then it throws an exception.
+	 * Given I have an iterator to a populated list, when I select a position
+	 * outside the list, then it throws an exception.
 	 */
 	public void testSetPositionInvalidIndex() {
 		try {
 			iter = playlist.playlistIterator(playlist.size());
+			fail("setPosition() fails on invalid input");
 		} catch (IndexOutOfBoundsException e) {
-			return;
 		}
-
-		fail("setPosition() fails on invalid input");
 	}
 
 	/**
-	 * Given I have an iterator to a populated list, when I try to retrieve the
-	 * current item before one is available, then it throws an exception.
+	 * Given I have an iterator to a populated list, when I retrieve the current
+	 * item before one is available, then it throws an exception.
 	 */
 	public void testCurrentOutOfRange() {
 		try {
 			iter.current();
+			fail("current() fails if next() has not been called");
 		} catch (IllegalStateException e) {
-			return;
 		}
-
-		fail("current() fails if next() has not been called");
 	}
 
 	/**
 	 * Given I have an iterator to a populated list, and it has been advanced to
-	 * a valid position, when I try to reverse past the beginning, then it
-	 * throws an exception.
+	 * a valid position, when I reverse past the beginning, then it throws an
+	 * exception.
 	 */
 	public void testPreviousAtStart() {
 		iter.next();
@@ -114,16 +106,14 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 
 		try {
 			iter.previous();
+			fail("previous() fails at the start of the list");
 		} catch (IndexOutOfBoundsException e) {
-			return;
 		}
-
-		fail("previous() fails at the start of the list");
 	}
 
 	/**
 	 * Given I have an iterator to a populated list, and it has been advanced to
-	 * a valid position, when I try to advance past the end, then it throws an
+	 * a valid position, when I advance past the end, then it throws an
 	 * exception.
 	 */
 	public void testNextAtEnd() {
@@ -135,11 +125,9 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 
 		try {
 			iter.next();
+			fail("previous() fails at the start of the list");
 		} catch (IndexOutOfBoundsException e) {
-			return;
 		}
-
-		fail("previous() fails at the start of the list");
 	}
 
 	/**
@@ -202,19 +190,17 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 
 	/**
 	 * Given I have an iterator to a populated list, and it has been advanced to
-	 * a valid position, when I try to remove the current item, then it throws
-	 * an exception.
+	 * a valid position, when I remove the current item, then it throws an
+	 * exception.
 	 */
 	public void testRemoveUnsupported() {
 		iter.next();
 
 		try {
 			iter.remove();
+			fail("remove() throws an exception.");
 		} catch (UnsupportedOperationException e) {
-			return;
 		}
-
-		fail("remove() throws an exception.");
 	}
 
 }

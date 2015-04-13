@@ -190,7 +190,7 @@ public class PlayerActivity extends Activity {
 	 * If no track is playing, times are set to 0:00 and the progress bar is
 	 * locked to the beginning.
 	 */
-	private void displayPosition() {
+	private void drawTime() {
 
 		final int position = player.getPosition();
 		final int duration = player.getDuration();
@@ -210,8 +210,10 @@ public class PlayerActivity extends Activity {
 			progressBar.setProgress(0);
 			progressBar.setMax(0);
 
-			positionView.setText(getString(R.string.activity_player_blank_time));
-			durationView.setText(getString(R.string.activity_player_blank_time));
+			positionView
+					.setText(R.string.activity_player_blank_time);
+			durationView
+					.setText(R.string.activity_player_blank_time);
 		}
 
 	}
@@ -225,7 +227,7 @@ public class PlayerActivity extends Activity {
 			progressTimer.cancel();
 		}
 
-		displayPosition();
+		drawTime();
 
 		final int position = player.getPosition();
 		final int duration = player.getDuration();
@@ -265,7 +267,7 @@ public class PlayerActivity extends Activity {
 
 		Log.i("Active track", "Stopping timer");
 
-		displayPosition();
+		drawTime();
 		progressBar.setIndeterminate(false);
 	}
 
@@ -275,7 +277,7 @@ public class PlayerActivity extends Activity {
 		}
 
 		Log.i("Active track", "Clearing timer & times");
-		displayPosition();
+		drawTime();
 	}
 
 	/*
@@ -307,8 +309,10 @@ public class PlayerActivity extends Activity {
 			}
 
 			LocalBroadcastManager.getInstance(PlayerActivity.this)
-					.registerReceiver(playerReceiver,
-							new IntentFilter(BroadcastConstants.FILTER_PLAYER_EVENT));
+					.registerReceiver(
+							playerReceiver,
+							new IntentFilter(
+									BroadcastConstants.FILTER_PLAYER_EVENT));
 		}
 
 		/**
@@ -332,6 +336,11 @@ public class PlayerActivity extends Activity {
 				boolean fromUser) {
 			if (fromUser) {
 				player.seekTo(progress * SEC);
+				if (player.isPlaying()) {
+					startCountdown();
+				} else {
+					drawTime();
+				}
 			}
 		}
 
@@ -375,7 +384,8 @@ public class PlayerActivity extends Activity {
 				stopCountdown();
 
 				if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
-					Toast.makeText(PlayerActivity.this,
+					Toast.makeText(
+							PlayerActivity.this,
 							intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
 							Toast.LENGTH_LONG).show();
 				}
@@ -391,13 +401,16 @@ public class PlayerActivity extends Activity {
 				clearCountdown();
 
 				if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
-					Toast.makeText(PlayerActivity.this,
+					Toast.makeText(
+							PlayerActivity.this,
 							intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
 							Toast.LENGTH_LONG).show();
 				}
 
-				((TextView) findViewById(R.id.view_uri)).setText("");
-				((TextView) findViewById(R.id.view_tags)).setText("");
+				 ((TextView) findViewById(R.id.view_uri)).setText("");
+				 ((TextView) findViewById(R.id.view_tags)).setText("");
+
+				finish();
 
 				break;
 

@@ -38,6 +38,7 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 	 * the end of the overridden onHandleIntent.
 	 */
 	private CountDownLatch latch;
+	private static final int WAIT_TIME = 1000;
 
 	private BroadcastReceiver receiver;
 	private SharedPreferences preferences;
@@ -100,7 +101,7 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 		latch = new CountDownLatch(1);
 		startService(scannerIntent);
 		assertTrue("Scanner completes on time",
-				latch.await(1000, TimeUnit.MILLISECONDS));
+				latch.await(WAIT_TIME, TimeUnit.MILLISECONDS));
 
 		// Then
 		assertEquals("Scanner requires non-debug mode",
@@ -120,10 +121,7 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 		startService(scannerIntent);
 		startService(scannerIntent);
 		assertTrue("Scanner completes on time",
-				latch.await(1000, TimeUnit.MILLISECONDS));
-
-		// Then (failure to complete will send an InterruptedException)
-
+				latch.await(WAIT_TIME, TimeUnit.MILLISECONDS));
 	}
 
 	/**
@@ -138,7 +136,7 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 		latch = new CountDownLatch(1);
 		startService(scannerIntent);
 		assertTrue("Scanner completes on time",
-				latch.await(1000, TimeUnit.MILLISECONDS));
+				latch.await(WAIT_TIME, TimeUnit.MILLISECONDS));
 
 		// Then
 		assertEquals("Scanner requires a music folder",
@@ -158,7 +156,7 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 		latch = new CountDownLatch(1);
 		startService(scannerIntent);
 		assertTrue("Scanner completes on time",
-				latch.await(1000, TimeUnit.MILLISECONDS));
+				latch.await(WAIT_TIME, TimeUnit.MILLISECONDS));
 
 		// Then
 		assertEquals("Scanner runs with valid app preferences", getContext()
@@ -182,7 +180,7 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 		latch = new CountDownLatch(1);
 		startService(scannerIntent);
 		assertTrue("Scanner completes on time",
-				latch.await(1000, TimeUnit.MILLISECONDS));
+				latch.await(WAIT_TIME, TimeUnit.MILLISECONDS));
 
 		// Then
 		assertEquals("Scan completed",
