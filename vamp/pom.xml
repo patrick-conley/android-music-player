@@ -18,14 +18,6 @@
 			<artifactId>support-v4</artifactId>
 			<version>19.0.1</version>
 		</dependency>
-		<dependency>
-			<groupId>com.github.wseemann</groupId>
-			<artifactId>FFmpegMediaMetadataRetriever</artifactId>
-			<version>1.0.0</version>
-<!-- 			<type>apk</type> -->
-            <scope>system</scope>
-            <systemPath>/home/pconley/Documents/projects/2014/android-music-player/vamp-parent/libs/fmmr.jar</systemPath>
-		</dependency>
 	</dependencies>
 
 </project>

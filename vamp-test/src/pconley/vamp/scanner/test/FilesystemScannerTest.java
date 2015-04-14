@@ -25,13 +25,13 @@ import static android.test.MoreAsserts.*;
  * <li>Empty directory
  * <li>Non-media file
  * <li>Ogg Vorbis file
- * <li>MP3 file
+ * <li>FLAC file
  * <li>Ogg Vorbis and non-media files together
- * <li>Ogg Vorbis and MP3 files together
+ * <li>Ogg Vorbis and FLAC files together
  * <li>Empty child directory
  * <li>Ogg Vorbis in a child directory
- * <li>Ogg Vorbis file and .nomedia, MP3 file in a child directory
- * <li>Ogg Vorbis file, MP3 file and .nomedia in a child directory
+ * <li>Ogg Vorbis file and .nomedia, FLAC file in a child directory
+ * <li>Ogg Vorbis file, FLAC file and .nomedia in a child directory
  * <li>Untested: media file and a symlink to it
  * <li>Untested: directory loop
  * </ul>
@@ -103,27 +103,6 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	}
 
 	/**
-	 * Given a media directory containing a single MP3 file, when I scan media,
-	 * then the database contains the file and its tags.
-	 */
-	public void testSingleMP3() throws IOException {
-		// Given
-		Track expected = AssetUtils.copyMusicAsset(testContext, AssetUtils.MP3,
-				new File(musicFolder, "sample.mp3"));
-
-		// When
-		scanner.scanMediaFolder();
-
-		// Then
-		List<Long> ids = dao.getIds();
-		assertEquals("One file has been found", 1, ids.size());
-
-		Track track = dao.getTrack(ids.get(0));
-		assertEquals("The MP3 file was scanned", expected, track);
-
-	}
-
-	/**
 	 * Given a media directory containing a single Ogg Vorbis file, when I scan
 	 * media, then the database contains the file and its tags.
 	 */
@@ -188,10 +167,10 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	 */
 	public void testTwoFiles() throws IOException {
 		// Given
-		Track mp3Expected = AssetUtils.copyMusicAsset(testContext,
-				AssetUtils.MP3, new File(musicFolder, "sample.mp3"));
-		Track oggExpected = AssetUtils.copyMusicAsset(testContext,
-				AssetUtils.OGG, new File(musicFolder, "sample.ogg"));
+		Track expected1 = AssetUtils.copyMusicAsset(testContext,
+				AssetUtils.OGG, new File(musicFolder, "sample_1.ogg"));
+		Track expected2 = AssetUtils.copyMusicAsset(testContext,
+				AssetUtils.OGG, new File(musicFolder, "sample_2.ogg"));
 
 		// When
 		scanner.scanMediaFolder();
@@ -201,13 +180,13 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		assertEquals("Two files have been found", 2, ids.size());
 
 		Track track = dao.getTrack(ids.get(0));
-		if (track.getUri().toString().endsWith(".mp3")) {
-			assertEquals("The MP3 file was scanned", mp3Expected, track);
-			assertEquals("The Ogg Vorbis file was scanned", oggExpected,
+		if (track.getUri().toString().endsWith("sample_1.ogg")) {
+			assertEquals("First file is correct", expected1, track);
+			assertEquals("Second file is correct", expected2,
 					dao.getTrack(ids.get(1)));
 		} else {
-			assertEquals("The Ogg Vorbis file was scanned", oggExpected, track);
-			assertEquals("The MP3 file was scanned", mp3Expected,
+			assertEquals("Second file is correct", expected2, track);
+			assertEquals("First file is correct", expected1,
 					dao.getTrack(ids.get(1)));
 		}
 	}
@@ -264,8 +243,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 
 		AssetUtils.copyMusicAsset(testContext, AssetUtils.OGG, new File(
 				musicFolder, "sample.ogg"));
-		AssetUtils.copyMusicAsset(testContext, AssetUtils.MP3, new File(folder,
-				"sample.mp3"));
+		AssetUtils.copyMusicAsset(testContext, AssetUtils.FLAC, new File(
+				folder, "sample.flac"));
 
 		// When
 		scanner.scanMediaFolder();
@@ -288,8 +267,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 
 		Track expected = AssetUtils.copyMusicAsset(testContext, AssetUtils.OGG,
 				new File(musicFolder, "sample.ogg"));
-		AssetUtils.copyMusicAsset(testContext, AssetUtils.MP3, new File(folder,
-				"sample.mp3"));
+		AssetUtils.copyMusicAsset(testContext, AssetUtils.FLAC, new File(
+				folder, "sample.flac"));
 
 		// When
 		scanner.scanMediaFolder();

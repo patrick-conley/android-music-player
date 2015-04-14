@@ -8,6 +8,7 @@ import java.io.OutputStream;
 
 import org.apache.commons.io.FileUtils;
 
+import pconley.vamp.db.TrackDAO;
 import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
 import pconley.vamp.preferences.SettingsHelper;
@@ -19,13 +20,8 @@ import android.test.InstrumentationTestCase;
 
 public final class AssetUtils {
 
-	// Note: these have faked extensions because the APK recompresses media
-	// files.
-	public static final int MP3 = R.raw.sample_mp3;
 	public static final int OGG = R.raw.sample_ogg;
-
-	// public static final String MP3 = "sample.mp3_";
-	// public static final String OGG = "sample.ogg_";
+	public static final int FLAC = R.raw.sample_flac;
 
 	/**
 	 * Private constructor: static members only
@@ -99,13 +95,44 @@ public final class AssetUtils {
 		inStream.close();
 		outStream.close();
 
-		return new Track.Builder(0, Uri.fromFile(destination))
+		return getTrack(destination);
+	}
+
+	/**
+	 * Add a track to the database which corresponds to one of the sample
+	 * assets.
+	 * 
+	 * @param context
+	 *            The test's context
+	 * @param dest
+	 *            The path of the file to add.
+	 * @return ID of the new track in the database.
+	 */
+	public static long addAssetToDb(Context context, File dest) {
+		TrackDAO dao = new TrackDAO(context);
+		dao.openWritableDatabase();
+
+		Track track = getTrack(dest);
+
+		long trackId = dao.insertTrack(track.getUri());
+
+		for (String name : track.getTagNames()) {
+			for (Tag tag : track.getTags(name)) {
+				dao.insertTag(trackId, tag.getName(), tag.getValue());
+			}
+		}
+
+		return trackId;
+	}
+
+	private static Track getTrack(File path) {
+		return new Track.Builder(0, Uri.fromFile(path))
 				.add(new Tag(0, "album", "MyAlbum"))
 				.add(new Tag(0, "artist", "MyArtist"))
 				.add(new Tag(0, "composer", "MyComposer"))
 				.add(new Tag(0, "genre", "Silence"))
 				.add(new Tag(0, "title", "MyTitle"))
-				.add(new Tag(0, "tracknumber", "03")).build();
+				.add(new Tag(0, "tracknumber", "3"))
+				.add(new Tag(0, "discnumber", "1")).build();
 	}
-
 }
