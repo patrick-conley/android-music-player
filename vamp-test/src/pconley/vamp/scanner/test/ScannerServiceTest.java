@@ -64,7 +64,6 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 
 		preferences = context.getSharedPreferences(Constants.PREFERENCES_NAME,
 				Context.MODE_PRIVATE);
-		preferences.edit().putBoolean(SettingsHelper.KEY_DEBUG, false).commit();
 		SettingsHelper.setPreferences(preferences);
 
 		dao = new TrackDAO(context);
@@ -79,6 +78,8 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 	protected void tearDown() throws Exception {
 		LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(
 				receiver);
+
+		preferences.edit().putBoolean(SettingsHelper.KEY_DEBUG, false).commit();
 
 		dao.openWritableDatabase();
 		dao.wipeDatabase();

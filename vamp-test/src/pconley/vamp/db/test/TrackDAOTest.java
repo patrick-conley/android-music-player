@@ -48,8 +48,8 @@ public class TrackDAOTest extends AndroidTestCase {
 		library = new LibraryOpenHelper(context).getWritableDatabase();
 		dao = new TrackDAO(context);
 
-		library.execSQL("DELETE FROM " + TrackEntry.NAME);
 		library.execSQL("DELETE FROM " + TrackTagRelation.NAME);
+		library.execSQL("DELETE FROM " + TrackEntry.NAME);
 		library.execSQL("DELETE FROM " + TagEntry.NAME);
 	}
 
