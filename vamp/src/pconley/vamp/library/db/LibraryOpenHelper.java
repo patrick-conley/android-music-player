@@ -1,8 +1,8 @@
-package pconley.vamp.db;
+package pconley.vamp.library.db;
 
-import pconley.vamp.db.LibraryContract.TagEntry;
-import pconley.vamp.db.LibraryContract.TrackEntry;
-import pconley.vamp.db.LibraryContract.TrackTagRelation;
+import pconley.vamp.library.db.LibrarySchema.TagEntry;
+import pconley.vamp.library.db.LibrarySchema.TrackEntry;
+import pconley.vamp.library.db.LibrarySchema.TrackTagRelation;
 import pconley.vamp.preferences.SettingsHelper;
 import android.content.ContentValues;
 import android.content.Context;

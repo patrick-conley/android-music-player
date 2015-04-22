@@ -1,12 +1,12 @@
-package pconley.vamp.model.test;
+package pconley.vamp.library.model.test;
 
 import static android.test.MoreAsserts.checkEqualsAndHashCodeMethods;
 
 import java.io.File;
 import java.util.Set;
 
-import pconley.vamp.model.Tag;
-import pconley.vamp.model.Track;
+import pconley.vamp.library.model.Tag;
+import pconley.vamp.library.model.Track;
 import android.net.Uri;
 import android.test.AndroidTestCase;
 

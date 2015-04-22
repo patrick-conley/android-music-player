@@ -2,7 +2,7 @@ package pconley.vamp.scanner;
 
 import java.io.File;
 
-import pconley.vamp.db.TrackDAO;
+import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.preferences.SettingsHelper;
 import android.content.Context;
 import android.media.MediaMetadataRetriever;

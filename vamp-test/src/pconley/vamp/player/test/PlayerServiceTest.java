@@ -27,8 +27,8 @@ import org.robolectric.shadows.ShadowAudioManager;
 import org.robolectric.shadows.ShadowMediaPlayer;
 
 import pconley.vamp.R;
-import pconley.vamp.db.TrackDAO;
-import pconley.vamp.model.Track;
+import pconley.vamp.library.db.TrackDAO;
+import pconley.vamp.library.model.Track;
 import pconley.vamp.player.PlayerEvent;
 import pconley.vamp.player.PlayerFactory;
 import pconley.vamp.player.PlayerService;
@@ -1021,9 +1021,9 @@ public class PlayerServiceTest {
 	}
 
 	/**
-	 * When I have started the service with an invalid track followed by a valid
-	 * track, then it is in the Playing state and the second track is current
-	 * and it broadcasts a single new track and play event.
+	 * When I start the service with an invalid track followed by a valid track,
+	 * then it is in the Playing state and the second track is current and it
+	 * broadcasts a single new track and play event.
 	 */
 	@Test
 	public void testInvalidFirstTrack() {

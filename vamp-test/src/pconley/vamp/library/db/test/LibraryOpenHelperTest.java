@@ -1,7 +1,7 @@
-package pconley.vamp.db.test;
+package pconley.vamp.library.db.test;
 
-import pconley.vamp.db.LibraryContract.TrackEntry;
-import pconley.vamp.db.LibraryOpenHelper;
+import pconley.vamp.library.db.LibraryOpenHelper;
+import pconley.vamp.library.db.LibrarySchema.TrackEntry;
 import pconley.vamp.preferences.SettingsHelper;
 import pconley.vamp.util.Constants;
 import android.content.ContentValues;

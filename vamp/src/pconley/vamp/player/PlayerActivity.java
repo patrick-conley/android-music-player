@@ -6,7 +6,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import pconley.vamp.R;
-import pconley.vamp.model.Track;
+import pconley.vamp.library.model.Track;
 import pconley.vamp.preferences.SettingsActivity;
 import pconley.vamp.util.BroadcastConstants;
 import android.app.Activity;

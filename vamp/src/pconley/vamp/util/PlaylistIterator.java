@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import pconley.vamp.model.Track;
+import pconley.vamp.library.model.Track;
 
 /**
  * An extended {@link Iterator}, specific to {@link Track}s. It adds the concept

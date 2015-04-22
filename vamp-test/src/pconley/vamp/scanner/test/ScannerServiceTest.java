@@ -10,8 +10,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import pconley.vamp.R;
-import pconley.vamp.db.TrackDAO;
-import pconley.vamp.model.Track;
+import pconley.vamp.library.db.TrackDAO;
+import pconley.vamp.library.model.Track;
 import pconley.vamp.preferences.SettingsHelper;
 import pconley.vamp.scanner.ScannerService;
 import pconley.vamp.util.AssetUtils;

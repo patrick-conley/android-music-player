@@ -1,8 +1,9 @@
-package pconley.vamp;
+package pconley.vamp.library;
 
 import java.util.List;
 
-import pconley.vamp.db.TrackDAO;
+import pconley.vamp.R;
+import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.preferences.SettingsActivity;

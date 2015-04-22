@@ -1,13 +1,13 @@
-package pconley.vamp.db;
+package pconley.vamp.library.db;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import pconley.vamp.db.LibraryContract.TagEntry;
-import pconley.vamp.db.LibraryContract.TrackEntry;
-import pconley.vamp.db.LibraryContract.TrackTagRelation;
-import pconley.vamp.model.Tag;
-import pconley.vamp.model.Track;
+import pconley.vamp.library.db.LibrarySchema.TagEntry;
+import pconley.vamp.library.db.LibrarySchema.TrackEntry;
+import pconley.vamp.library.db.LibrarySchema.TrackTagRelation;
+import pconley.vamp.library.model.Tag;
+import pconley.vamp.library.model.Track;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;

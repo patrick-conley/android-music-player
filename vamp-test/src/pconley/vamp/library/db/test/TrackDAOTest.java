@@ -1,4 +1,4 @@
-package pconley.vamp.db.test;
+package pconley.vamp.library.db.test;
 
 import static android.test.MoreAsserts.assertEmpty;
 
@@ -6,13 +6,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import pconley.vamp.db.LibraryContract.TagEntry;
-import pconley.vamp.db.LibraryContract.TrackEntry;
-import pconley.vamp.db.LibraryContract.TrackTagRelation;
-import pconley.vamp.db.LibraryOpenHelper;
-import pconley.vamp.db.TrackDAO;
-import pconley.vamp.model.Tag;
-import pconley.vamp.model.Track;
+import pconley.vamp.library.db.LibraryOpenHelper;
+import pconley.vamp.library.db.TrackDAO;
+import pconley.vamp.library.db.LibrarySchema.TagEntry;
+import pconley.vamp.library.db.LibrarySchema.TrackEntry;
+import pconley.vamp.library.db.LibrarySchema.TrackTagRelation;
+import pconley.vamp.library.model.Tag;
+import pconley.vamp.library.model.Track;
 import pconley.vamp.preferences.SettingsHelper;
 import pconley.vamp.util.Constants;
 import android.content.ContentValues;

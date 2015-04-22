@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
-import pconley.vamp.db.TrackDAO;
-import pconley.vamp.model.Track;
+import pconley.vamp.library.db.TrackDAO;
+import pconley.vamp.library.model.Track;
 import pconley.vamp.scanner.FilesystemScanner;
 import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.Constants;
@@ -15,7 +15,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.test.InstrumentationTestCase;
 import android.test.RenamingDelegatingContext;
-
 import static android.test.MoreAsserts.*;
 
 /**

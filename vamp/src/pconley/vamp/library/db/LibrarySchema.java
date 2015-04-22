@@ -1,11 +1,11 @@
-package pconley.vamp.db;
+package pconley.vamp.library.db;
 
 import android.provider.BaseColumns;
 
-public class LibraryContract {
+public class LibrarySchema {
 
 	/* Don't allow instantiation. */
-	public LibraryContract() {
+	public LibrarySchema() {
 	}
 
 	/**

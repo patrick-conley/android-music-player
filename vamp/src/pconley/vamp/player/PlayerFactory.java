@@ -1,6 +1,6 @@
 package pconley.vamp.player;
 
-import pconley.vamp.db.TrackDAO;
+import pconley.vamp.library.db.TrackDAO;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.PowerManager;
