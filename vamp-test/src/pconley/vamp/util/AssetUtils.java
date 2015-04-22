@@ -12,7 +12,6 @@ import pconley.vamp.db.TrackDAO;
 import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
 import pconley.vamp.preferences.SettingsHelper;
-import pconley.vamp.test.R;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -20,14 +19,21 @@ import android.test.InstrumentationTestCase;
 
 public final class AssetUtils {
 
-	public static final int OGG = R.raw.sample_ogg;
-	public static final int FLAC = R.raw.sample_flac;
+	/**
+	 * Sample Ogg Vorbis file with several comments: see {@link #getTrack(File)}
+	 */
+	public static final String OGG = "../../vamp-test/assets/sample.ogg_";
+
+	/**
+	 * Sample FLAC file with several comments. It is longer than
+	 * {@link PlayerService#PREV_RESTART_LIMIT}.
+	 */
+	public static final String FLAC = "../../vamp-test/assets/sample.flac_";
 
 	/**
 	 * Private constructor: static members only
 	 */
 	private AssetUtils() {
-
 	}
 
 	/**
@@ -77,11 +83,11 @@ public final class AssetUtils {
 	 * @throws IOException
 	 *             In case of any file read/write errors.
 	 */
-	public static Track copyMusicAsset(Context context, int asset,
+	public static Track addAssetToFolder(Context context, String asset,
 			File destination) throws IOException {
 		destination.createNewFile();
 
-		InputStream inStream = context.getResources().openRawResource(asset);
+		InputStream inStream = context.getAssets().open(asset);
 		OutputStream outStream = new FileOutputStream(destination);
 
 		byte[] buffer = new byte[1024];
@@ -99,8 +105,8 @@ public final class AssetUtils {
 	}
 
 	/**
-	 * Add a track to the database which corresponds to one of the sample
-	 * assets.
+	 * Add a track to the database with metadata matching the sample assets. The
+	 * tracks added don't need to exist on disk.
 	 * 
 	 * @param context
 	 *            The test's context
@@ -108,24 +114,43 @@ public final class AssetUtils {
 	 *            The path of the file to add.
 	 * @return ID of the new track in the database.
 	 */
-	public static long addAssetToDb(Context context, File dest) {
+	public static long addTrackToDb(Context context, File dest) {
+		return addTracksToDb(context, new File[] { dest })[0];
+	}
+
+	/**
+	 * Add several tracks to the database.
+	 * 
+	 * @param context
+	 *            The test's context
+	 * @param files
+	 *            The path of each file to add.
+	 * @return IDs of the new tracks in the database.
+	 */
+	public static long[] addTracksToDb(Context context, File[] files) {
+		long[] ids = new long[files.length];
+
 		TrackDAO dao = new TrackDAO(context);
 		dao.openWritableDatabase();
 
-		Track track = getTrack(dest);
+		for (int i = 0; i < files.length; i++) {
+			Track track = getTrack(files[i]);
 
-		long trackId = dao.insertTrack(track.getUri());
+			ids[i] = dao.insertTrack(track.getUri());
 
-		for (String name : track.getTagNames()) {
-			for (Tag tag : track.getTags(name)) {
-				dao.insertTag(trackId, tag.getName(), tag.getValue());
+			for (String name : track.getTagNames()) {
+				for (Tag tag : track.getTags(name)) {
+					dao.insertTag(ids[i], tag.getName(), tag.getValue());
+				}
 			}
 		}
 
-		return trackId;
+		dao.close();
+
+		return ids;
 	}
 
-	private static Track getTrack(File path) {
+	public static Track getTrack(File path) {
 		return new Track.Builder(0, Uri.fromFile(path))
 				.add(new Tag(0, "album", "MyAlbum"))
 				.add(new Tag(0, "artist", "MyArtist"))

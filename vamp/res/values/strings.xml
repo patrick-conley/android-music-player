@@ -13,7 +13,7 @@
     <string name="player_focus_failed">Could not obtain audio focus</string>
     <string name="player_focus_lost">Lost audio focus</string>
     <string name="player_focus_lost_transient">Lost audio focus temporarily</string>
-    <string name="player_error_MediaPlayer">Error %d,d</string>
+    <string name="player_error_MediaPlayer">Error %1$d,%2$d</string>
     <string name="player_error_read">Track %s could not be read</string>
     <string name="player_error_internal">Internal error %s</string>
     <string name="player_error_invalid_playlist">Can\'t start: playlist has errors</string>

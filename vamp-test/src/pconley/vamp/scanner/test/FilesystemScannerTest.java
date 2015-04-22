@@ -108,7 +108,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	 */
 	public void testSingleOgg() throws IOException {
 		// Given
-		Track expected = AssetUtils.copyMusicAsset(testContext, AssetUtils.OGG,
+		Track expected = AssetUtils.addAssetToFolder(testContext, AssetUtils.OGG,
 				new File(musicFolder, "sample.ogg"));
 
 		// When
@@ -147,7 +147,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	public void testMixedFiles() throws IOException {
 		// Given
 		File.createTempFile("sample", null, musicFolder);
-		Track expected = AssetUtils.copyMusicAsset(testContext, AssetUtils.OGG,
+		Track expected = AssetUtils.addAssetToFolder(testContext, AssetUtils.OGG,
 				new File(musicFolder, "sample.ogg"));
 
 		// When
@@ -167,9 +167,9 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	 */
 	public void testTwoFiles() throws IOException {
 		// Given
-		Track expected1 = AssetUtils.copyMusicAsset(testContext,
+		Track expected1 = AssetUtils.addAssetToFolder(testContext,
 				AssetUtils.OGG, new File(musicFolder, "sample_1.ogg"));
-		Track expected2 = AssetUtils.copyMusicAsset(testContext,
+		Track expected2 = AssetUtils.addAssetToFolder(testContext,
 				AssetUtils.OGG, new File(musicFolder, "sample_2.ogg"));
 
 		// When
@@ -215,7 +215,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		// Given
 		File folder = new File(musicFolder, "sample");
 		folder.mkdir();
-		Track expected = AssetUtils.copyMusicAsset(testContext, AssetUtils.OGG,
+		Track expected = AssetUtils.addAssetToFolder(testContext, AssetUtils.OGG,
 				new File(folder, "sample.ogg"));
 
 		// When
@@ -241,9 +241,9 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 
 		new File(musicFolder, ".nomedia").createNewFile();
 
-		AssetUtils.copyMusicAsset(testContext, AssetUtils.OGG, new File(
+		AssetUtils.addAssetToFolder(testContext, AssetUtils.OGG, new File(
 				musicFolder, "sample.ogg"));
-		AssetUtils.copyMusicAsset(testContext, AssetUtils.FLAC, new File(
+		AssetUtils.addAssetToFolder(testContext, AssetUtils.FLAC, new File(
 				folder, "sample.flac"));
 
 		// When
@@ -265,9 +265,9 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 
 		new File(folder, ".NOMEDIA").createNewFile();
 
-		Track expected = AssetUtils.copyMusicAsset(testContext, AssetUtils.OGG,
+		Track expected = AssetUtils.addAssetToFolder(testContext, AssetUtils.OGG,
 				new File(musicFolder, "sample.ogg"));
-		AssetUtils.copyMusicAsset(testContext, AssetUtils.FLAC, new File(
+		AssetUtils.addAssetToFolder(testContext, AssetUtils.FLAC, new File(
 				folder, "sample.flac"));
 
 		// When

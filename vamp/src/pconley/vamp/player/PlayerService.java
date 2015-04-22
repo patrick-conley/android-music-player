@@ -1,5 +1,6 @@
 package pconley.vamp.player;
 
+import java.io.File;
 import java.io.IOException;
 
 import pconley.vamp.R;
@@ -19,7 +20,6 @@ import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -51,7 +51,7 @@ public class PlayerService extends Service implements
 	/**
 	 * Action for incoming intents. Start playing a new track.
 	 * 
-	 * Use EXTRA_TRACK_LIST to set an array of tracks to play, and
+	 * Use EXTRA_TRACK_LIST to set an array of IDs of tracks to play, and
 	 * EXTRA_START_POSITION to specify the start position in the list (if not
 	 * included, begin with the first track).
 	 */
@@ -64,13 +64,6 @@ public class PlayerService extends Service implements
 	 */
 	public static final String ACTION_PAUSE = "pconley.vamp.PlayerService.pause";
 
-	/**
-	 * Action for incoming intents. Seek within the current track. Does nothing
-	 * if there is no track in progress.
-	 */
-	public static final String ACTION_SEEK = "pconley.vamp.playerService.seek";
-	public static final String EXTRA_SEEK_POSITION = "pconley.vamp.playerService.seek.time";
-
 	private static final int SEC = 1000;
 
 	private Playlist playlist;
@@ -78,10 +71,11 @@ public class PlayerService extends Service implements
 
 	private boolean isPlaying = false;
 	private boolean isPrepared = false;
+	private boolean isFocusLost = false;
 
 	private IBinder binder;
 	private AudioManager audioManager;
-	private MediaPlayer player = null;
+	private MediaPlayer player;
 	private LocalBroadcastManager broadcastManager;
 
 	// Constant content of the notification displayed while a track plays.
@@ -108,7 +102,7 @@ public class PlayerService extends Service implements
 
 		notificationBase = new Notification.Builder(getApplicationContext())
 				.setContentTitle(getString(R.string.app_name))
-				.setContentText(getString(R.string.player_now_playing))
+				.setContentText(getString(R.string.player_notification_playing))
 				.setSmallIcon(android.R.drawable.ic_media_play)
 				.setOngoing(true)
 				.setLargeIcon(
@@ -121,9 +115,7 @@ public class PlayerService extends Service implements
 										PlayerActivity.class),
 								PendingIntent.FLAG_UPDATE_CURRENT));
 
-		audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		broadcastManager = LocalBroadcastManager.getInstance(this);
-
 		binder = new PlayerBinder();
 	}
 
@@ -144,43 +136,49 @@ public class PlayerService extends Service implements
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		super.onStartCommand(intent, flags, startId);
 
-		if (intent != null) {
-
-			if (intent.getAction() == null) {
-				Log.e(TAG,
-						"Intent to start the player missing a required action");
-				return START_NOT_STICKY;
-			}
-
-			Log.i(TAG, "Received control action " + intent.getAction());
-
-			switch (intent.getAction()) {
-			case ACTION_PLAY:
-
-				if (!intent.hasExtra(EXTRA_TRACKS)) {
-					throw new IllegalArgumentException(
-							"Play action given with no tracks");
-				}
-
-				new LoadPlaylistTask().execute(intent);
-
-				break;
-
-			case ACTION_PAUSE:
-				pause();
-				break;
-
-			case ACTION_SEEK:
-				seekTo(intent.getIntExtra(EXTRA_SEEK_POSITION, 0));
-				break;
-
-			default:
-				Log.w(TAG, "Invalid action " + intent.getAction());
-				break;
-			}
+		if (intent == null || intent.getAction() == null) {
+			return START_NOT_STICKY;
 		}
 
-		return Service.START_STICKY;
+		Log.i(TAG, "Received control action " + intent.getAction());
+
+		switch (intent.getAction()) {
+		case ACTION_PLAY:
+
+			// Check the intent has a list of tracks
+			if (!intent.hasExtra(EXTRA_TRACKS)) {
+				throw new IllegalArgumentException("EXTRA_TRACKS missing");
+			}
+
+			long[] tracks = intent.getLongArrayExtra(EXTRA_TRACKS);
+
+			if (tracks == null || tracks.length == 0) {
+				throw new IllegalArgumentException("EXTRA_TRACKS empty");
+			}
+
+			int position = intent.getIntExtra(EXTRA_START_POSITION, 0);
+			if (position < 0 || position >= tracks.length) {
+				throw new IllegalArgumentException(
+						"EXTRA_START_POSITION invalid");
+			}
+
+			player = PlayerFactory.getInstance(this).createMediaPlayer();
+			audioManager = (AudioManager) getApplicationContext()
+					.getSystemService(Context.AUDIO_SERVICE);
+
+			new LoadPlaylistTask().execute(intent);
+			break;
+
+		case ACTION_PAUSE:
+			pause();
+			break;
+
+		default:
+			Log.w(TAG, "Invalid action " + intent.getAction());
+			break;
+		}
+
+		return START_STICKY;
 	}
 
 	/**
@@ -189,10 +187,7 @@ public class PlayerService extends Service implements
 	 */
 	@Override
 	public void onCompletion(MediaPlayer mp) {
-		if (isPrepared && trackIterator.hasNext()) {
-			trackIterator.next();
-			start(true);
-		}
+		next();
 	}
 
 	/**
@@ -200,13 +195,11 @@ public class PlayerService extends Service implements
 	 */
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
-		String error = getString(R.string.player_MediaPlayer_error, what, extra);
-
 		// FIXME: broadcasts do little if we're between activities
 		// FIXME: use actual messages rather than codes (as I figure out what
 		// messages mean)
-		Log.e(TAG, error);
-		stop(error);
+		Log.e(TAG, getString(R.string.player_error_MediaPlayer, what, extra));
+		stop(R.string.player_error_MediaPlayer, what, extra);
 
 		return true;
 	}
@@ -215,15 +208,21 @@ public class PlayerService extends Service implements
 	public void onAudioFocusChange(int focusChange) {
 
 		switch (focusChange) {
+		case AudioManager.AUDIOFOCUS_GAIN:
+			if (isFocusLost) {
+				play();
+			}
+			break;
 		case AudioManager.AUDIOFOCUS_LOSS:
 
-			Log.w(TAG, getString(R.string.player_lost_focus));
-			stop(getString(R.string.player_lost_focus));
+			Log.w(TAG, getString(R.string.player_focus_lost));
+			stop(R.string.player_focus_lost);
 			break;
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
 
-			Log.i(TAG, getString(R.string.player_temp_lost_focus));
+			Log.i(TAG, getString(R.string.player_focus_lost_transient));
+			isFocusLost = true;
 			pause();
 			break;
 		}
@@ -272,25 +271,22 @@ public class PlayerService extends Service implements
 	private void start(boolean beginPlayback) {
 		Track current = trackIterator.current();
 
-		// Set or reset the player
-		if (player != null) {
-			player.reset();
-			isPrepared = false;
-			isPlaying = false;
-		} else {
-			player = new MediaPlayer();
-
-			player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-			player.setOnCompletionListener(PlayerService.this);
-			player.setOnErrorListener(PlayerService.this);
-			player.setWakeMode(getApplicationContext(),
-					PowerManager.PARTIAL_WAKE_LOCK);
-		}
-
 		try {
 
+			// Set or reset the player
+			if (isPrepared) {
+				player.reset();
+				isPrepared = false;
+				isPlaying = false;
+			}
+
 			Log.d(TAG, "Preparing track " + current);
-			player.setDataSource(getApplicationContext(), current.getUri());
+
+			if (!new File(current.getUri().getPath()).exists()) {
+				throw new IOException();
+			}
+
+			player.setDataSource(this, current.getUri());
 			player.prepare();
 			isPrepared = true;
 
@@ -301,18 +297,20 @@ public class PlayerService extends Service implements
 			}
 
 		} catch (IOException e) {
-			Log.e(TAG, getString(R.string.player_read_error, current.getUri()));
+			Log.e(TAG, getString(R.string.player_error_read, current.getUri()));
 
 			// Skip to next track on error
 			if (trackIterator.hasNext()) {
 				trackIterator.next();
+				start(beginPlayback);
+			} else {
+				stop(R.string.player_error_read, current.getUri());
 			}
-			start(beginPlayback);
 
 		} catch (IllegalArgumentException | SecurityException
 				| IllegalStateException e) {
 			Log.e(TAG, e.getMessage());
-			stop(getString(R.string.player_internal_error, e.getMessage()));
+			stop(R.string.player_error_internal, e.getMessage());
 		}
 
 	}
@@ -320,44 +318,56 @@ public class PlayerService extends Service implements
 	/**
 	 * See {@link #stop(String)}
 	 */
-	private void stop() {
-		stop(null);
+	public void stop() {
+		stop(0);
 	}
 
 	/**
 	 * Stop playback and clean up the player. Use this function instead of an
 	 * explicit call to onCompletion if the player can't continue.
 	 * 
-	 * @param message
+	 * @param resId
 	 *            Reason for stopping.
 	 */
-	private void stop(String message) {
-		stopForeground(true);
+	private void stop(int resId, Object... formatArgs) {
+		String message = resId > 0 ? getString(resId, formatArgs) : null;
 
-		isPlaying = false;
-		isPrepared = false;
+		if (isPlaying) {
+			isPlaying = false;
+			stopForeground(true);
+		}
 
-		player.reset();
-		player.release();
-		player = null;
+		if (player != null) {
+			isPrepared = false;
+
+			player.reset();
+			player.release();
+			player = null;
+		}
 
 		broadcastEvent(PlayerEvent.STOP, message);
+		stopSelf();
 	}
 
 	/**
 	 * Pause the current track.
 	 */
-	public void pause() {
-		pause(null);
+	public boolean pause() {
+		return pause(0);
 	}
 
 	/**
 	 * Pause the current track.
 	 * 
-	 * @param message
-	 *            Reason for pausing; null if by user request.
+	 * @param resId
+	 *            Resource ID of the message to include.
+	 * @param formatArgs
+	 *            See {@link Context#getString(int, Object...)}
+	 * @return True if the service has a track prepared (whether or not the
+	 *         track is currently playing).
 	 */
-	private void pause(String message) {
+	private boolean pause(int resId, Object... formatArgs) {
+		String message = resId > 0 ? getString(resId, formatArgs) : null;
 
 		if (isPlaying) {
 			player.pause();
@@ -368,10 +378,11 @@ public class PlayerService extends Service implements
 
 			Log.d(TAG, "paused");
 			broadcastEvent(PlayerEvent.PAUSE, message);
-
-		} else if (!isPrepared && message != null) {
+		} else if (!isPrepared && resId > 0) {
 			broadcastEvent(PlayerEvent.STOP, message);
 		}
+
+		return isPrepared;
 	}
 
 	/**
@@ -379,29 +390,33 @@ public class PlayerService extends Service implements
 	 *
 	 * @return whether the track is now playing
 	 */
-	public void play() {
+	public boolean play() {
 		if (!isPrepared) {
 			Log.w(TAG, "Can't play: player not prepared.");
-			return;
+			return false;
 		} else if (isPlaying) {
-			return; // nothing to do
+			return true; // nothing to do
 		}
 
-		boolean hasFocus = audioManager.requestAudioFocus(this,
-				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
+		int focus = audioManager.requestAudioFocus(this,
+				AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
-		if (hasFocus) {
+		if (focus == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
 			startForeground(NOTIFICATION_ID, notificationBase.build());
 
 			player.start();
 			isPlaying = true;
+			isFocusLost = false;
 			Log.d(TAG, "started");
 
 			broadcastEvent(PlayerEvent.PLAY);
 
+			return true;
 		} else {
 			broadcastEvent(PlayerEvent.PAUSE,
-					getString(R.string.player_cant_focus));
+					getString(R.string.player_focus_failed));
+
+			return false;
 		}
 	}
 
@@ -411,16 +426,16 @@ public class PlayerService extends Service implements
 	 * @param time
 	 *            target position (in ms). I'm not sure what will happen if the
 	 *            target is invalid.
+	 * @return True if the service has a track prepared
 	 */
-	public void seekTo(int time) {
+	public boolean seekTo(int time) {
 		if (!isPrepared) {
 			Log.w(TAG, "Can't seek: player not prepared.");
-			return;
+			return false;
 		}
 
 		player.seekTo(time);
-
-		broadcastEvent(isPlaying ? PlayerEvent.PLAY : PlayerEvent.PAUSE);
+		return true;
 	}
 
 	/**
@@ -428,12 +443,12 @@ public class PlayerService extends Service implements
 	 * in the collection, go to the beginning of the previous track. Otherwise,
 	 * go to the beginning of this track.
 	 *
-	 * Does nothing if the player is not prepared.
+	 * @return True if the player has a track prepared
 	 */
-	public void previous() {
+	public boolean previous() {
 		if (!isPrepared) {
 			Log.w(TAG, "Can't go to previous: player not prepared.");
-			return;
+			return false;
 		}
 
 		if (getPosition() / SEC > PREV_RESTART_LIMIT
@@ -444,16 +459,19 @@ public class PlayerService extends Service implements
 			start(isPlaying);
 		}
 
+		return isPrepared;
 	}
 
 	/**
 	 * If the current track is not the last track in the collection, got to the
 	 * beginning of the next track. Otherwise, stop playing.
+	 * 
+	 * @return True if the player has a track prepared
 	 */
-	public void next() {
+	public boolean next() {
 		if (!isPrepared) {
 			Log.w(TAG, "Can't go to next: player not prepared.");
-			return;
+			return false;
 		} else if (trackIterator.hasNext()) {
 			trackIterator.next();
 			start(isPlaying);
@@ -461,6 +479,7 @@ public class PlayerService extends Service implements
 			stop();
 		}
 
+		return isPrepared;
 	}
 
 	/**
@@ -497,33 +516,57 @@ public class PlayerService extends Service implements
 	 * {@link PlayerService#onStartCommand(Intent, int, int)}, then start
 	 * playing from the intent's start position.
 	 * 
+	 * If one of the track IDs in the intent is missing from the database,
+	 * onPostExecute will broadcast an error and stop the service.
+	 * 
 	 * @author pconley
 	 */
-	private class LoadPlaylistTask extends AsyncTask<Intent, Void, Void> {
+	private class LoadPlaylistTask extends AsyncTask<Intent, Void, Boolean> {
+
+		private TrackDAO dao;
 
 		@Override
-		protected Void doInBackground(Intent... params) {
+		protected void onPreExecute() {
+			super.onPreExecute();
+
+			dao = PlayerFactory.getInstance(PlayerService.this).createDAO();
+		}
+
+		@Override
+		protected Boolean doInBackground(Intent... params) {
 			Intent intent = params[0];
 
-			TrackDAO dao = new TrackDAO(PlayerService.this)
-					.openReadableDatabase();
-
+			// Load the tracks from the database into the service's playlist
+			dao.openReadableDatabase();
 			playlist = new Playlist();
 			for (long id : intent.getLongArrayExtra(EXTRA_TRACKS)) {
-				playlist.add(dao.getTrack(id));
+				Track track = dao.getTrack(id);
+
+				if (track == null) {
+					return false;
+				}
+
+				playlist.add(track);
 			}
+
+			// Set the starting position in the playlist
 			trackIterator = playlist.playlistIterator(intent.getIntExtra(
 					EXTRA_START_POSITION, 0));
 
-			dao.close();
-
-			return null;
+			return true;
 		}
 
-		protected void onPostExecute(Void result) {
-			trackIterator.next();
-			start(true);
+		protected void onPostExecute(Boolean result) {
+			dao.close();
+
+			if (result) {
+				trackIterator.next();
+				start(true);
+			} else {
+				stop(R.string.player_error_invalid_playlist);
+			}
 		};
+
 	}
 
 }

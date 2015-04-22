@@ -173,7 +173,7 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 			InvocationTargetException, NoSuchMethodException {
 		// Given
 		File musicFolder = AssetUtils.setupMusicFolder(getContext());
-		Track expected = AssetUtils.copyMusicAsset((Context) getClass()
+		Track expected = AssetUtils.addAssetToFolder((Context) getClass()
 				.getMethod("getTestContext").invoke(this), AssetUtils.OGG,
 				new File(musicFolder, "sample.ogg"));
 
