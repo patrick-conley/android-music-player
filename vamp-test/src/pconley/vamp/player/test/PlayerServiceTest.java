@@ -61,6 +61,9 @@ public class PlayerServiceTest {
 	private PlayerService service;
 	private ShadowMediaPlayer player;
 
+	// Robolectric gets its assets relative to vamp/assets/
+	private static final String ASSET_PATH = "../../vamp-test/assets/";
+
 	private File musicFolder;
 	private File ogg;
 	private File flac;
@@ -103,8 +106,10 @@ public class PlayerServiceTest {
 		missingId = 5;
 
 		tracks = new Track[3];
-		tracks[0] = AssetUtils.addAssetToFolder(context, AssetUtils.OGG, ogg);
-		tracks[1] = AssetUtils.addAssetToFolder(context, AssetUtils.FLAC, flac);
+		tracks[0] = AssetUtils.addAssetToFolder(context, ASSET_PATH
+				+ AssetUtils.OGG, ogg);
+		tracks[1] = AssetUtils.addAssetToFolder(context, ASSET_PATH
+				+ AssetUtils.FLAC, flac);
 		tracks[2] = AssetUtils.getTrack(missing);
 
 		trackIds = new long[] { 0, 2 };
@@ -150,7 +155,7 @@ public class PlayerServiceTest {
 	@Test
 	public void testBind() {
 		// When
-		service = bindService();
+		bindService();
 
 		// Then
 		assertPlayerState("Unstarted service is not playing", false,
@@ -164,7 +169,7 @@ public class PlayerServiceTest {
 	@Test
 	public void testBindCantPause() {
 		// Given
-		service = bindService();
+		bindService();
 
 		// When/Then
 		assertFalse("Unstarted service can't be paused", service.pause());
@@ -177,7 +182,7 @@ public class PlayerServiceTest {
 	@Test
 	public void testBindCantPlay() {
 		// Given
-		service = bindService();
+		bindService();
 
 		// When/Then
 		assertFalse("Unstarted service can't play", service.play());
@@ -190,7 +195,7 @@ public class PlayerServiceTest {
 	@Test
 	public void testBindCantGoToNext() {
 		// Given
-		service = bindService();
+		bindService();
 
 		// When/Then
 		assertFalse("Unstarted service can't go to the next track",
@@ -204,7 +209,7 @@ public class PlayerServiceTest {
 	@Test
 	public void testBindCantGoToPrevious() {
 		// Given
-		service = bindService();
+		bindService();
 
 		// When/Then
 		assertFalse("Unstarted service can't go to the previous track",
@@ -218,7 +223,7 @@ public class PlayerServiceTest {
 	@Test
 	public void testBindCantSeek() {
 		// Given
-		service = bindService();
+		bindService();
 
 		// When/Then
 		assertFalse("Unstarted service can't seek", service.seekTo(0));
@@ -367,7 +372,7 @@ public class PlayerServiceTest {
 						AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
 
 		// When
-		service = startService();
+		startService();
 
 		// Then
 		assertPlayerState("Player plays when it can focus", true,
@@ -393,7 +398,7 @@ public class PlayerServiceTest {
 						AudioManager.AUDIOFOCUS_REQUEST_FAILED);
 
 		// When
-		service = startService();
+		startService();
 
 		// Then
 		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
@@ -412,7 +417,7 @@ public class PlayerServiceTest {
 	public void testPauseWhilePlaying() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		broadcastEvents.clear();
 
 		assertTrue("The service is playing", service.isPlaying());
@@ -436,7 +441,7 @@ public class PlayerServiceTest {
 	public void testPauseIntentWhilePlaying() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		broadcastEvents.clear();
 
 		assertTrue("The service is playing", service.isPlaying());
@@ -462,7 +467,7 @@ public class PlayerServiceTest {
 	public void testPlayWhilePlaying() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		broadcastEvents.clear();
 
 		assertTrue("The service is playing", service.isPlaying());
@@ -484,7 +489,7 @@ public class PlayerServiceTest {
 	public void testPlayWhilePaused() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		service.pause();
 		broadcastEvents.clear();
 
@@ -514,7 +519,7 @@ public class PlayerServiceTest {
 	public void testPauseWhilePaused() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		service.pause();
 		broadcastEvents.clear();
 
@@ -537,7 +542,7 @@ public class PlayerServiceTest {
 	public void testPauseIntentWhilePaused() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		service.pause();
 		broadcastEvents.clear();
 
@@ -563,7 +568,7 @@ public class PlayerServiceTest {
 	public void testNextOnSingleTrack() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		broadcastEvents.clear();
 
 		assertTrue("The service is playing", service.isPlaying());
@@ -586,7 +591,7 @@ public class PlayerServiceTest {
 	public void testPreviousOnSingleTrack() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		broadcastEvents.clear();
 
 		assertTrue("The service is playing", service.isPlaying());
@@ -609,7 +614,7 @@ public class PlayerServiceTest {
 	public void testRestartTrack() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		broadcastEvents.clear();
 
 		assertTrue("The service is playing", service.isPlaying());
@@ -631,7 +636,7 @@ public class PlayerServiceTest {
 	public void testSeekWhilePlaying() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		broadcastEvents.clear();
 
 		assertTrue("The service is playing", service.isPlaying());
@@ -654,7 +659,7 @@ public class PlayerServiceTest {
 	public void testSeekWhilePaused() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		service.pause();
 		broadcastEvents.clear();
 
@@ -679,7 +684,7 @@ public class PlayerServiceTest {
 	public void testOnError() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		broadcastEvents.clear();
 
 		assertTrue("The service is playing", service.isPlaying());
@@ -707,7 +712,7 @@ public class PlayerServiceTest {
 	public void testOnCompletion() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		broadcastEvents.clear();
 
 		assertTrue("The service is playing", service.isPlaying());
@@ -731,7 +736,7 @@ public class PlayerServiceTest {
 	public void testAudioFocusLossTransient() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		broadcastEvents.clear();
 
 		assertTrue("The service is playing", service.isPlaying());
@@ -755,7 +760,7 @@ public class PlayerServiceTest {
 	public void testAudioFocusLoss() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		broadcastEvents.clear();
 
 		assertTrue("The service is playing", service.isPlaying());
@@ -783,7 +788,7 @@ public class PlayerServiceTest {
 	public void testAudioFocusGainAfterLoss() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		service.onAudioFocusChange(AudioManager.AUDIOFOCUS_LOSS_TRANSIENT);
 		broadcastEvents.clear();
 
@@ -808,7 +813,7 @@ public class PlayerServiceTest {
 	public void testAudioFocusGain() {
 		// Given
 		prepareService(1);
-		service = startService();
+		startService();
 		service.pause();
 		broadcastEvents.clear();
 
@@ -834,7 +839,7 @@ public class PlayerServiceTest {
 		prepareService(2);
 
 		// When
-		service = startService();
+		startService();
 
 		// Then
 		assertPlayerState("Player can play two tracks", true,
@@ -853,7 +858,7 @@ public class PlayerServiceTest {
 
 		// When
 		serviceIntent.putExtra(PlayerService.EXTRA_START_POSITION, 1);
-		service = startService();
+		startService();
 
 		// Then
 		assertPlayerState("Player can start from the second track", true,
@@ -870,7 +875,7 @@ public class PlayerServiceTest {
 	public void testNextWithTwoTracks() {
 		// Given
 		prepareService(2);
-		service = startService();
+		startService();
 		broadcastEvents.clear();
 
 		assertTrue("The service is playing", service.isPlaying());
@@ -893,7 +898,7 @@ public class PlayerServiceTest {
 	public void testPreviousWithTwoTracks() {
 		// Given
 		prepareService(2);
-		service = startService();
+		startService();
 		service.next();
 		broadcastEvents.clear();
 
@@ -918,7 +923,7 @@ public class PlayerServiceTest {
 	public void testRestartWithTwoTracks() {
 		// Given
 		prepareService(2);
-		service = startService();
+		startService();
 		service.next();
 		broadcastEvents.clear();
 
@@ -943,7 +948,7 @@ public class PlayerServiceTest {
 	public void testNextWhilePaused() {
 		// Given
 		prepareService(2);
-		service = startService();
+		startService();
 		service.pause();
 		broadcastEvents.clear();
 
@@ -969,7 +974,7 @@ public class PlayerServiceTest {
 	public void testPreviousWhilePaused() {
 		// Given
 		prepareService(2);
-		service = startService();
+		startService();
 		service.pause();
 		service.next();
 		broadcastEvents.clear();
@@ -997,7 +1002,7 @@ public class PlayerServiceTest {
 	public void testRestartWhilePaused() {
 		// Given
 		prepareService(2);
-		service = startService();
+		startService();
 		service.pause();
 		service.next();
 		broadcastEvents.clear();
@@ -1031,7 +1036,7 @@ public class PlayerServiceTest {
 		serviceIntent.putExtra(PlayerService.EXTRA_TRACKS, ids);
 
 		// When
-		service = startService();
+		startService();
 
 		// Then
 		assertPlayerState("Player skips invalid tracks", true,
@@ -1043,8 +1048,8 @@ public class PlayerServiceTest {
 	 * 
 	 * @return The service
 	 */
-	private PlayerService startService() {
-		return Robolectric.buildService(PlayerService.class).attach()
+	private void startService() {
+		service = Robolectric.buildService(PlayerService.class).attach()
 				.withIntent(serviceIntent).withBaseContext(context).create()
 				.startCommand(0, 0).get();
 	}
@@ -1054,8 +1059,8 @@ public class PlayerServiceTest {
 	 * 
 	 * @return The service
 	 */
-	private PlayerService bindService() {
-		return Robolectric.buildService(PlayerService.class)
+	private void bindService() {
+		service = Robolectric.buildService(PlayerService.class)
 				.withIntent(serviceIntent).withBaseContext(context).create()
 				.bind().get();
 	}

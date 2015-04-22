@@ -22,13 +22,12 @@ public final class AssetUtils {
 	/**
 	 * Sample Ogg Vorbis file with several comments: see {@link #getTrack(File)}
 	 */
-	public static final String OGG = "../../vamp-test/assets/sample.ogg_";
+	public static final String OGG = "sample.ogg_";
 
 	/**
-	 * Sample FLAC file with several comments. It is longer than
-	 * {@link PlayerService#PREV_RESTART_LIMIT}.
+	 * Sample FLAC file with several comments.
 	 */
-	public static final String FLAC = "../../vamp-test/assets/sample.flac_";
+	public static final String FLAC = "sample.flac_";
 
 	/**
 	 * Private constructor: static members only
