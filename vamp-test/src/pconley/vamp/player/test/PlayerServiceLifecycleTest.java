@@ -1,7 +1,5 @@
 package pconley.vamp.player.test;
 
-import java.util.concurrent.CountDownLatch;
-
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.player.test.PlayerServiceLifecycleTest.PlayerServiceWrapper;
 import android.content.Intent;
@@ -23,7 +21,6 @@ import android.test.ServiceTestCase;
  * class to ensure bugs in the wrapper can't affect them.
  * 
  * @author pconley
- *
  */
 public class PlayerServiceLifecycleTest extends
 		ServiceTestCase<PlayerServiceWrapper> {
@@ -33,8 +30,6 @@ public class PlayerServiceLifecycleTest extends
 	private static int timesDestroyed;
 
 	private Intent serviceIntent;
-
-	private static CountDownLatch latch;
 
 	public PlayerServiceLifecycleTest() {
 		super(PlayerServiceWrapper.class);
@@ -92,10 +87,7 @@ public class PlayerServiceLifecycleTest extends
 		timesCreated = timesStarted = timesDestroyed = 0;
 
 		// When
-		latch = new CountDownLatch(1);
 		shutdownService();
-		latch.await();
-		latch = null;
 
 		// Then
 		assertEquals("The service is created", 0, timesCreated);
@@ -205,9 +197,6 @@ public class PlayerServiceLifecycleTest extends
 		public void onDestroy() {
 			super.onDestroy();
 			timesDestroyed++;
-			if (latch != null) {
-				latch.countDown();
-			}
 		}
 	}
 }

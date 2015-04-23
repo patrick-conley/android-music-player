@@ -37,21 +37,21 @@ public class ScannerService extends IntentService {
 		// Prohibit scanning into the sample library
 		if (settings.getDebugMode()) {
 			Log.w(TAG, "Abort scan: debug mode is set");
-			broadcastScanStatus(R.string.scan_error_debug_mode);
+			broadcastResult(R.string.scan_error_debug_mode);
 			return;
 		} else if (settings.getMusicFolder() == null) {
 			Log.w(TAG, "Abort scan: no music folder set");
-			broadcastScanStatus(R.string.scan_error_no_music_folder);
+			broadcastResult(R.string.scan_error_no_music_folder);
 			return;
 		}
 		
-		new FilesystemScanner(getBaseContext()).scanMediaFolder();
+		new FilesystemScanner(getBaseContext()).scanMusicFolder();
 
 		Log.i(TAG, "Scan complete");
-		broadcastScanStatus(R.string.scan_done);
+		broadcastResult(R.string.scan_done);
 	}
 
-	private void broadcastScanStatus(int scanStatus) {
+	private void broadcastResult(int scanStatus) {
 		Intent broadcastIntent = new Intent(BroadcastConstants.FILTER_SCANNER);
 
 		broadcastIntent.putExtra(BroadcastConstants.EXTRA_MESSAGE,

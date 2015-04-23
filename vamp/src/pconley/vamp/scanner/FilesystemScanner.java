@@ -60,7 +60,7 @@ public class FilesystemScanner {
 	 * 
 	 * Don't call this from the UI thread.
 	 */
-	public void scanMediaFolder() {
+	public void scanMusicFolder() {
 		dao.openWritableDatabase();
 		dao.wipeDatabase();
 

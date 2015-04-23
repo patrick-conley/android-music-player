@@ -46,23 +46,21 @@ import android.support.v4.content.LocalBroadcastManager;
 @Config(emulateSdk = 18, manifest = "../vamp/AndroidManifest.xml")
 public class PlayerServiceTest {
 
+	// Robolectric gets its assets relative to vamp/assets/
+	private static final String ASSET_PATH = "../../vamp-test/assets/";
+
 	private static BroadcastReceiver receiver;
 	private static String latestBroadcastMessage;
 	private static List<PlayerEvent> broadcastEvents;
-
 	private static List<PlayerEvent> normalStartEvents;
 
 	private Context context;
 	private Intent serviceIntent;
 
-	private ShadowAudioManager audioManager;
-
-	private static PlayerFactory factory;
 	private PlayerService service;
+	private static PlayerFactory factory;
 	private ShadowMediaPlayer player;
-
-	// Robolectric gets its assets relative to vamp/assets/
-	private static final String ASSET_PATH = "../../vamp-test/assets/";
+	private ShadowAudioManager audioManager;
 
 	private File musicFolder;
 	private File ogg;
@@ -70,20 +68,22 @@ public class PlayerServiceTest {
 	private File missing;
 	private long missingId;
 
-	private long[] trackIds;
+	private static long[] trackIds;
 	private Track[] tracks;
 
 	@BeforeClass
 	public static void setUp() {
+		receiver = new PlayerReceiver();
+
+		broadcastEvents = new LinkedList<PlayerEvent>();
 		normalStartEvents = new LinkedList<PlayerEvent>();
 		normalStartEvents.add(PlayerEvent.NEW_TRACK);
 		normalStartEvents.add(PlayerEvent.PLAY);
 
-		broadcastEvents = new LinkedList<PlayerEvent>();
-		receiver = new PlayerReceiver();
-
 		factory = mock(PlayerFactory.class);
 		PlayerFactory.setInstance(factory);
+
+		trackIds = new long[] { 0, 2 };
 	}
 
 	@Before
@@ -111,8 +111,6 @@ public class PlayerServiceTest {
 		tracks[1] = AssetUtils.addAssetToFolder(context, ASSET_PATH
 				+ AssetUtils.FLAC, flac);
 		tracks[2] = AssetUtils.getTrack(missing);
-
-		trackIds = new long[] { 0, 2 };
 
 		// Shadow the service's MediaPlayer
 		MediaPlayer mp = new MediaPlayer();
@@ -143,8 +141,6 @@ public class PlayerServiceTest {
 
 	@AfterClass
 	public static void tearDown() {
-		// SQLiteDatabase.deleteDatabase(new File(databasePath));
-
 		PlayerFactory.resetInstance();
 	}
 
@@ -366,10 +362,8 @@ public class PlayerServiceTest {
 		serviceIntent.putExtra(PlayerService.EXTRA_TRACKS,
 				new long[] { trackIds[0] });
 
-		Robolectric.shadowOf(
-				(AudioManager) context.getSystemService(Context.AUDIO_SERVICE))
-				.setNextFocusRequestResponse(
-						AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
+		audioManager
+				.setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
 
 		// When
 		startService();
@@ -392,10 +386,8 @@ public class PlayerServiceTest {
 		serviceIntent.putExtra(PlayerService.EXTRA_TRACKS,
 				new long[] { trackIds[0] });
 
-		Robolectric.shadowOf(
-				(AudioManager) context.getSystemService(Context.AUDIO_SERVICE))
-				.setNextFocusRequestResponse(
-						AudioManager.AUDIOFOCUS_REQUEST_FAILED);
+		audioManager
+				.setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_FAILED);
 
 		// When
 		startService();
@@ -493,10 +485,8 @@ public class PlayerServiceTest {
 		service.pause();
 		broadcastEvents.clear();
 
-		Robolectric.shadowOf(
-				(AudioManager) context.getSystemService(Context.AUDIO_SERVICE))
-				.setNextFocusRequestResponse(
-						AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
+		audioManager
+				.setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
 
 		assertFalse("The service is paused", service.isPlaying());
 
@@ -1011,8 +1001,6 @@ public class PlayerServiceTest {
 
 		// When
 		player.setCurrentPosition((PlayerService.PREV_RESTART_LIMIT + 1) * 1000);
-		Robolectric.runBackgroundTasks();
-		assertTrue(service.getPosition() > PlayerService.PREV_RESTART_LIMIT * 1000);
 		service.previous();
 
 		// Then
@@ -1032,7 +1020,7 @@ public class PlayerServiceTest {
 
 		long[] ids = new long[2];
 		ids[0] = missingId;
-		ids[1] = serviceIntent.getLongArrayExtra(PlayerService.EXTRA_TRACKS)[0];
+		ids[1] = trackIds[0];
 		serviceIntent.putExtra(PlayerService.EXTRA_TRACKS, ids);
 
 		// When
@@ -1049,9 +1037,8 @@ public class PlayerServiceTest {
 	 * @return The service
 	 */
 	private void startService() {
-		service = Robolectric.buildService(PlayerService.class).attach()
-				.withIntent(serviceIntent).withBaseContext(context).create()
-				.startCommand(0, 0).get();
+		service = Robolectric.buildService(PlayerService.class)
+				.withIntent(serviceIntent).create().startCommand(0, 0).get();
 	}
 
 	/**
@@ -1061,8 +1048,7 @@ public class PlayerServiceTest {
 	 */
 	private void bindService() {
 		service = Robolectric.buildService(PlayerService.class)
-				.withIntent(serviceIntent).withBaseContext(context).create()
-				.bind().get();
+				.withIntent(serviceIntent).create().bind().get();
 	}
 
 	/**

@@ -10,7 +10,6 @@ import android.os.PowerManager;
  * testing.
  * 
  * @author pconley
- *
  */
 public class PlayerFactory {
 
@@ -65,7 +64,7 @@ public class PlayerFactory {
 				PowerManager.PARTIAL_WAKE_LOCK);
 		return player;
 	}
-	
+
 	public TrackDAO createDAO() {
 		return new TrackDAO(service.getApplicationContext());
 	}

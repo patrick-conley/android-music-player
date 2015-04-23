@@ -78,7 +78,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	 */
 	public void testEmptyDirectory() {
 		// When
-		scanner.scanMediaFolder();
+		scanner.scanMusicFolder();
 
 		// Then
 		assertEmpty("No files are found in an empty directory", dao.getIds());
@@ -93,7 +93,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		File.createTempFile("sample", null, musicFolder);
 
 		// When
-		scanner.scanMediaFolder();
+		scanner.scanMusicFolder();
 
 		// Then
 		assertEmpty("No files are found in a directory with no media files",
@@ -111,7 +111,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 				new File(musicFolder, "sample.ogg"));
 
 		// When
-		scanner.scanMediaFolder();
+		scanner.scanMusicFolder();
 
 		// Then
 		List<Long> ids = dao.getIds();
@@ -132,7 +132,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		dao.insertTrack(Uri.fromFile(new File(musicFolder, "sample.ogg")));
 
 		// When
-		scanner.scanMediaFolder();
+		scanner.scanMusicFolder();
 
 		// Then
 		assertEmpty("Database is emptied before scanning", dao.getIds());
@@ -150,7 +150,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 				new File(musicFolder, "sample.ogg"));
 
 		// When
-		scanner.scanMediaFolder();
+		scanner.scanMusicFolder();
 
 		// Then
 		List<Long> ids = dao.getIds();
@@ -172,7 +172,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 				AssetUtils.OGG, new File(musicFolder, "sample_2.ogg"));
 
 		// When
-		scanner.scanMediaFolder();
+		scanner.scanMusicFolder();
 
 		// Then
 		List<Long> ids = dao.getIds();
@@ -199,7 +199,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		new File(musicFolder, "sample").mkdir();
 
 		// When
-		scanner.scanMediaFolder();
+		scanner.scanMusicFolder();
 
 		// Then
 		assertEmpty("No files are found in an empty directory", dao.getIds());
@@ -218,7 +218,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 				new File(folder, "sample.ogg"));
 
 		// When
-		scanner.scanMediaFolder();
+		scanner.scanMusicFolder();
 
 		// Then
 		List<Long> ids = dao.getIds();
@@ -246,7 +246,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 				folder, "sample.flac"));
 
 		// When
-		scanner.scanMediaFolder();
+		scanner.scanMusicFolder();
 
 		// Then
 		assertEmpty("No files are found in an empty directory", dao.getIds());
@@ -270,7 +270,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 				folder, "sample.flac"));
 
 		// When
-		scanner.scanMediaFolder();
+		scanner.scanMusicFolder();
 
 		// Then
 		List<Long> ids = dao.getIds();

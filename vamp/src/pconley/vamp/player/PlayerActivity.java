@@ -210,10 +210,8 @@ public class PlayerActivity extends Activity {
 			progressBar.setProgress(0);
 			progressBar.setMax(0);
 
-			positionView
-					.setText(R.string.activity_player_blank_time);
-			durationView
-					.setText(R.string.activity_player_blank_time);
+			positionView.setText(R.string.activity_player_blank_time);
+			durationView.setText(R.string.activity_player_blank_time);
 		}
 
 	}
@@ -407,8 +405,8 @@ public class PlayerActivity extends Activity {
 							Toast.LENGTH_LONG).show();
 				}
 
-				 ((TextView) findViewById(R.id.view_uri)).setText("");
-				 ((TextView) findViewById(R.id.view_tags)).setText("");
+				((TextView) findViewById(R.id.view_uri)).setText("");
+				((TextView) findViewById(R.id.view_tags)).setText("");
 
 				finish();
 
