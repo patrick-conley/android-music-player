@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import pconley.vamp.model.Track;
+import pconley.vamp.library.model.Track;
 import pconley.vamp.util.Playlist;
 import pconley.vamp.util.PlaylistIterator;
 import android.net.Uri;
@@ -17,47 +17,46 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 
 	private PlaylistIterator iter;
 	private PlaylistIterator emptyIter;
-	
+
 	/*
 	 * Create a list of simple tracks.
 	 */
 	public PlaylistIteratorTest() {
 		tracks = new ArrayList<Track>();
 		playlist = new Playlist();
-		
+
 		for (int i = 0; i < 5; i++) {
-			Track track = new Track.Builder(i, Uri.parse(String.valueOf(i))).build();
-			
+			Track track = new Track.Builder(i, Uri.parse(String.valueOf(i)))
+					.build();
+
 			tracks.add(track);
 			playlist.add(track);
 		}
 	}
-	
+
 	public void setUp() {
 		emptyIter = new Playlist().playlistIterator();
 		iter = playlist.playlistIterator();
-		
+
 	}
 
 	/**
-	 * Given I have an iterator to an empty list, when I try to advance to the
-	 * next item, then it throws an exception.
+	 * Given I have an iterator to an empty list, when I advance to the next
+	 * item, then it throws an exception.
 	 */
 	public void testNextOnEmptyList() {
 		assertFalse("hasNext() is false on empty input", emptyIter.hasNext());
 
 		try {
 			emptyIter.next();
+			fail("next() fails on empty input");
 		} catch (NoSuchElementException e) {
-			return;
 		}
-
-		fail("next() fails on empty input");
 	}
 
 	/**
-	 * Given I have an iterator to an empty list, when I try to reverse to the
-	 * previous item, then it throws an exception.
+	 * Given I have an iterator to an empty list, when I reverse to the previous
+	 * item, then it throws an exception.
 	 */
 	public void testPreviousOnEmptyList() {
 		assertFalse("hasPrevious() is false on empty input",
@@ -65,45 +64,39 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 
 		try {
 			emptyIter.previous();
+			fail("previous() fails on empty input");
 		} catch (NoSuchElementException e) {
-			return;
 		}
-
-		fail("previous() fails on empty input");
 	}
 
 	/**
-	 * Given I have an iterator to a populated list, when I try to select a
-	 * position outside the list, then it throws an exception.
+	 * Given I have an iterator to a populated list, when I select a position
+	 * outside the list, then it throws an exception.
 	 */
 	public void testSetPositionInvalidIndex() {
 		try {
 			iter = playlist.playlistIterator(playlist.size());
+			fail("setPosition() fails on invalid input");
 		} catch (IndexOutOfBoundsException e) {
-			return;
 		}
-
-		fail("setPosition() fails on invalid input");
 	}
 
 	/**
-	 * Given I have an iterator to a populated list, when I try to retrieve the
-	 * current item before one is available, then it throws an exception.
+	 * Given I have an iterator to a populated list, when I retrieve the current
+	 * item before one is available, then it throws an exception.
 	 */
 	public void testCurrentOutOfRange() {
 		try {
 			iter.current();
+			fail("current() fails if next() has not been called");
 		} catch (IllegalStateException e) {
-			return;
 		}
-
-		fail("current() fails if next() has not been called");
 	}
 
 	/**
 	 * Given I have an iterator to a populated list, and it has been advanced to
-	 * a valid position, when I try to reverse past the beginning, then it
-	 * throws an exception.
+	 * a valid position, when I reverse past the beginning, then it throws an
+	 * exception.
 	 */
 	public void testPreviousAtStart() {
 		iter.next();
@@ -113,20 +106,18 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 
 		try {
 			iter.previous();
+			fail("previous() fails at the start of the list");
 		} catch (IndexOutOfBoundsException e) {
-			return;
 		}
-
-		fail("previous() fails at the start of the list");
 	}
 
 	/**
 	 * Given I have an iterator to a populated list, and it has been advanced to
-	 * a valid position, when I try to advance past the end, then it throws an
+	 * a valid position, when I advance past the end, then it throws an
 	 * exception.
 	 */
 	public void testNextAtEnd() {
-		iter = playlist.playlistIterator(playlist.size()-1);
+		iter = playlist.playlistIterator(playlist.size() - 1);
 		iter.next(); // Get the last item
 
 		assertTrue("Iterator has a previous item", iter.hasPrevious());
@@ -134,11 +125,9 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 
 		try {
 			iter.next();
+			fail("previous() fails at the start of the list");
 		} catch (IndexOutOfBoundsException e) {
-			return;
 		}
-
-		fail("previous() fails at the start of the list");
 	}
 
 	/**
@@ -195,26 +184,23 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 			iter = playlist.playlistIterator(i);
 
 			assertEquals("Item " + String.valueOf(i)
-					+ " of iterator is correct", tracks.get(i),
-					iter.next());
+					+ " of iterator is correct", tracks.get(i), iter.next());
 		}
 	}
 
 	/**
 	 * Given I have an iterator to a populated list, and it has been advanced to
-	 * a valid position, when I try to remove the current item, then it throws
-	 * an exception.
+	 * a valid position, when I remove the current item, then it throws an
+	 * exception.
 	 */
 	public void testRemoveUnsupported() {
 		iter.next();
 
 		try {
 			iter.remove();
+			fail("remove() throws an exception.");
 		} catch (UnsupportedOperationException e) {
-			return;
 		}
-
-		fail("remove() throws an exception.");
 	}
 
 }

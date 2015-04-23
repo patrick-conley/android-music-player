@@ -3,12 +3,12 @@ package pconley.vamp.preferences;
 import java.io.File;
 
 import pconley.vamp.R;
-import pconley.vamp.util.FileUtils;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.text.InputType;
+import android.widget.Toast;
 
 public class SettingsFragment extends PreferenceFragment {
 
@@ -34,8 +34,22 @@ public class SettingsFragment extends PreferenceFragment {
 					public boolean onPreferenceChange(Preference preference,
 							Object newValue) {
 
-						return FileUtils.validateDirectory(new File(
-								(String) newValue), getActivity());
+						File dir = new File((String) newValue);
+
+						int error = -1;
+						if (!dir.exists()) {
+							error = R.string.scan_error_no_such_path;
+						} else if (!dir.isDirectory()) {
+							error = R.string.scan_error_not_a_folder;
+						} else if (!dir.canExecute()) {
+							error = R.string.scan_error_not_readable;
+						}
+
+						if (error >= 0) {
+							Toast.makeText(getActivity(), error, Toast.LENGTH_LONG).show();
+						}
+
+						return error == -1;
 					}
 				});
 	}

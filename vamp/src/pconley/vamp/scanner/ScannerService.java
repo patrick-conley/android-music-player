@@ -1,21 +1,16 @@
 package pconley.vamp.scanner;
 
-import pconley.vamp.db.LibraryContract.TagEntry;
-import pconley.vamp.db.LibraryContract.TrackEntry;
-import pconley.vamp.db.LibraryContract.TrackTagRelation;
-import pconley.vamp.db.LibraryOpenHelper;
+import pconley.vamp.R;
 import pconley.vamp.preferences.SettingsHelper;
 import pconley.vamp.util.BroadcastConstants;
 import android.app.IntentService;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 /**
  * Scan the media folder defined in the app's preferences. Work is performed in
- * a worker thread. If scan Intents are sent while a scan is in progress, they
- * will be quietly ignored.
+ * a worker thread.
  * 
  * When a scan is complete a broadcast message with
  * {@link BroadcastConstants#FILTER_SCANNER} will be sent.
@@ -26,12 +21,8 @@ import android.util.Log;
 public class ScannerService extends IntentService {
 	private static final String TAG = "Scanner Service";
 
-	private boolean isRunningScan = false;
-
 	/**
 	 * Constructor. Do not call this explicitly.
-	 * 
-	 * @param name
 	 */
 	public ScannerService() {
 		super("ScannerService");
@@ -41,37 +32,33 @@ public class ScannerService extends IntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		// Ignore intents sent while a scan is in progress
-		if (isRunningScan) {
-			return;
-		}
-		isRunningScan = true;
-
-		SettingsHelper settings = new SettingsHelper(getApplicationContext());
+		SettingsHelper settings = new SettingsHelper(getBaseContext());
 
 		// Prohibit scanning into the sample library
 		if (settings.getDebugMode()) {
-			Log.w(TAG, "Abort scan to debug library");
+			Log.w(TAG, "Abort scan: debug mode is set");
+			broadcastResult(R.string.scan_error_debug_mode);
 			return;
 		} else if (settings.getMusicFolder() == null) {
 			Log.w(TAG, "Abort scan: no music folder set");
+			broadcastResult(R.string.scan_error_no_music_folder);
 			return;
 		}
+		
+		new FilesystemScanner(getBaseContext()).scanMusicFolder();
 
-		// Clear the database
-		SQLiteDatabase db = new LibraryOpenHelper(getApplicationContext())
-				.getWritableDatabase();
-		db.execSQL("DELETE FROM " + TrackTagRelation.NAME);
-		db.execSQL("DELETE FROM " + TrackEntry.NAME);
-		db.execSQL("DELETE FROM " + TagEntry.NAME);
-		db.close();
+		Log.i(TAG, "Scan complete");
+		broadcastResult(R.string.scan_done);
+	}
 
-		new FilesystemScanner(getApplicationContext()).scanMediaFolder();
-		isRunningScan = false;
-
+	private void broadcastResult(int scanStatus) {
 		Intent broadcastIntent = new Intent(BroadcastConstants.FILTER_SCANNER);
 
-		LocalBroadcastManager.getInstance(getApplicationContext())
+		broadcastIntent.putExtra(BroadcastConstants.EXTRA_MESSAGE,
+				getString(scanStatus));
+
+		LocalBroadcastManager.getInstance(getBaseContext())
 				.sendBroadcast(broadcastIntent);
 	}
+
 }

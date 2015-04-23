@@ -1,16 +1,14 @@
 package pconley.vamp.scanner;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
-import pconley.vamp.db.TrackDAO;
+import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.preferences.SettingsHelper;
-import pconley.vamp.util.FileUtils;
-import wseemann.media.FFmpegMediaMetadataRetriever;
 import android.content.Context;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.util.Log;
+import android.util.SparseArray;
 
 /**
  * Scan for media files in the Media Folder defined in the app's preferences;
@@ -26,52 +24,47 @@ public class FilesystemScanner {
 
 	private SettingsHelper settings;
 	private TrackDAO dao;
-	private Context context;
 
 	// I use this instead of MediaMetadataRetriever as that class doesn't return
 	// any tags for the MP3 files I've tested against.
-	private FFmpegMediaMetadataRetriever metadataRetriever;
+	private MediaMetadataRetriever metadataRetriever;
 
-	private Map<String, String> metadataKeys;
+	private SparseArray<String> metadataKeys;
 
 	public FilesystemScanner(Context context) {
-		this.context = context;
-
 		settings = new SettingsHelper(context);
 		dao = new TrackDAO(context);
 
 		// Define a mapping between a minimal set of metadata keys and
 		// appropriate names.
-		metadataKeys = new HashMap<String, String>();
-		metadataKeys.put(FFmpegMediaMetadataRetriever.METADATA_KEY_ALBUM,
-				"album");
-		metadataKeys.put(
-				FFmpegMediaMetadataRetriever.METADATA_KEY_ALBUM_ARTIST,
+		metadataKeys = new SparseArray<String>();
+		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_ALBUM, "album");
+		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST,
 				"albumartist");
-		metadataKeys.put(FFmpegMediaMetadataRetriever.METADATA_KEY_ARTIST,
-				"artist");
-		metadataKeys.put(FFmpegMediaMetadataRetriever.METADATA_KEY_GENRE,
-				"genre");
-		metadataKeys.put(FFmpegMediaMetadataRetriever.METADATA_KEY_TRACK,
+		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_ARTIST, "artist");
+		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_GENRE, "genre");
+		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER,
 				"tracknumber");
-		metadataKeys.put(FFmpegMediaMetadataRetriever.METADATA_KEY_COMPOSER,
-				"composer");
-		metadataKeys.put(FFmpegMediaMetadataRetriever.METADATA_KEY_DISC,
+		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_DISC_NUMBER,
 				"discnumber");
-		metadataKeys.put(FFmpegMediaMetadataRetriever.METADATA_KEY_TITLE,
-				"title");
+		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_COMPOSER,
+				"composer");
+		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_TITLE, "title");
 	}
 
 	/**
 	 * Scan for music files, starting at the directory given by the Music Folder
 	 * preference item. Abort (displaying a warning if the app is in the
-	 * foreground) if the Music Folder isn't a readable directory.
+	 * foreground) if the Music Folder isn't a readable directory. If the
+	 * database already contains tracks, then those will first be deleted.
 	 * 
 	 * Don't call this from the UI thread.
 	 */
-	public void scanMediaFolder() {
+	public void scanMusicFolder() {
 		dao.openWritableDatabase();
-		metadataRetriever = new FFmpegMediaMetadataRetriever();
+		dao.wipeDatabase();
+
+		metadataRetriever = new MediaMetadataRetriever();
 
 		scanDir(new File(settings.getMusicFolder()));
 
@@ -83,8 +76,8 @@ public class FilesystemScanner {
 	private void scanDir(File path) {
 
 		// Check the directory is readable
-		if (!FileUtils.validateDirectory(path, context.getApplicationContext())) {
-			Log.w(TAG, "Media directory is invalid");
+		if (!(path.exists() && path.isDirectory() && path.canExecute())) {
+			Log.w(TAG, "Directory is invalid");
 			return;
 		}
 
@@ -120,18 +113,23 @@ public class FilesystemScanner {
 		// the retriever determine what it can read.
 		try {
 			metadataRetriever.setDataSource(file.getAbsolutePath());
-		} catch (IllegalArgumentException e) {
-			Log.v(TAG, "Skipping file (not media)");
-			return; // The file isn't media.
+		} catch (RuntimeException e) {
+			if (e.getMessage().endsWith("0xFFFFFFEA")) {
+				Log.v(TAG, "Skipping file (not media)");
+				return;
+			} else {
+				throw e;
+			}
 		}
 
 		trackId = dao.insertTrack(Uri.fromFile(file));
 
 		// Read and store data for each key
-		for (String key : metadataKeys.keySet()) {
-			String metadata = metadataRetriever.extractMetadata(key);
+		for (int i = 0; i < metadataKeys.size(); i++) {
+			String metadata = metadataRetriever.extractMetadata(metadataKeys
+					.keyAt(i));
 			if (metadata != null) {
-				dao.insertTag(trackId, metadataKeys.get(key), metadata);
+				dao.insertTag(trackId, metadataKeys.valueAt(i), metadata);
 			}
 		}
 
