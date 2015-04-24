@@ -48,8 +48,20 @@ public class ScannerService extends IntentService {
 			return;
 		}
 
-		FilesystemScanner scanner = new FilesystemScanner(getBaseContext());
-		scanner.countFolders();
+		FilesystemScanner scanner = new FilesystemScanner(getBaseContext(),
+				settings.getMusicFolder());
+
+		// Count the number of expected files to get a limit for the progress
+		// bar.
+		int count = scanner.countMusicFiles();
+
+		Intent broadcastIntent = new Intent(BroadcastConstants.FILTER_SCANNER);
+		broadcastIntent.putExtra(BroadcastConstants.EXTRA_EVENT,
+				ScannerEvent.UPDATE);
+		broadcastIntent.putExtra(BroadcastConstants.EXTRA_TOTAL, count);
+		LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
+
+		// Run the scan.
 		scanner.scanMusicFolder();
 
 		Log.i(TAG, "Scan complete");

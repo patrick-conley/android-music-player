@@ -31,7 +31,7 @@ public final class BroadcastConstants {
 
 	/**
 	 * Number of files scanned so far by {@link FilesystemScanner}. If either
-	 * this or {@link #EXTRA_MAX} is set, then a broadcast with FILTER_SCANNER
+	 * this or {@link #EXTRA_TOTAL} is set, then a broadcast with FILTER_SCANNER
 	 * is assumed to be an update. Otherwise a broadcast announces the scanner
 	 * is finished. {@link #EXTRA_MESSAGE} might be used for information about
 	 * the current file.
@@ -42,7 +42,7 @@ public final class BroadcastConstants {
 	 * Estimated total number of files and directories to be scanned by
 	 * {@link FilesystemScanner}. See {@link #EXTRA_PROGRESS}.
 	 */
-	public static final String EXTRA_MAX = "pconley.vamp.broadcast.scanner.max";
+	public static final String EXTRA_TOTAL = "pconley.vamp.broadcast.scanner.max";
 
 	/**
 	 * Private constructor.

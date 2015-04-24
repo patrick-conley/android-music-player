@@ -3,7 +3,6 @@ package pconley.vamp.scanner;
 import java.io.File;
 
 import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.preferences.SettingsHelper;
 import pconley.vamp.util.BroadcastConstants;
 import android.content.Context;
 import android.content.Intent;
@@ -35,8 +34,9 @@ public class FilesystemScanner {
 
 	private SparseArray<String> metadataKeys;
 
-	public FilesystemScanner(Context context) {
-		musicFolder = new File(new SettingsHelper(context).getMusicFolder());
+	public FilesystemScanner(Context context, File musicFolder) {
+		this.musicFolder = musicFolder;
+
 		dao = new TrackDAO(context);
 		broadcastManager = LocalBroadcastManager.getInstance(context);
 
@@ -63,10 +63,13 @@ public class FilesystemScanner {
 	 * foreground) if the Music Folder isn't a readable directory. If the
 	 * database already contains tracks, then those will first be deleted.
 	 * 
+	 * <p>
 	 * Sends a broadcast each time it enters a folder with the current folder
 	 * (relative to the Music Folder) name and number of tracks scanned.
 	 * 
-	 * Don't call this from the UI thread.
+	 * <p>
+	 * Don't call this from the UI thread. The metadata retriever can only scan
+	 * 5-10 files per second.
 	 */
 	public void scanMusicFolder() {
 		Log.i(TAG, "Scanning for music");
@@ -83,20 +86,19 @@ public class FilesystemScanner {
 	}
 
 	/**
-	 * Count the number of folders descendent from the Music Folder.
+	 * Count the number of files in the music folder and its children.
 	 * 
-	 * Sends a single broadcast when finished to announce the total.
+	 * <p>
+	 * This can scan ~1000 files per second, which may block the UI on large
+	 * libraries.
 	 */
-	public void countFolders() {
+	public int countMusicFiles() {
 		Log.i(TAG, "Counting music files");
 		max = 0;
 		scanDir(musicFolder, true);
 		progress = 0;
 
-		Intent intent = new Intent(BroadcastConstants.FILTER_SCANNER);
-		intent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.UPDATE);
-		intent.putExtra(BroadcastConstants.EXTRA_MAX, max);
-		broadcastManager.sendBroadcast(intent);
+		return max;
 	}
 
 	// FIXME: directory loops will cause an infinite recursion
@@ -118,11 +120,12 @@ public class FilesystemScanner {
 		}
 
 		if (!countOnly) {
+			String folder = path.toString().replace(musicFolder.toString(), "");
+			folder.replaceFirst("^/", "");
+
 			Intent intent = new Intent(BroadcastConstants.FILTER_SCANNER);
 			intent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.UPDATE);
-			intent.putExtra(BroadcastConstants.EXTRA_PROGRESS, progress);
-			intent.putExtra(BroadcastConstants.EXTRA_MESSAGE, path.toString()
-					.replace(musicFolder.toString() + "/", ""));
+			intent.putExtra(BroadcastConstants.EXTRA_MESSAGE, folder);
 
 			broadcastManager.sendBroadcast(intent);
 		}
@@ -148,9 +151,9 @@ public class FilesystemScanner {
 			return;
 		}
 
+		// Update the count
 		Log.v(TAG, "Scanning file " + file.toString());
 
-		// Update the count
 		Intent intent = new Intent(BroadcastConstants.FILTER_SCANNER);
 		intent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.UPDATE);
 		intent.putExtra(BroadcastConstants.EXTRA_PROGRESS, progress);

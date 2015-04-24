@@ -114,9 +114,9 @@ public class ScannerProgressDialogFragment extends DialogFragment {
 				break;
 			case UPDATE:
 
-				if (intent.hasExtra(BroadcastConstants.EXTRA_MAX)) {
+				if (intent.hasExtra(BroadcastConstants.EXTRA_TOTAL)) {
 					progressBar.setIndeterminate(false);
-					setMax(intent.getIntExtra(BroadcastConstants.EXTRA_MAX, 0));
+					setMax(intent.getIntExtra(BroadcastConstants.EXTRA_TOTAL, 0));
 				}
 
 				if (intent.hasExtra(BroadcastConstants.EXTRA_PROGRESS)) {

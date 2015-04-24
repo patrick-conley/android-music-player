@@ -41,13 +41,12 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 	private CountDownLatch latch;
 	private static final int WAIT_TIME = 1000;
 
-	private BroadcastReceiver receiver;
 	private SharedPreferences preferences;
 	private Intent scannerIntent;
-
 	private TrackDAO dao;
 
-	private String status;
+	private BroadcastReceiver receiver;
+	private String finalStatus;
 
 	public ScannerServiceTest() {
 		super(ScannerService.class);
@@ -71,6 +70,8 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 
 		scannerIntent = new Intent(getContext(), ScannerService.class);
 
+		finalStatus = null;
+
 		LocalBroadcastManager.getInstance(context).registerReceiver(receiver,
 				new IntentFilter(BroadcastConstants.FILTER_SCANNER));
 	}
@@ -85,8 +86,6 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 		dao.openWritableDatabase();
 		dao.wipeDatabase();
 		dao.close();
-
-		status = null;
 
 		super.tearDown();
 	}
@@ -107,7 +106,8 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 
 		// Then
 		assertEquals("Scanner requires non-debug mode",
-				getContext().getString(R.string.scan_error_debug_mode), status);
+				getContext().getString(R.string.scan_error_debug_mode),
+				finalStatus);
 	}
 
 	/**
@@ -143,12 +143,12 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 		// Then
 		assertEquals("Scanner requires a music folder",
 				getContext().getString(R.string.scan_error_no_music_folder),
-				status);
+				finalStatus);
 	}
 
 	/**
 	 * Given preferences are valid, when I run the scanner, then it finishes
-	 * with a message
+	 * with a message.
 	 */
 	public void testSuccessfulScan() throws InterruptedException, IOException {
 		// Given
@@ -162,7 +162,7 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 
 		// Then
 		assertEquals("Scanner runs with valid app preferences", getContext()
-				.getString(R.string.scan_done), status);
+				.getString(R.string.scan_done), finalStatus);
 	}
 
 	/**
@@ -186,7 +186,7 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 
 		// Then
 		assertEquals("Scan completed",
-				getContext().getString(R.string.scan_done), status);
+				getContext().getString(R.string.scan_done), finalStatus);
 		dao.openReadableDatabase();
 		List<Long> ids = dao.getIds();
 		assertNotEmpty("Files have been scanned", ids);
@@ -197,15 +197,18 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 
 	/**
 	 * Listen for broadcasts from ScannerService and set the global
-	 * {@link ScannerServiceTest#status} according to the broadcast's message.
+	 * {@link ScannerServiceTest#finalStatus} according to the broadcast's
+	 * message.
 	 */
 	private class ScannerBroadcastReceiver extends BroadcastReceiver {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			if ((ScannerEvent) intent
-					.getSerializableExtra(BroadcastConstants.EXTRA_EVENT) == ScannerEvent.FINISHED) {
-				status = intent
+			ScannerEvent event = (ScannerEvent) intent
+					.getSerializableExtra(BroadcastConstants.EXTRA_EVENT);
+
+			if (event == ScannerEvent.FINISHED) {
+				finalStatus = intent
 						.getStringExtra(BroadcastConstants.EXTRA_MESSAGE);
 				latch.countDown();
 			}
