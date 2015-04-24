@@ -13,6 +13,7 @@ import pconley.vamp.R;
 import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.library.model.Track;
 import pconley.vamp.preferences.SettingsHelper;
+import pconley.vamp.scanner.ScannerEvent;
 import pconley.vamp.scanner.ScannerService;
 import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.BroadcastConstants;
@@ -202,8 +203,12 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			status = intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE);
-			latch.countDown();
+			if ((ScannerEvent) intent
+					.getSerializableExtra(BroadcastConstants.EXTRA_EVENT) == ScannerEvent.FINISHED) {
+				status = intent
+						.getStringExtra(BroadcastConstants.EXTRA_MESSAGE);
+				latch.countDown();
+			}
 		}
 
 	}

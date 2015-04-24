@@ -7,6 +7,8 @@ import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.preferences.SettingsActivity;
+import pconley.vamp.scanner.ScannerEvent;
+import pconley.vamp.scanner.ScannerProgressDialogFragment;
 import pconley.vamp.scanner.ScannerService;
 import pconley.vamp.util.BroadcastConstants;
 import android.app.Activity;
@@ -35,7 +37,7 @@ public class LibraryActivity extends Activity {
 	private ListView trackListView;
 	private long[] trackIds;
 
-	private ProgressDialog scanningDialog;
+	private ScannerProgressDialogFragment scanningDialog;
 
 	private LocalBroadcastManager broadcastManager;
 
@@ -47,7 +49,7 @@ public class LibraryActivity extends Activity {
 	/*
 	 * Receiver completion notice from the media scanner.
 	 */
-	private BroadcastReceiver scannerReceiver;
+	private ScannerBroadcastReceiver scannerReceiver;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -71,18 +73,7 @@ public class LibraryActivity extends Activity {
 			}
 		};
 
-		scannerReceiver = new BroadcastReceiver() {
-
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				Toast.makeText(
-						LibraryActivity.this,
-						intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
-						Toast.LENGTH_LONG).show();
-				scanningDialog.dismiss();
-				new LoadTrackListTask().execute();
-			}
-		};
+		scannerReceiver = new ScannerBroadcastReceiver();
 
 		// Get the list of tracks in the library. If one is clicked, play it and
 		// open the Now Playing screen.
@@ -126,6 +117,7 @@ public class LibraryActivity extends Activity {
 
 		if (scanningDialog != null) {
 			scanningDialog.dismiss();
+			scanningDialog = null;
 		}
 
 		super.onPause();
@@ -151,13 +143,11 @@ public class LibraryActivity extends Activity {
 			startActivity(new Intent(this, SettingsActivity.class));
 			return true;
 		case R.id.action_rescan:
-			scanningDialog = new ProgressDialog(this);
-			scanningDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-			scanningDialog.setTitle(R.string.activity_library_scanning);
-			scanningDialog.setCanceledOnTouchOutside(false);
-			scanningDialog.setIndeterminate(true);
+			scanningDialog = new ScannerProgressDialogFragment();
+			scanningDialog.show(getFragmentManager(), "scan progress");
+
 			startService(new Intent(this, ScannerService.class));
-			scanningDialog.show();
+
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -204,6 +194,49 @@ public class LibraryActivity extends Activity {
 			}
 
 			dialog.dismiss();
+		}
+
+	}
+
+	private class ScannerBroadcastReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+
+			switch ((ScannerEvent) intent
+					.getSerializableExtra(BroadcastConstants.EXTRA_EVENT)) {
+			case FINISHED:
+
+				scanningDialog.dismiss();
+				scanningDialog = null;
+				new LoadTrackListTask().execute();
+
+				Toast.makeText(
+						LibraryActivity.this,
+						intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
+						Toast.LENGTH_LONG).show();
+
+				break;
+			case UPDATE:
+
+				if (intent.hasExtra(BroadcastConstants.EXTRA_MAX)) {
+					scanningDialog.setIndeterminate(false);
+					scanningDialog.setMax(intent.getIntExtra(
+							BroadcastConstants.EXTRA_MAX, 0));
+				}
+				if (intent.hasExtra(BroadcastConstants.EXTRA_PROGRESS)) {
+					scanningDialog.setProgress(intent.getIntExtra(
+							BroadcastConstants.EXTRA_PROGRESS, 0));
+				}
+
+				if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
+					scanningDialog.displayComment(intent
+							.getStringExtra(BroadcastConstants.EXTRA_MESSAGE));
+				}
+
+				break;
+			}
+
 		}
 
 	}

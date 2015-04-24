@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/generic_padding" >
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:paddingTop="@dimen/generic_padding" />
+
+    <TextView
+        android:id="@+id/progress_comment"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/progress_bar"
+        android:layout_toLeftOf="@+id/progress_totals"
+        android:text="@string/fragment_progress_counting"
+        android:textSize="@dimen/text_size" />
+
+    <TextView
+        android:id="@+id/progress_totals"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/progress_bar"
+        android:paddingLeft="@dimen/generic_padding"
+        android:layout_alignParentRight="true"
+        android:textSize="@dimen/text_size" />
+
+</RelativeLayout>

@@ -28,7 +28,6 @@
     <!-- Library -->
     <string name="activity_library_name">Library</string>
     <string name="activity_library_scan">Rebuild library</string>
-    <string name="activity_library_scanning">Scanning media folders</string>
 
     <!-- Media scanner -->
     <string name="scan_done">Scan complete</string>
@@ -37,5 +36,9 @@
     <string name="scan_error_not_readable">Directory contents are not readable</string>
     <string name="scan_error_debug_mode">Scan aborted: prohibited in debug mode</string>
     <string name="scan_error_no_music_folder">Scan aborted: Music folder has not been set</string>
+    
+    <!-- Scanner progress dialog -->
+    <string name="fragment_progress_name">Scanning media folders</string>
+    <string name="fragment_progress_counting">Counting music files</string>
 
 </resources>
