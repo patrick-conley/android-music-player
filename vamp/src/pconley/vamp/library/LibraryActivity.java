@@ -7,7 +7,6 @@ import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.preferences.SettingsActivity;
-import pconley.vamp.scanner.ScannerEvent;
 import pconley.vamp.scanner.ScannerProgressDialogFragment;
 import pconley.vamp.scanner.ScannerService;
 import pconley.vamp.util.BroadcastConstants;
@@ -46,11 +45,6 @@ public class LibraryActivity extends Activity {
 	 */
 	private BroadcastReceiver playerEventReceiver;
 
-	/*
-	 * Receiver completion notice from the media scanner.
-	 */
-	private ScannerBroadcastReceiver scannerReceiver;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -73,11 +67,9 @@ public class LibraryActivity extends Activity {
 			}
 		};
 
-		scannerReceiver = new ScannerBroadcastReceiver();
-
 		// Get the list of tracks in the library. If one is clicked, play it and
 		// open the Now Playing screen.
-		new LoadTrackListTask().execute();
+		loadLibrary();
 
 		trackListView = (ListView) findViewById(R.id.track_list);
 		trackListView.setOnItemClickListener(new OnItemClickListener() {
@@ -105,19 +97,15 @@ public class LibraryActivity extends Activity {
 
 		broadcastManager.registerReceiver(playerEventReceiver,
 				new IntentFilter(BroadcastConstants.FILTER_PLAYER_EVENT));
-		broadcastManager.registerReceiver(scannerReceiver, new IntentFilter(
-				BroadcastConstants.FILTER_SCANNER));
 
 	}
 
 	@Override
 	protected void onPause() {
 		broadcastManager.unregisterReceiver(playerEventReceiver);
-		broadcastManager.unregisterReceiver(scannerReceiver);
 
-		if (scanningDialog != null) {
+		if (scanningDialog != null && scanningDialog.isAdded()) {
 			scanningDialog.dismiss();
-			scanningDialog = null;
 		}
 
 		super.onPause();
@@ -152,6 +140,14 @@ public class LibraryActivity extends Activity {
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	/**
+	 * Read the contents of the library and fill the library View. Work is done
+	 * in a background thread.
+	 */
+	public void loadLibrary() {
+		new LoadTrackListTask().execute();
 	}
 
 	/*
@@ -194,49 +190,6 @@ public class LibraryActivity extends Activity {
 			}
 
 			dialog.dismiss();
-		}
-
-	}
-
-	private class ScannerBroadcastReceiver extends BroadcastReceiver {
-
-		@Override
-		public void onReceive(Context context, Intent intent) {
-
-			switch ((ScannerEvent) intent
-					.getSerializableExtra(BroadcastConstants.EXTRA_EVENT)) {
-			case FINISHED:
-
-				scanningDialog.dismiss();
-				scanningDialog = null;
-				new LoadTrackListTask().execute();
-
-				Toast.makeText(
-						LibraryActivity.this,
-						intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
-						Toast.LENGTH_LONG).show();
-
-				break;
-			case UPDATE:
-
-				if (intent.hasExtra(BroadcastConstants.EXTRA_MAX)) {
-					scanningDialog.setIndeterminate(false);
-					scanningDialog.setMax(intent.getIntExtra(
-							BroadcastConstants.EXTRA_MAX, 0));
-				}
-				if (intent.hasExtra(BroadcastConstants.EXTRA_PROGRESS)) {
-					scanningDialog.setProgress(intent.getIntExtra(
-							BroadcastConstants.EXTRA_PROGRESS, 0));
-				}
-
-				if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
-					scanningDialog.displayComment(intent
-							.getStringExtra(BroadcastConstants.EXTRA_MESSAGE));
-				}
-
-				break;
-			}
-
 		}
 
 	}

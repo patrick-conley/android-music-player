@@ -31,8 +31,6 @@ public class FilesystemScanner {
 	private TrackDAO dao;
 	private LocalBroadcastManager broadcastManager;
 
-	// I use this instead of MediaMetadataRetriever as that class doesn't return
-	// any tags for the MP3 files I've tested against.
 	private MediaMetadataRetriever metadataRetriever;
 
 	private SparseArray<String> metadataKeys;
@@ -67,6 +65,8 @@ public class FilesystemScanner {
 	 * 
 	 * Sends a broadcast each time it enters a folder with the current folder
 	 * (relative to the Music Folder) name and number of tracks scanned.
+	 * 
+	 * Don't call this from the UI thread.
 	 */
 	public void scanMusicFolder() {
 		Log.i(TAG, "Scanning for music");
@@ -95,7 +95,7 @@ public class FilesystemScanner {
 
 		Intent intent = new Intent(BroadcastConstants.FILTER_SCANNER);
 		intent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.UPDATE);
-		intent.putExtra( BroadcastConstants.EXTRA_MAX, max);
+		intent.putExtra(BroadcastConstants.EXTRA_MAX, max);
 		broadcastManager.sendBroadcast(intent);
 	}
 

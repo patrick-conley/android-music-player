@@ -14,20 +14,13 @@ import android.util.Log;
  * 
  * Scan for media files in the Media Folder defined in the app's preferences;
  * add conventional metadata from these files to the app database. A ".nomedia"
- * file is respected. Work is done in a background thread
+ * file is respected. Work is done in a background thread.
  * 
  * When a scan is complete a broadcast message with
  * {@link BroadcastConstants#FILTER_SCANNER} will be sent.
  * 
  * @author pconley
  */
-/**
- * Scan for music files, starting at the directory given by the Music Folder
- * preference item. Abort (displaying a warning if the app is in the foreground)
- * if the Music Folder isn't a readable directory. If the database already
- * contains tracks, then those will first be deleted.
- */
-
 public class ScannerService extends IntentService {
 	private static final String TAG = "Scanner Service";
 
@@ -54,7 +47,7 @@ public class ScannerService extends IntentService {
 			broadcastResult(R.string.scan_error_no_music_folder);
 			return;
 		}
-		
+
 		FilesystemScanner scanner = new FilesystemScanner(getBaseContext());
 		scanner.countFolders();
 		scanner.scanMusicFolder();
