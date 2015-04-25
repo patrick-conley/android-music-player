@@ -121,7 +121,9 @@ public class FilesystemScanner {
 
 		if (!countOnly) {
 			String folder = path.toString().replace(musicFolder.toString(), "");
-			folder.replaceFirst("^/", "");
+			if (folder.length() > 0) {
+				folder.substring(1); // skip the leading slash
+			}
 
 			Intent intent = new Intent(BroadcastConstants.FILTER_SCANNER);
 			intent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.UPDATE);
