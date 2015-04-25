@@ -23,8 +23,10 @@ import android.util.SparseArray;
 public class FilesystemScanner {
 	private static final String TAG = "FilesystemScanner";
 
-	int progress = 0;
-	int max = 0;
+	private static boolean isScanInProgress = false;
+
+	private int progress = 0;
+	private int total = 0;
 
 	private File musicFolder;
 	private TrackDAO dao;
@@ -57,6 +59,10 @@ public class FilesystemScanner {
 		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_TITLE, "title");
 	}
 
+	public static boolean isScanInProgress() {
+		return isScanInProgress;
+	}
+
 	/**
 	 * Scan for music files, starting at the directory given by the Music Folder
 	 * preference item. Abort (displaying a warning if the app is in the
@@ -74,15 +80,18 @@ public class FilesystemScanner {
 	public void scanMusicFolder() {
 		Log.i(TAG, "Scanning for music");
 
+		isScanInProgress = true;
+
+		metadataRetriever = new MediaMetadataRetriever();
 		dao.openWritableDatabase();
 		dao.wipeDatabase();
 
-		metadataRetriever = new MediaMetadataRetriever();
-
 		scanDir(musicFolder, false);
 
-		metadataRetriever.release();
 		dao.close();
+		metadataRetriever.release();
+
+		isScanInProgress = false;
 	}
 
 	/**
@@ -94,11 +103,16 @@ public class FilesystemScanner {
 	 */
 	public int countMusicFiles() {
 		Log.i(TAG, "Counting music files");
-		max = 0;
+
+		isScanInProgress = true;
+
+		total = 0;
 		scanDir(musicFolder, true);
 		progress = 0;
 
-		return max;
+		isScanInProgress = false;
+
+		return total;
 	}
 
 	// FIXME: directory loops will cause an infinite recursion
@@ -122,11 +136,15 @@ public class FilesystemScanner {
 		if (!countOnly) {
 			String folder = path.toString().replace(musicFolder.toString(), "");
 			if (folder.length() > 0) {
-				folder.substring(1); // skip the leading slash
+				folder = folder.substring(1); // skip the leading slash
 			}
 
+			// Broadcast folder information.
+			// Total is included in case a listening activity was closed &
+			// reopened, and needs that info.
 			Intent intent = new Intent(BroadcastConstants.FILTER_SCANNER);
 			intent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.UPDATE);
+			intent.putExtra(BroadcastConstants.EXTRA_TOTAL, total);
 			intent.putExtra(BroadcastConstants.EXTRA_MESSAGE, folder);
 
 			broadcastManager.sendBroadcast(intent);
@@ -137,7 +155,7 @@ public class FilesystemScanner {
 			if (file.isDirectory()) {
 				scanDir(file, countOnly);
 			} else if (countOnly) {
-				max++;
+				total++;
 			} else {
 				scanFile(file);
 			}

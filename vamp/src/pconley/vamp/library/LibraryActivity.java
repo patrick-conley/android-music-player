@@ -7,6 +7,7 @@ import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.preferences.SettingsActivity;
+import pconley.vamp.scanner.FilesystemScanner;
 import pconley.vamp.scanner.ScannerProgressDialogFragment;
 import pconley.vamp.scanner.ScannerService;
 import pconley.vamp.util.BroadcastConstants;
@@ -66,6 +67,12 @@ public class LibraryActivity extends Activity {
 
 			}
 		};
+		
+		// Check if the filesystem is being scanned and add its dialog if so.
+		if (FilesystemScanner.isScanInProgress()) {
+			scanningDialog = new ScannerProgressDialogFragment();
+			scanningDialog.show(getFragmentManager(), "scan progress");
+		}
 
 		// Get the list of tracks in the library. If one is clicked, play it and
 		// open the Now Playing screen.
