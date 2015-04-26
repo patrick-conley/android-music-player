@@ -1,5 +1,7 @@
 package pconley.vamp.player;
 
+import pconley.vamp.util.BroadcastConstants;
+
 /**
  * Events that can be broadcast from the player to clients within the app.
  * 
@@ -23,13 +25,14 @@ public enum PlayerEvent {
 
 	/**
 	 * The current track has been paused. If it wasn't paused by a user
-	 * EXTRA_MESSAGE will have an explanation.
+	 * {@link BroadcastConstants#EXTRA_MESSAGE} will have an explanation.
 	 */
 	PAUSE,
 
 	/**
 	 * The player has finished all tracks or encountered an error. If the
-	 * latter, EXTRA_MESSAGE will have an explanation.
+	 * latter, {@link BroadcastConstants#EXTRA_MESSAGE} will have an
+	 * explanation.
 	 */
 	STOP
 

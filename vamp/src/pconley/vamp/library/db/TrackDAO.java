@@ -178,6 +178,8 @@ public class TrackDAO {
 			results.moveToFirst();
 			tagId = results.getLong(results.getColumnIndex(TagEntry.COLUMN_ID));
 		}
+		
+		results.close();
 
 		library.beginTransaction();
 		try {

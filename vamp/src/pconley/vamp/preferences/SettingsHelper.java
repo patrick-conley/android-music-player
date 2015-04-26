@@ -1,5 +1,7 @@
 package pconley.vamp.preferences;
 
+import java.io.File;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -33,8 +35,14 @@ public class SettingsHelper {
 	/**
 	 * @return The path to the music folder.
 	 */
-	public String getMusicFolder() {
-		return preferences.getString(KEY_MUSIC_FOLDER, null);
+	public File getMusicFolder() {
+		String musicFolder = preferences.getString(KEY_MUSIC_FOLDER, null);
+		
+		if (musicFolder == null) {
+			return null;
+		} else {
+			return new File(musicFolder);
+		}
 	}
 
 	/**

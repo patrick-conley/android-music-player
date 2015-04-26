@@ -7,6 +7,8 @@ import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.preferences.SettingsActivity;
+import pconley.vamp.scanner.FilesystemScanner;
+import pconley.vamp.scanner.ScannerProgressDialogFragment;
 import pconley.vamp.scanner.ScannerService;
 import pconley.vamp.util.BroadcastConstants;
 import android.app.Activity;
@@ -35,7 +37,7 @@ public class LibraryActivity extends Activity {
 	private ListView trackListView;
 	private long[] trackIds;
 
-	private ProgressDialog scanningDialog;
+	private ScannerProgressDialogFragment scanningDialog;
 
 	private LocalBroadcastManager broadcastManager;
 
@@ -43,11 +45,6 @@ public class LibraryActivity extends Activity {
 	 * Receive status messages from the player. Only necessary to show errors.
 	 */
 	private BroadcastReceiver playerEventReceiver;
-
-	/*
-	 * Receiver completion notice from the media scanner.
-	 */
-	private BroadcastReceiver scannerReceiver;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -70,23 +67,16 @@ public class LibraryActivity extends Activity {
 
 			}
 		};
-
-		scannerReceiver = new BroadcastReceiver() {
-
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				Toast.makeText(
-						LibraryActivity.this,
-						intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
-						Toast.LENGTH_LONG).show();
-				scanningDialog.dismiss();
-				new LoadTrackListTask().execute();
-			}
-		};
+		
+		// Check if the filesystem is being scanned and add its dialog if so.
+		if (FilesystemScanner.isScanInProgress()) {
+			scanningDialog = new ScannerProgressDialogFragment();
+			scanningDialog.show(getFragmentManager(), "scan progress");
+		}
 
 		// Get the list of tracks in the library. If one is clicked, play it and
 		// open the Now Playing screen.
-		new LoadTrackListTask().execute();
+		loadLibrary();
 
 		trackListView = (ListView) findViewById(R.id.track_list);
 		trackListView.setOnItemClickListener(new OnItemClickListener() {
@@ -114,17 +104,14 @@ public class LibraryActivity extends Activity {
 
 		broadcastManager.registerReceiver(playerEventReceiver,
 				new IntentFilter(BroadcastConstants.FILTER_PLAYER_EVENT));
-		broadcastManager.registerReceiver(scannerReceiver, new IntentFilter(
-				BroadcastConstants.FILTER_SCANNER));
 
 	}
 
 	@Override
 	protected void onPause() {
 		broadcastManager.unregisterReceiver(playerEventReceiver);
-		broadcastManager.unregisterReceiver(scannerReceiver);
 
-		if (scanningDialog != null) {
+		if (scanningDialog != null && scanningDialog.isAdded()) {
 			scanningDialog.dismiss();
 		}
 
@@ -151,17 +138,23 @@ public class LibraryActivity extends Activity {
 			startActivity(new Intent(this, SettingsActivity.class));
 			return true;
 		case R.id.action_rescan:
-			scanningDialog = new ProgressDialog(this);
-			scanningDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-			scanningDialog.setTitle(R.string.activity_library_scanning);
-			scanningDialog.setCanceledOnTouchOutside(false);
-			scanningDialog.setIndeterminate(true);
+			scanningDialog = new ScannerProgressDialogFragment();
+			scanningDialog.show(getFragmentManager(), "scan progress");
+
 			startService(new Intent(this, ScannerService.class));
-			scanningDialog.show();
+
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	/**
+	 * Read the contents of the library and fill the library View. Work is done
+	 * in a background thread.
+	 */
+	public void loadLibrary() {
+		new LoadTrackListTask().execute();
 	}
 
 	/*

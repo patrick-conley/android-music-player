@@ -3,10 +3,12 @@ package pconley.vamp.scanner;
 import java.io.File;
 
 import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.preferences.SettingsHelper;
+import pconley.vamp.util.BroadcastConstants;
 import android.content.Context;
+import android.content.Intent;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -19,21 +21,26 @@ import android.util.SparseArray;
  *
  */
 public class FilesystemScanner {
-
 	private static final String TAG = "FilesystemScanner";
 
-	private SettingsHelper settings;
-	private TrackDAO dao;
+	private static boolean isScanInProgress = false;
 
-	// I use this instead of MediaMetadataRetriever as that class doesn't return
-	// any tags for the MP3 files I've tested against.
+	private int progress = 0;
+	private int total = 0;
+
+	private File musicFolder;
+	private TrackDAO dao;
+	private LocalBroadcastManager broadcastManager;
+
 	private MediaMetadataRetriever metadataRetriever;
 
 	private SparseArray<String> metadataKeys;
 
-	public FilesystemScanner(Context context) {
-		settings = new SettingsHelper(context);
+	public FilesystemScanner(Context context, File musicFolder) {
+		this.musicFolder = musicFolder;
+
 		dao = new TrackDAO(context);
+		broadcastManager = LocalBroadcastManager.getInstance(context);
 
 		// Define a mapping between a minimal set of metadata keys and
 		// appropriate names.
@@ -52,31 +59,67 @@ public class FilesystemScanner {
 		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_TITLE, "title");
 	}
 
+	public static boolean isScanInProgress() {
+		return isScanInProgress;
+	}
+
 	/**
 	 * Scan for music files, starting at the directory given by the Music Folder
 	 * preference item. Abort (displaying a warning if the app is in the
 	 * foreground) if the Music Folder isn't a readable directory. If the
 	 * database already contains tracks, then those will first be deleted.
 	 * 
-	 * Don't call this from the UI thread.
+	 * <p>
+	 * Sends a broadcast each time it enters a folder with the current folder
+	 * (relative to the Music Folder) name and number of tracks scanned.
+	 * 
+	 * <p>
+	 * Don't call this from the UI thread. The metadata retriever can only scan
+	 * 5-10 files per second.
 	 */
 	public void scanMusicFolder() {
+		Log.i(TAG, "Scanning for music");
+
+		isScanInProgress = true;
+
+		metadataRetriever = new MediaMetadataRetriever();
 		dao.openWritableDatabase();
 		dao.wipeDatabase();
 
-		metadataRetriever = new MediaMetadataRetriever();
+		scanDir(musicFolder, false);
 
-		scanDir(new File(settings.getMusicFolder()));
-
-		metadataRetriever.release();
 		dao.close();
+		metadataRetriever.release();
+
+		isScanInProgress = false;
+	}
+
+	/**
+	 * Count the number of files in the music folder and its children.
+	 * 
+	 * <p>
+	 * This can scan ~1000 files per second, which may block the UI on large
+	 * libraries.
+	 */
+	public int countMusicFiles() {
+		Log.i(TAG, "Counting music files");
+
+		isScanInProgress = true;
+
+		total = 0;
+		scanDir(musicFolder, true);
+		progress = 0;
+
+		isScanInProgress = false;
+
+		return total;
 	}
 
 	// FIXME: directory loops will cause an infinite recursion
-	private void scanDir(File path) {
+	private void scanDir(File path, boolean countOnly) {
 
 		// Check the directory is readable
-		if (!(path.exists() && path.isDirectory() && path.canExecute())) {
+		if (!path.exists() || !path.isDirectory() || !path.canExecute()) {
 			Log.w(TAG, "Directory is invalid");
 			return;
 		}
@@ -90,10 +133,29 @@ public class FilesystemScanner {
 			return;
 		}
 
+		if (!countOnly) {
+			String folder = path.toString().replace(musicFolder.toString(), "");
+			if (folder.length() > 0) {
+				folder = folder.substring(1); // skip the leading slash
+			}
+
+			// Broadcast folder information.
+			// Total is included in case a listening activity was closed &
+			// reopened, and needs that info.
+			Intent intent = new Intent(BroadcastConstants.FILTER_SCANNER);
+			intent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.UPDATE);
+			intent.putExtra(BroadcastConstants.EXTRA_TOTAL, total);
+			intent.putExtra(BroadcastConstants.EXTRA_MESSAGE, folder);
+
+			broadcastManager.sendBroadcast(intent);
+		}
+
 		File[] contents = path.listFiles();
 		for (File file : contents) {
 			if (file.isDirectory()) {
-				scanDir(file);
+				scanDir(file, countOnly);
+			} else if (countOnly) {
+				total++;
 			} else {
 				scanFile(file);
 			}
@@ -103,11 +165,19 @@ public class FilesystemScanner {
 	private void scanFile(File file) {
 		long trackId;
 
+		progress++;
+
 		if (!file.canRead()) {
 			return;
 		}
 
+		// Update the count
 		Log.v(TAG, "Scanning file " + file.toString());
+
+		Intent intent = new Intent(BroadcastConstants.FILTER_SCANNER);
+		intent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.UPDATE);
+		intent.putExtra(BroadcastConstants.EXTRA_PROGRESS, progress);
+		broadcastManager.sendBroadcast(intent);
 
 		// Scan the file. Identifying the MIME type is a bit finnicky, so let
 		// the retriever determine what it can read.
