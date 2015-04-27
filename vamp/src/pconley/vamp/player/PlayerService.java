@@ -117,6 +117,10 @@ public class PlayerService extends Service implements
 
 		broadcastManager = LocalBroadcastManager.getInstance(this);
 		binder = new PlayerBinder();
+
+		player = PlayerFactory.getInstance(this).createMediaPlayer();
+		audioManager = (AudioManager) getApplicationContext().getSystemService(
+				Context.AUDIO_SERVICE);
 	}
 
 	@Override
@@ -161,10 +165,6 @@ public class PlayerService extends Service implements
 				throw new IllegalArgumentException(
 						"EXTRA_START_POSITION invalid");
 			}
-
-			player = PlayerFactory.getInstance(this).createMediaPlayer();
-			audioManager = (AudioManager) getApplicationContext()
-					.getSystemService(Context.AUDIO_SERVICE);
 
 			new LoadPlaylistTask().execute(intent);
 			break;
@@ -342,7 +342,6 @@ public class PlayerService extends Service implements
 
 			player.reset();
 			player.release();
-			player = null;
 		}
 
 		broadcastEvent(PlayerEvent.STOP, message);

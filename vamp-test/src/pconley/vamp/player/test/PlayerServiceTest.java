@@ -474,31 +474,25 @@ public class PlayerServiceTest {
 	}
 
 	/**
-	 * Given the service is paused, when I play, then it is in the Playing state
-	 * and it broadcasts the play event.
+	 * Given the service is playing, when I start the service with a PLAY
+	 * action, then it is in the Playing state etc.
 	 */
 	@Test
-	public void testPlayWhilePaused() {
+	public void testPlayIntentWhilePlaying() {
 		// Given
 		prepareService(1);
 		startService();
-		service.pause();
 		broadcastEvents.clear();
 
-		audioManager
-				.setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
-
-		assertFalse("The service is paused", service.isPlaying());
+		assertTrue("The service is playing", service.isPlaying());
 
 		// When
-		boolean status = service.play();
+		prepareService(1);
+		startService();
 
 		// Then
-		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
-		events.add(PlayerEvent.PLAY);
-		assertPlayerState("Player plays from pause", true, events, tracks[0],
-				true);
-		assertTrue("Player can play from pause", status);
+		assertPlayerState("Player can be restarted with a new intent", true,
+				normalStartEvents, tracks[0], true);
 	}
 
 	/**
@@ -547,6 +541,56 @@ public class PlayerServiceTest {
 		// Then
 		assertPlayerState("Pause intent does nothing when already paused",
 				false, new LinkedList<PlayerEvent>(), tracks[0], true);
+	}
+
+	/**
+	 * Given the service is paused, when I play, then it is in the Playing state
+	 * and it broadcasts the play event.
+	 */
+	@Test
+	public void testPlayWhilePaused() {
+		// Given
+		prepareService(1);
+		startService();
+		service.pause();
+		broadcastEvents.clear();
+
+		audioManager
+				.setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
+
+		assertFalse("The service is paused", service.isPlaying());
+
+		// When
+		boolean status = service.play();
+
+		// Then
+		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
+		events.add(PlayerEvent.PLAY);
+		assertPlayerState("Player plays from pause", true, events, tracks[0],
+				true);
+		assertTrue("Player can play from pause", status);
+	}
+
+	/**
+	 * Given the service is playing, when I start the service with a PLAY
+	 * action, then it is in the Playing state etc.
+	 */
+	@Test
+	public void testPlayIntentWhilePaused() {
+		// Given
+		prepareService(1);
+		startService();
+		service.pause();
+		broadcastEvents.clear();
+
+		// When
+		prepareService(1);
+		startService();
+
+		// Then
+		assertPlayerState(
+				"Player can be restarted with a new intent while paused", true,
+				normalStartEvents, tracks[0], true);
 	}
 
 	/**
