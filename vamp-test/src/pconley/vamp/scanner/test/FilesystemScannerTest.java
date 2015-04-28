@@ -1,5 +1,6 @@
 package pconley.vamp.scanner.test;
 
+import static android.test.MoreAsserts.assertContentsInAnyOrder;
 import static android.test.MoreAsserts.assertEmpty;
 
 import java.io.File;
@@ -129,7 +130,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 
 		assertEquals("No files are found in an empty directory", 0, count);
 		assertEmpty("No files are scanned from an empty directory",
-				dao.getIds());
+				dao.getTracks());
 	}
 
 	/**
@@ -155,7 +156,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		assertEquals("A non-media file is counted", 1, count);
 		assertEmpty(
 				"No files are scanned from a directory with no media files",
-				dao.getIds());
+				dao.getTracks());
 
 	}
 
@@ -182,11 +183,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 
 		assertEquals("One file is found", 1, count);
 
-		List<Long> ids = dao.getIds();
-		assertEquals("One file is scanned", 1, ids.size());
-
-		Track track = dao.getTrack(ids.get(0));
-		assertEquals("The Ogg Vorbis file was scanned", expected, track);
+		assertEquals("The Ogg Vorbis file was scanned",
+				Arrays.asList(new Track[] { expected }), dao.getTracks());
 	}
 
 	/**
@@ -203,7 +201,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		scanner.scanMusicFolder();
 
 		// Then
-		assertEmpty("Database is emptied before scanning", dao.getIds());
+		assertEmpty("Database is emptied before scanning", dao.getTracks());
 
 	}
 
@@ -231,11 +229,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 
 		assertEquals("Media and non-media files are counted", 2, count);
 
-		List<Long> ids = dao.getIds();
-		assertEquals("One file is scanned", 1, ids.size());
-
-		Track track = dao.getTrack(ids.get(0));
-		assertEquals("The Ogg Vorbis file was scanned", expected, track);
+		assertEquals("The Ogg Vorbis file was scanned",
+				Arrays.asList(new Track[] { expected }), dao.getTracks());
 	}
 
 	/**
@@ -244,10 +239,10 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 	 */
 	public void testTwoFiles() throws IOException, InterruptedException {
 		// Given
-		Track expected1 = AssetUtils.addAssetToFolder(testContext,
-				AssetUtils.OGG, new File(musicFolder, "sample_1.ogg"));
-		Track expected2 = AssetUtils.addAssetToFolder(testContext,
-				AssetUtils.OGG, new File(musicFolder, "sample_2.ogg"));
+		Track exp1 = AssetUtils.addAssetToFolder(testContext, AssetUtils.OGG,
+				new File(musicFolder, "sample_1.ogg"));
+		Track exp2 = AssetUtils.addAssetToFolder(testContext, AssetUtils.OGG,
+				new File(musicFolder, "sample_2.ogg"));
 
 		// When
 		int count = scanner.countMusicFiles();
@@ -263,19 +258,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 
 		assertEquals("Multiple media files are counted", 2, count);
 
-		List<Long> ids = dao.getIds();
-		assertEquals("Two files are scanned", 2, ids.size());
-
-		Track track = dao.getTrack(ids.get(0));
-		if (track.getUri().toString().endsWith("sample_1.ogg")) {
-			assertEquals("First file is correct", expected1, track);
-			assertEquals("Second file is correct", expected2,
-					dao.getTrack(ids.get(1)));
-		} else {
-			assertEquals("First file is correct", expected1,
-					dao.getTrack(ids.get(1)));
-			assertEquals("Second file is correct", expected2, track);
-		}
+		assertContentsInAnyOrder("Two files are scanned", dao.getTracks(),
+				exp1, exp2);
 	}
 
 	/**
@@ -299,7 +283,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 				Arrays.asList(new String[] { "", "sample" }), receivedDirs);
 
 		assertEquals("Directories are not counted", 0, count);
-		assertEmpty("No files are scanned in an empty directory", dao.getIds());
+		assertEmpty("No files are scanned in an empty directory",
+				dao.getTracks());
 	}
 
 	/**
@@ -329,11 +314,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 
 		assertEquals("Files in child directories are counted", 1, count);
 
-		List<Long> ids = dao.getIds();
-		assertEquals("One file is scanned", 1, ids.size());
-
-		Track track = dao.getTrack(ids.get(0));
-		assertEquals("The Ogg Vorbis file was scanned", expected, track);
+		assertEquals("The Ogg Vorbis file was scanned",
+				Arrays.asList(new Track[] { expected }), dao.getTracks());
 	}
 
 	/**
@@ -364,7 +346,7 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		assertEmpty("No folders are recorded", receivedDirs);
 
 		assertEquals(".nomedia directories are not counted", 0, count);
-		assertEmpty(".nomedia is respected by the scanner", dao.getIds());
+		assertEmpty(".nomedia is respected by the scanner", dao.getTracks());
 	}
 
 	/**
@@ -397,13 +379,8 @@ public class FilesystemScannerTest extends InstrumentationTestCase {
 		assertEquals("Folders scanned are correct", singleDir, receivedDirs);
 
 		assertEquals(".nomedia child directories are not counted", 1, count);
-
-		List<Long> ids = dao.getIds();
-		assertEquals(".nomedia child directories are not scanned", 1,
-				ids.size());
-
-		Track track = dao.getTrack(ids.get(0));
-		assertEquals("The Ogg Vorbis file was scanned", expected, track);
+		assertEquals(".nomedia child directories are not scanned",
+				Arrays.asList(new Track[] { expected }), dao.getTracks());
 	}
 
 	public class ScannerBroadcastReceiver extends BroadcastReceiver {

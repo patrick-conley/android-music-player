@@ -21,15 +21,19 @@ public class PlaylistTest extends AndroidTestCase {
 
 	public void setUp() {
 		tracks = new LinkedList<Track>();
-		playlist = new Playlist();
 
 		for (int i = 0; i < 3; i++) {
 			Track track = new Track.Builder(i, Uri.parse(String.valueOf(i)))
 					.build();
 
 			tracks.add(track);
-			playlist.add(track);
 		}
+
+		playlist = new Playlist(tracks);
+	}
+
+	public void tearDown() {
+		Playlist.setInstance(null);
 	}
 
 	/**
@@ -46,6 +50,7 @@ public class PlaylistTest extends AndroidTestCase {
 	 * When I add several tracks to the playlist, then its size is correct.
 	 */
 	public void testPlaylistSize() {
+		assertNotEmpty(playlist);
 		assertEquals("Playlist has the correct size", tracks.size(),
 				playlist.size());
 	}
@@ -65,13 +70,34 @@ public class PlaylistTest extends AndroidTestCase {
 	}
 
 	/**
-	 * Given the playlist has several tracks, when I clear it, then it is marked
-	 * empty.
+	 * Given the playlist has been constructed from a list of tracks, when I
+	 * remove a track from the list, then the playlist is not modified.
 	 */
-	public void testClear() {
-		assertNotEmpty(playlist);
-		playlist.clear();
-		assertEmpty("Playlist is empty after clearing it", playlist);
+	public void testPlaylistSourceModified() {
+		// Given
+		playlist = new Playlist(tracks);
+		int expected = playlist.size();
+
+		// When
+		tracks.remove(0);
+
+		// Then
+		assertEquals("Playlist is not changed when its source is", expected,
+				playlist.size());
+	}
+
+	/**
+	 * When I set the global playlist and create a new playlist instance, then I
+	 * can recover the original global instance.
+	 */
+	public void testStaticInstanceIsPersistent() {
+		
+		// When
+		Playlist.setInstance(playlist);
+		new Playlist();
+		
+		// Then
+		assertSame("Global instance can be recovered", playlist, Playlist.getInstance());
 	}
 
 	/**

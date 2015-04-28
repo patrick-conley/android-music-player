@@ -4,6 +4,7 @@ import java.util.List;
 
 import pconley.vamp.R;
 import pconley.vamp.library.db.TrackDAO;
+import pconley.vamp.library.model.Track;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.preferences.SettingsActivity;
@@ -11,6 +12,7 @@ import pconley.vamp.scanner.FilesystemScanner;
 import pconley.vamp.scanner.ScannerProgressDialogFragment;
 import pconley.vamp.scanner.ScannerService;
 import pconley.vamp.util.BroadcastConstants;
+import pconley.vamp.util.Playlist;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -35,7 +37,6 @@ import android.widget.Toast;
 public class LibraryActivity extends Activity {
 
 	private ListView trackListView;
-	private long[] trackIds;
 
 	private ScannerProgressDialogFragment scanningDialog;
 
@@ -88,7 +89,6 @@ public class LibraryActivity extends Activity {
 				Intent intent = new Intent(LibraryActivity.this,
 						PlayerService.class);
 				intent.setAction(PlayerService.ACTION_PLAY)
-						.putExtra(PlayerService.EXTRA_TRACKS, trackIds)
 						.putExtra(PlayerService.EXTRA_START_POSITION, position);
 				startService(intent);
 
@@ -161,7 +161,7 @@ public class LibraryActivity extends Activity {
 	 * Load the contents of the library into a TextView with execute(). Work is
 	 * done in a background thread.
 	 */
-	private class LoadTrackListTask extends AsyncTask<Void, Void, List<Long>> {
+	private class LoadTrackListTask extends AsyncTask<Void, Void, List<Track>> {
 
 		private ProgressDialog dialog;
 
@@ -176,26 +176,19 @@ public class LibraryActivity extends Activity {
 		}
 
 		@Override
-		protected List<Long> doInBackground(Void... params) {
+		protected List<Track> doInBackground(Void... params) {
 			return new TrackDAO(LibraryActivity.this).openReadableDatabase()
-					.getIds();
+					.getTracks();
 		}
 
-		protected void onPostExecute(List<Long> ids) {
-			ArrayAdapter<Long> adapter = new ArrayAdapter<Long>(
+		protected void onPostExecute(List<Track> tracks) {
+			ArrayAdapter<Track> adapter = new ArrayAdapter<Track>(
 					LibraryActivity.this, R.layout.track_list_item,
-					R.id.track_list_item, ids);
+					R.id.track_list_item, tracks);
 
 			trackListView.setAdapter(adapter);
-
-			// Get a list of the track IDs as required for intent extras:
-			// there's no built-in means of converting these to primitives.
-			trackIds = new long[ids.size()];
-
-			for (int i = 0; i < trackIds.length; i++) {
-				trackIds[i] = ids.get(i);
-			}
-
+			Playlist.setInstance(new Playlist(tracks));
+			
 			dialog.dismiss();
 		}
 

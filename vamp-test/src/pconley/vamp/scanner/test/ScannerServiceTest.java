@@ -1,11 +1,9 @@
 package pconley.vamp.scanner.test;
 
-import static android.test.MoreAsserts.assertNotEmpty;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -188,10 +186,8 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 		assertEquals("Scan completed",
 				getContext().getString(R.string.scan_done), finalStatus);
 		dao.openReadableDatabase();
-		List<Long> ids = dao.getIds();
-		assertNotEmpty("Files have been scanned", ids);
-		assertEquals("Scanner writes to the library", expected,
-				dao.getTrack(ids.get(0)));
+		assertEquals("Scanner writes to the library",
+				Arrays.asList(new Track[] { expected }), dao.getTracks());
 
 	}
 
