@@ -14,7 +14,6 @@ import pconley.vamp.scanner.ScannerService;
 import pconley.vamp.util.BroadcastConstants;
 import pconley.vamp.util.Playlist;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -29,6 +28,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 /**
@@ -68,12 +68,6 @@ public class LibraryActivity extends Activity {
 
 			}
 		};
-		
-		// Check if the filesystem is being scanned and add its dialog if so.
-		if (FilesystemScanner.isScanInProgress()) {
-			scanningDialog = new ScannerProgressDialogFragment();
-			scanningDialog.show(getFragmentManager(), "scan progress");
-		}
 
 		// Get the list of tracks in the library. If one is clicked, play it and
 		// open the Now Playing screen.
@@ -88,23 +82,29 @@ public class LibraryActivity extends Activity {
 
 				Intent intent = new Intent(LibraryActivity.this,
 						PlayerService.class);
-				intent.setAction(PlayerService.ACTION_PLAY)
-						.putExtra(PlayerService.EXTRA_START_POSITION, position);
+				intent.setAction(PlayerService.ACTION_PLAY).putExtra(
+						PlayerService.EXTRA_START_POSITION, position);
 				startService(intent);
 
 				startActivity(new Intent(LibraryActivity.this,
 						PlayerActivity.class));
 			}
 		});
+
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 
+		// Check if the filesystem is being scanned and add its dialog if so.
+		if (FilesystemScanner.isScanInProgress()) {
+			scanningDialog = new ScannerProgressDialogFragment();
+			scanningDialog.show(getFragmentManager(), "scan progress");
+		}
+
 		broadcastManager.registerReceiver(playerEventReceiver,
 				new IntentFilter(BroadcastConstants.FILTER_PLAYER_EVENT));
-
 	}
 
 	@Override
@@ -163,22 +163,21 @@ public class LibraryActivity extends Activity {
 	 */
 	private class LoadTrackListTask extends AsyncTask<Void, Void, List<Track>> {
 
-		private ProgressDialog dialog;
+		private ProgressBar progress;
+		private TrackDAO dao;
 
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
 
-			dialog = new ProgressDialog(LibraryActivity.this);
-			dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-			dialog.setIndeterminate(true);
-			dialog.show();
+			progress = ((ProgressBar) findViewById(R.id.track_list_progress));
+			progress.setVisibility(ProgressBar.VISIBLE);
+			dao = new TrackDAO(LibraryActivity.this);
 		}
 
 		@Override
 		protected List<Track> doInBackground(Void... params) {
-			return new TrackDAO(LibraryActivity.this).openReadableDatabase()
-					.getTracks();
+			return dao.openReadableDatabase().getTracks();
 		}
 
 		protected void onPostExecute(List<Track> tracks) {
@@ -188,8 +187,9 @@ public class LibraryActivity extends Activity {
 
 			trackListView.setAdapter(adapter);
 			Playlist.setInstance(new Playlist(tracks));
-			
-			dialog.dismiss();
+
+			dao.close();
+			progress.setVisibility(ProgressBar.INVISIBLE);
 		}
 
 	}

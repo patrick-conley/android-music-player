@@ -184,6 +184,19 @@ public class PlayerActivity extends Activity {
 	}
 
 	/*
+	 * Display the tags for the current track.
+	 */
+	private void displayTrackDetails() {
+		Track track = player.getCurrentTrack();
+
+		((TextView) findViewById(R.id.view_uri)).setText(track.getUri()
+				.toString());
+		((TextView) findViewById(R.id.view_tags)).setText(track.tagsToString());
+
+		drawTime();
+	}
+
+	/*
 	 * Update values for progress & duration timers, and position in the
 	 * progress bar.
 	 * 
@@ -199,14 +212,12 @@ public class PlayerActivity extends Activity {
 		durationView = (TextView) findViewById(R.id.duration);
 
 		if (position != -1) {
-			progressBar.setIndeterminate(duration == -1);
 			progressBar.setProgress(position / SEC);
 			progressBar.setMax(duration / SEC);
 
 			positionView.setText(dateFormat.format(new Date(position)));
 			durationView.setText(dateFormat.format(new Date(duration)));
 		} else {
-			progressBar.setIndeterminate(false);
 			progressBar.setProgress(0);
 			progressBar.setMax(0);
 
@@ -266,7 +277,6 @@ public class PlayerActivity extends Activity {
 		Log.i("Active track", "Stopping timer");
 
 		drawTime();
-		progressBar.setIndeterminate(false);
 	}
 
 	private void clearCountdown() {
@@ -276,19 +286,6 @@ public class PlayerActivity extends Activity {
 
 		Log.i("Active track", "Clearing timer & times");
 		drawTime();
-	}
-
-	/*
-	 * Display the tags for the current track.
-	 */
-	private void displayTrackDetails() {
-
-		Track track = player.getCurrentTrack();
-
-		((TextView) findViewById(R.id.view_uri)).setText(track.getUri()
-				.toString());
-		((TextView) findViewById(R.id.view_tags)).setText(track.tagsToString());
-
 	}
 
 	private final class PlayerServiceConnection implements ServiceConnection {

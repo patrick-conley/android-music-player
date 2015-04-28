@@ -85,6 +85,7 @@
             android:layout_height="wrap_content"
             android:layout_toLeftOf="@+id/duration"
             android:layout_toRightOf="@+id/position"
+            android:indeterminate="false"
             android:progress="0" />
 
         <TextView
