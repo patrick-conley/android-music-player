@@ -33,6 +33,14 @@ public class TrackDAO {
 					TrackTagRelation.TRACK_ID, TagEntry.NAME,
 					TrackTagRelation.TAG_ID, TagEntry.COLUMN_ID);
 
+	private static final String GET_TRACKS_QUERY = String
+			.format("SELECT * FROM (SELECT * FROM (SELECT %s AS %s, %s FROM %s) LEFT OUTER JOIN %s USING (%s)) LEFT OUTER JOIN %s ON %s = %s ORDER BY %s",
+					TrackEntry.COLUMN_ID, TrackTagRelation.TRACK_ID,
+					TrackEntry.COLUMN_URI, TrackEntry.NAME,
+					TrackTagRelation.NAME, TrackTagRelation.TRACK_ID,
+					TagEntry.NAME, TrackTagRelation.TAG_ID, TagEntry.COLUMN_ID,
+					TrackTagRelation.TRACK_ID);
+
 	public TrackDAO(Context context) {
 		libraryOpenHelper = new LibraryOpenHelper(context);
 	}
@@ -72,27 +80,6 @@ public class TrackDAO {
 	}
 
 	/**
-	 * @return Every track ID in the database.
-	 */
-	public List<Long> getIds() {
-		Cursor results = library.query(TrackEntry.NAME,
-				new String[] { TrackEntry.COLUMN_ID }, null, null, null, null,
-				null);
-
-		List<Long> tracks = new LinkedList<Long>();
-		int idColumn = results.getColumnIndexOrThrow(TrackEntry.COLUMN_ID);
-
-		for (results.moveToFirst(); !results.isAfterLast(); results
-				.moveToNext()) {
-			tracks.add(results.getLong(idColumn));
-		}
-
-		results.close();
-
-		return tracks;
-	}
-
-	/**
 	 * Load every tag for a single track.
 	 *
 	 * @param trackId
@@ -104,6 +91,7 @@ public class TrackDAO {
 				new String[] { String.valueOf(trackId) });
 
 		if (results.getCount() == 0) {
+			results.close();
 			return null;
 		}
 
@@ -128,6 +116,51 @@ public class TrackDAO {
 		results.close();
 
 		return builder.build();
+	}
+
+	public List<Track> getTracks() {
+		List<Track> tracks = new LinkedList<Track>();
+
+		Cursor results = library.rawQuery(GET_TRACKS_QUERY, null);
+
+		int trackIdColumn = results
+				.getColumnIndexOrThrow(TrackTagRelation.TRACK_ID);
+		int uriColumn = results.getColumnIndexOrThrow(TrackEntry.COLUMN_URI);
+		int tagIdColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_ID);
+		int nameColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_TAG);
+		int valueColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_VAL);
+
+		long id = -1;
+		Track.Builder builder = null;
+
+		for (results.moveToFirst(); !results.isAfterLast(); results
+				.moveToNext()) {
+			long trackId = results.getLong(trackIdColumn);
+
+			// Check if this row is part of a new track: add the current track
+			// to the list and begin a new track.
+			if (id != trackId) {
+				if (builder != null) {
+					tracks.add(builder.build());
+				}
+
+				builder = new Track.Builder(trackId, Uri.parse(results
+						.getString(uriColumn)));
+				id = trackId;
+			}
+
+			if (!results.isNull(nameColumn)) {
+				builder.add(new Tag(results.getLong(tagIdColumn), results
+						.getString(nameColumn), results.getString(valueColumn)));
+			}
+		}
+
+		if (builder != null) {
+			tracks.add(builder.build());
+		}
+
+		results.close();
+		return tracks;
 	}
 
 	/**
@@ -178,7 +211,7 @@ public class TrackDAO {
 			results.moveToFirst();
 			tagId = results.getLong(results.getColumnIndex(TagEntry.COLUMN_ID));
 		}
-		
+
 		results.close();
 
 		library.beginTransaction();
@@ -207,7 +240,7 @@ public class TrackDAO {
 		}
 
 	}
-	
+
 	/**
 	 * Remove all tracks, tags, and relations
 	 */

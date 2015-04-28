@@ -1,16 +1,19 @@
 package pconley.vamp.library.db.test;
 
+import static android.test.MoreAsserts.assertContentsInAnyOrder;
 import static android.test.MoreAsserts.assertEmpty;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import pconley.vamp.library.db.LibraryOpenHelper;
-import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.library.db.LibrarySchema.TagEntry;
 import pconley.vamp.library.db.LibrarySchema.TrackEntry;
 import pconley.vamp.library.db.LibrarySchema.TrackTagRelation;
+import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.library.model.Tag;
 import pconley.vamp.library.model.Track;
 import pconley.vamp.preferences.SettingsHelper;
@@ -60,7 +63,7 @@ public class TrackDAOTest extends AndroidTestCase {
 	public void testGetTracksOnEmptyDatabase() {
 		dao.openReadableDatabase();
 
-		List<Long> tracks = dao.getIds();
+		List<Track> tracks = dao.getTracks();
 
 		assertEmpty("DAO retrieves nothing from an empty database", tracks);
 	}
@@ -73,7 +76,7 @@ public class TrackDAOTest extends AndroidTestCase {
 		dao.openReadableDatabase().close();
 
 		try {
-			dao.getIds();
+			dao.getTracks();
 			fail("DAO throws an exception on read-after-close.");
 		} catch (IllegalStateException e) {
 		}
@@ -96,7 +99,7 @@ public class TrackDAOTest extends AndroidTestCase {
 		dao.openReadableDatabase();
 
 		// Insert some tracks. No associated tags are needed.
-		Set<Long> expected = new HashSet<Long>();
+		List<Track> expected = new LinkedList<Track>();
 		for (int i = 0; i < 5; i++) {
 			String trackUri = "file:///track" + String.valueOf(i * 7) + ".mp3";
 
@@ -104,12 +107,10 @@ public class TrackDAOTest extends AndroidTestCase {
 			value.put(TrackEntry.COLUMN_URI, trackUri);
 
 			long id = library.insertOrThrow(TrackEntry.NAME, null, value);
-			expected.add(id);
+			expected.add(new Track.Builder(id, Uri.parse(trackUri)).build());
 		}
 
-		Set<Long> actual = new HashSet<Long>(dao.getIds());
-
-		assertEquals("DAO can retrieve items", expected, actual);
+		assertEquals("DAO can retrieve items", expected, dao.getTracks());
 	}
 
 	/**
@@ -120,26 +121,24 @@ public class TrackDAOTest extends AndroidTestCase {
 		dao.openReadableDatabase();
 
 		Track sample = insertSampleTrack();
-		Track actual = dao.getTrack(sample.getId() + 1);
 
-		assertNull(sample.toString()
-				+ "DAO returns nothing for a non-existent track", actual);
+		assertNull("DAO returns nothing for a non-existent track",
+				dao.getTrack(sample.getId() + 1));
 	}
 
 	/**
 	 * Given a track with no tags in the database, when I retrieve its tags,
 	 * then I get a Track with no tags.
 	 */
-	public void testGetTrackOnNoTags() {
+	public void testGetTrackWithNoTags() {
 		dao.openReadableDatabase();
-		insertSampleTrack();
 
 		Track expected = insertTrack(uri, new String[] {}, new String[] {});
-		Track actual = dao.getTrack(expected.getId());
 
-		assertEquals("DAO returns the correct track", expected, actual);
-		assertEmpty("DAO returns no tags for an empty track",
-				actual.getTagNames());
+		assertEquals("DAO returns the correct track", expected,
+				dao.getTrack(expected.getId()));
+		assertEquals("DAO returns the correct tracks",
+				Arrays.asList(new Track[] { expected }), dao.getTracks());
 	}
 
 	/**
@@ -148,16 +147,16 @@ public class TrackDAOTest extends AndroidTestCase {
 	 */
 	public void testGetTrackOneTrack() {
 		dao.openReadableDatabase();
-		insertSampleTrack();
 
 		String[] expectedNames = { "a", "b", "c" };
 		String[] expectedValues = { "aValue", "bValue", "cValue" };
 
 		Track expected = insertTrack(uri, expectedNames, expectedValues);
-		Track actual = dao.getTrack(expected.getId());
 
-		assertEquals("DAO returns the correct tags: one track exists",
-				expected, actual);
+		assertEquals("DAO returns the correct tags: one track exists (track)",
+				expected, dao.getTrack(expected.getId()));
+		assertEquals("DAO returns the correct tags: one track exists (tracks)",
+				Arrays.asList(new Track[] { expected }), dao.getTracks());
 	}
 
 	/**
@@ -170,10 +169,10 @@ public class TrackDAOTest extends AndroidTestCase {
 
 		Track expected = insertTrack(uri, new String[] { "a", "b", "a" },
 				new String[] { "aValue", "bValue", "cValue" });
-		Track actual = dao.getTrack(expected.getId());
 
-		assertEquals("DAO returns the correct tags: one has multiple values",
-				expected, actual);
+		assertEquals(
+				"DAO returns the correct tags: one has multiple values (track)",
+				expected, dao.getTrack(expected.getId()));
 	}
 
 	/**
@@ -183,16 +182,18 @@ public class TrackDAOTest extends AndroidTestCase {
 	 */
 	public void testGetTrackTwoTracksWithSameTagName() {
 		dao.openReadableDatabase();
-		insertSampleTrack();
+		Track sample = insertSampleTrack();
 
 		Track expected = insertTrack(uri, new String[] { "a",
 				sampleTagNames[1], "c" }, new String[] { "aValue", "bValue",
 				"cValue" });
-		Track actual = dao.getTrack(expected.getId());
 
 		assertEquals(
-				"DAO returns the correct tags: tracks have the same tag names",
-				expected, actual);
+				"DAO returns the correct tags: tracks have the same tag names (track)",
+				expected, dao.getTrack(expected.getId()));
+		assertContentsInAnyOrder(
+				"DAO returns the correct tags: tracks have the same tag names (tracks)",
+				dao.getTracks(), sample, expected);
 	}
 
 	/**
@@ -235,6 +236,10 @@ public class TrackDAOTest extends AndroidTestCase {
 				expectedIds);
 		assertEquals("Tags have the correct ID (are not duplicated in the DB)",
 				expectedIds, actualIds);
+
+		assertContentsInAnyOrder(
+				"Both tracks are returned with the correct tags",
+				dao.getTracks(), sample, expected);
 	}
 
 	/**

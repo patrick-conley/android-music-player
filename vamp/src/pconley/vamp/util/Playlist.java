@@ -15,10 +15,50 @@ import pconley.vamp.library.model.Track;
  */
 public class Playlist implements Iterable<Track> {
 
+	private static Playlist instance;
+
 	private List<Track> tracks;
 
+	/**
+	 * Constructor for a local playlist
+	 */
 	public Playlist() {
-		tracks = new ArrayList<Track>();
+		this.tracks = new ArrayList<Track>();
+	}
+
+	/**
+	 * Constructor using a copy of a list.
+	 * 
+	 * @param tracks
+	 */
+	public Playlist(List<Track> tracks) {
+		this.tracks = new ArrayList<Track>(tracks);
+	}
+
+	/**
+	 * Get the global playlist able to be shared between activities.
+	 * 
+	 * @return The single global playlist
+	 */
+	public static Playlist getInstance() {
+		if (instance == null) {
+			instance = new Playlist();
+		}
+
+		return instance;
+	}
+
+	/**
+	 * Set a playlist to be used by the player.
+	 * 
+	 * @param playlist
+	 */
+	public static void setInstance(Playlist playlist) {
+		instance = playlist;
+	}
+
+	public void setTracks(List<Track> tracks) {
+		this.tracks = tracks;
 	}
 
 	/**
@@ -30,13 +70,6 @@ public class Playlist implements Iterable<Track> {
 	 */
 	public boolean add(Track track) {
 		return tracks.add(track);
-	}
-
-	/**
-	 * Remove all tracks in the playlist.
-	 */
-	public void clear() {
-		tracks.clear();
 	}
 
 	/**

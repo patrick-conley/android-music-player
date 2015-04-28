@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import pconley.vamp.R;
-import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.library.model.Track;
 import pconley.vamp.util.BroadcastConstants;
 import pconley.vamp.util.Playlist;
@@ -17,7 +16,6 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
@@ -56,7 +54,6 @@ public class PlayerService extends Service implements
 	 * included, begin with the first track).
 	 */
 	public static final String ACTION_PLAY = "pconley.vamp.PlayerService.play";
-	public static final String EXTRA_TRACKS = "pconley.vamp.player.PlayerService.track_list";
 	public static final String EXTRA_START_POSITION = "pconley.vamp.player.PlayerService.position";
 
 	/**
@@ -99,6 +96,8 @@ public class PlayerService extends Service implements
 	@Override
 	public void onCreate() {
 		super.onCreate();
+
+		playlist = Playlist.getInstance();
 
 		notificationBase = new Notification.Builder(getApplicationContext())
 				.setContentTitle(getString(R.string.app_name))
@@ -149,24 +148,16 @@ public class PlayerService extends Service implements
 		switch (intent.getAction()) {
 		case ACTION_PLAY:
 
-			// Check the intent has a list of tracks
-			if (!intent.hasExtra(EXTRA_TRACKS)) {
-				throw new IllegalArgumentException("EXTRA_TRACKS missing");
-			}
-
-			long[] tracks = intent.getLongArrayExtra(EXTRA_TRACKS);
-
-			if (tracks == null || tracks.length == 0) {
-				throw new IllegalArgumentException("EXTRA_TRACKS empty");
-			}
-
 			int position = intent.getIntExtra(EXTRA_START_POSITION, 0);
-			if (position < 0 || position >= tracks.length) {
+			if (position < 0 || position >= playlist.size()) {
 				throw new IllegalArgumentException(
 						"EXTRA_START_POSITION invalid");
 			}
 
-			new LoadPlaylistTask().execute(intent);
+			trackIterator = playlist.playlistIterator(position);
+			trackIterator.next();
+			start(true);
+
 			break;
 
 		case ACTION_PAUSE:
@@ -342,6 +333,7 @@ public class PlayerService extends Service implements
 
 			player.reset();
 			player.release();
+			player = null;
 		}
 
 		broadcastEvent(PlayerEvent.STOP, message);
@@ -507,65 +499,6 @@ public class PlayerService extends Service implements
 		}
 
 		broadcastManager.sendBroadcast(intent);
-	}
-
-	/**
-	 * Launch a background thread to load metadata for each track in the
-	 * playlist defined by the intent sent to
-	 * {@link PlayerService#onStartCommand(Intent, int, int)}, then start
-	 * playing from the intent's start position.
-	 * 
-	 * If one of the track IDs in the intent is missing from the database,
-	 * onPostExecute will broadcast an error and stop the service.
-	 * 
-	 * @author pconley
-	 */
-	private class LoadPlaylistTask extends AsyncTask<Intent, Void, Boolean> {
-
-		private TrackDAO dao;
-
-		@Override
-		protected void onPreExecute() {
-			super.onPreExecute();
-
-			dao = PlayerFactory.getInstance(PlayerService.this).createDAO();
-		}
-
-		@Override
-		protected Boolean doInBackground(Intent... params) {
-			Intent intent = params[0];
-
-			// Load the tracks from the database into the service's playlist
-			dao.openReadableDatabase();
-			playlist = new Playlist();
-			for (long id : intent.getLongArrayExtra(EXTRA_TRACKS)) {
-				Track track = dao.getTrack(id);
-
-				if (track == null) {
-					return false;
-				}
-
-				playlist.add(track);
-			}
-
-			// Set the starting position in the playlist
-			trackIterator = playlist.playlistIterator(intent.getIntExtra(
-					EXTRA_START_POSITION, 0));
-
-			return true;
-		}
-
-		protected void onPostExecute(Boolean result) {
-			dao.close();
-
-			if (result) {
-				trackIterator.next();
-				start(true);
-			} else {
-				stop(R.string.player_error_invalid_playlist);
-			}
-		};
-
 	}
 
 }
