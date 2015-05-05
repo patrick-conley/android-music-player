@@ -24,6 +24,7 @@ import android.widget.Toast;
  * @author pconley
  */
 public class ScannerProgressDialogFragment extends DialogFragment {
+	public static final String TAG = "Scanner dialog";
 
 	private ScannerBroadcastReceiver receiver;
 
@@ -39,19 +40,29 @@ public class ScannerProgressDialogFragment extends DialogFragment {
 	}
 
 	@Override
-	public void onResume() {
-		super.onResume();
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+		setCancelable(false);
+
+		// Restore the dialog after sleep or rotate
+		setRetainInstance(true);
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
 
 		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
 				receiver, new IntentFilter(BroadcastConstants.FILTER_SCANNER));
 	}
 
 	@Override
-	public void onPause() {
+	public void onStop() {
 		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(
 				receiver);
 
-		super.onPause();
+		super.onStop();
 	}
 
 	@Override
@@ -62,15 +73,13 @@ public class ScannerProgressDialogFragment extends DialogFragment {
 
 		getDialog().setTitle(R.string.fragment_progress_name);
 
-		progressBar = (ProgressBar) view.findViewById(R.id.progress_bar);
-		commentView = (TextView) view.findViewById(R.id.progress_comment);
-		totalsView = (TextView) view.findViewById(R.id.progress_totals);
-
-		setCancelable(true);
+		progressBar = (ProgressBar) view.findViewById(R.id.scanner_progress);
+		commentView = (TextView) view.findViewById(R.id.scanner_view_comment);
+		totalsView = (TextView) view.findViewById(R.id.scanner_view_totals);
 
 		return view;
 	}
-	
+
 	@Override
 	public void onCancel(DialogInterface dialog) {
 		getActivity().finish();
@@ -102,10 +111,11 @@ public class ScannerProgressDialogFragment extends DialogFragment {
 			switch ((ScannerEvent) intent
 					.getSerializableExtra(BroadcastConstants.EXTRA_EVENT)) {
 			case FINISHED:
-				((LibraryActivity) getActivity()).loadLibrary();
+				LibraryActivity activity = (LibraryActivity) getActivity();
+				activity.loadLibrary();
 
 				Toast.makeText(
-						getActivity(),
+						activity,
 						intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
 						Toast.LENGTH_LONG).show();
 
@@ -116,7 +126,8 @@ public class ScannerProgressDialogFragment extends DialogFragment {
 
 				if (intent.hasExtra(BroadcastConstants.EXTRA_TOTAL)) {
 					progressBar.setIndeterminate(false);
-					setMax(intent.getIntExtra(BroadcastConstants.EXTRA_TOTAL, 0));
+					setMax(intent
+							.getIntExtra(BroadcastConstants.EXTRA_TOTAL, 0));
 				}
 
 				if (intent.hasExtra(BroadcastConstants.EXTRA_PROGRESS)) {

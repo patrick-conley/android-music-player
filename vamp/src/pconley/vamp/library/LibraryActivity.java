@@ -8,7 +8,6 @@ import pconley.vamp.library.model.Track;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.preferences.SettingsActivity;
-import pconley.vamp.scanner.FilesystemScanner;
 import pconley.vamp.scanner.ScannerProgressDialogFragment;
 import pconley.vamp.scanner.ScannerService;
 import pconley.vamp.util.BroadcastConstants;
@@ -37,7 +36,6 @@ import android.widget.Toast;
 public class LibraryActivity extends Activity {
 
 	private ListView trackListView;
-
 	private ScannerProgressDialogFragment scanningDialog;
 
 	private LocalBroadcastManager broadcastManager;
@@ -73,7 +71,7 @@ public class LibraryActivity extends Activity {
 		// open the Now Playing screen.
 		loadLibrary();
 
-		trackListView = (ListView) findViewById(R.id.track_list);
+		trackListView = (ListView) findViewById(R.id.library_view_tracks);
 		trackListView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -94,28 +92,18 @@ public class LibraryActivity extends Activity {
 	}
 
 	@Override
-	protected void onResume() {
-		super.onResume();
-
-		// Check if the filesystem is being scanned and add its dialog if so.
-		if (FilesystemScanner.isScanInProgress()) {
-			scanningDialog = new ScannerProgressDialogFragment();
-			scanningDialog.show(getFragmentManager(), "scan progress");
-		}
+	protected void onStart() {
+		super.onStart();
 
 		broadcastManager.registerReceiver(playerEventReceiver,
 				new IntentFilter(BroadcastConstants.FILTER_PLAYER_EVENT));
 	}
 
 	@Override
-	protected void onPause() {
+	protected void onStop() {
 		broadcastManager.unregisterReceiver(playerEventReceiver);
 
-		if (scanningDialog != null && scanningDialog.isAdded()) {
-			scanningDialog.dismiss();
-		}
-
-		super.onPause();
+		super.onStop();
 	}
 
 	@Override
@@ -139,7 +127,8 @@ public class LibraryActivity extends Activity {
 			return true;
 		case R.id.action_rescan:
 			scanningDialog = new ScannerProgressDialogFragment();
-			scanningDialog.show(getFragmentManager(), "scan progress");
+			scanningDialog.show(getFragmentManager(),
+					ScannerProgressDialogFragment.TAG);
 
 			startService(new Intent(this, ScannerService.class));
 
@@ -170,7 +159,7 @@ public class LibraryActivity extends Activity {
 		protected void onPreExecute() {
 			super.onPreExecute();
 
-			progress = ((ProgressBar) findViewById(R.id.track_list_progress));
+			progress = ((ProgressBar) findViewById(R.id.library_progress_load));
 			progress.setVisibility(ProgressBar.VISIBLE);
 			dao = new TrackDAO(LibraryActivity.this);
 		}
