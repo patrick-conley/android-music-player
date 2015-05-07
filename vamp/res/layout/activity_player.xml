@@ -9,7 +9,7 @@
     tools:context="pconley.vamp.player.PlayerActivity" >
 
     <TextView
-        android:id="@+id/view_uri"
+        android:id="@+id/player_view_uri"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/text_size" />
@@ -17,25 +17,25 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/row_controls"
-        android:layout_below="@+id/view_uri" >
+        android:layout_above="@+id/player_row_controls"
+        android:layout_below="@+id/player_view_uri" >
 
         <TextView
-            android:id="@+id/view_tags"
+            android:id="@+id/player_view_tags"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="@dimen/text_size" />
     </ScrollView>
 
     <RelativeLayout
-        android:id="@+id/row_controls"
+        android:id="@+id/player_row_controls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:layout_above="@+id/row_position" >
+        android:layout_above="@+id/player_row_position" >
 
         <Button
-            android:id="@+id/button_prev"
+            android:id="@+id/player_button_prev"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
@@ -44,17 +44,17 @@
             android:textSize="@dimen/text_size_large" />
 
         <Button
-            android:id="@+id/button_play_pause"
+            android:id="@+id/player_button_playpause"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_toLeftOf="@+id/button_next"
-            android:layout_toRightOf="@+id/button_prev"
+            android:layout_toLeftOf="@+id/player_button_next"
+            android:layout_toRightOf="@+id/player_button_prev"
             android:onClick="onPlayPauseClick"
             android:text="@string/player_button_play_pause"
             android:textSize="@dimen/text_size_large" />
 
         <Button
-            android:id="@+id/button_next"
+            android:id="@+id/player_button_next"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
@@ -64,38 +64,38 @@
     </RelativeLayout>
 
     <RelativeLayout
-        android:id="@+id/row_position"
+        android:id="@+id/player_row_position"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_marginTop="@dimen/activity_vertical_margin" >
 
         <TextView
-            android:id="@+id/position"
+            android:id="@+id/player_view_position"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
-            android:text="@string/activity_player_blank_time"
+            android:text="@string/player_blank_time"
             android:textSize="@dimen/text_size_large" />
 
         <SeekBar
-            android:id="@+id/progress_bar"
+            android:id="@+id/player_seek"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_toLeftOf="@+id/duration"
-            android:layout_toRightOf="@+id/position"
+            android:layout_toLeftOf="@+id/player_view_duration"
+            android:layout_toRightOf="@+id/player_view_position"
             android:indeterminate="false"
             android:progress="0" />
 
         <TextView
-            android:id="@+id/duration"
+            android:id="@+id/player_view_duration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:gravity="right"
-            android:text="@string/activity_player_blank_time"
+            android:text="@string/player_blank_time"
             android:textSize="@dimen/text_size_large" />
     </RelativeLayout>
 

@@ -23,8 +23,6 @@ import android.util.SparseArray;
 public class FilesystemScanner {
 	private static final String TAG = "FilesystemScanner";
 
-	private static boolean isScanInProgress = false;
-
 	private int progress = 0;
 	private int total = 0;
 
@@ -59,10 +57,6 @@ public class FilesystemScanner {
 		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_TITLE, "title");
 	}
 
-	public static boolean isScanInProgress() {
-		return isScanInProgress;
-	}
-
 	/**
 	 * Scan for music files, starting at the directory given by the Music Folder
 	 * preference item. Abort (displaying a warning if the app is in the
@@ -80,8 +74,6 @@ public class FilesystemScanner {
 	public void scanMusicFolder() {
 		Log.i(TAG, "Scanning for music");
 
-		isScanInProgress = true;
-
 		metadataRetriever = new MediaMetadataRetriever();
 		dao.openWritableDatabase();
 		dao.wipeDatabase();
@@ -90,8 +82,6 @@ public class FilesystemScanner {
 
 		dao.close();
 		metadataRetriever.release();
-
-		isScanInProgress = false;
 	}
 
 	/**
@@ -104,13 +94,9 @@ public class FilesystemScanner {
 	public int countMusicFiles() {
 		Log.i(TAG, "Counting music files");
 
-		isScanInProgress = true;
-
 		total = 0;
 		scanDir(musicFolder, true);
 		progress = 0;
-
-		isScanInProgress = false;
 
 		return total;
 	}

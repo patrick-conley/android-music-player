@@ -77,7 +77,7 @@ public class PlayerActivity extends Activity {
 		playerReceiver = new PlayerEventReceiver();
 
 		// Initialize the progress bar
-		progressBar = (SeekBar) findViewById(R.id.progress_bar);
+		progressBar = (SeekBar) findViewById(R.id.player_seek);
 		progressBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener());
 	}
 
@@ -106,8 +106,8 @@ public class PlayerActivity extends Activity {
 	 * PlayerServiceConnection.onServiceConnected.
 	 */
 	@Override
-	protected void onResume() {
-		super.onResume();
+	protected void onStart() {
+		super.onStart();
 
 		bindService(new Intent(this, PlayerService.class), playerConnection,
 				Context.BIND_AUTO_CREATE);
@@ -117,7 +117,7 @@ public class PlayerActivity extends Activity {
 	 * Unregister and unbind from the player service.
 	 */
 	@Override
-	protected void onPause() {
+	protected void onStop() {
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(
 				playerReceiver);
 
@@ -129,7 +129,7 @@ public class PlayerActivity extends Activity {
 
 		unbindService(playerConnection);
 
-		super.onPause();
+		super.onStop();
 	}
 
 	/**
@@ -189,9 +189,10 @@ public class PlayerActivity extends Activity {
 	private void displayTrackDetails() {
 		Track track = player.getCurrentTrack();
 
-		((TextView) findViewById(R.id.view_uri)).setText(track.getUri()
+		((TextView) findViewById(R.id.player_view_uri)).setText(track.getUri()
 				.toString());
-		((TextView) findViewById(R.id.view_tags)).setText(track.tagsToString());
+		((TextView) findViewById(R.id.player_view_tags)).setText(track
+				.tagsToString());
 
 		drawTime();
 	}
@@ -208,8 +209,8 @@ public class PlayerActivity extends Activity {
 		final int position = player.getPosition();
 		final int duration = player.getDuration();
 
-		positionView = (TextView) findViewById(R.id.position);
-		durationView = (TextView) findViewById(R.id.duration);
+		positionView = (TextView) findViewById(R.id.player_view_position);
+		durationView = (TextView) findViewById(R.id.player_view_duration);
 
 		if (position != -1) {
 			progressBar.setProgress(position / SEC);
@@ -221,8 +222,8 @@ public class PlayerActivity extends Activity {
 			progressBar.setProgress(0);
 			progressBar.setMax(0);
 
-			positionView.setText(R.string.activity_player_blank_time);
-			durationView.setText(R.string.activity_player_blank_time);
+			positionView.setText(R.string.player_blank_time);
+			durationView.setText(R.string.player_blank_time);
 		}
 
 	}
@@ -298,9 +299,12 @@ public class PlayerActivity extends Activity {
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			player = ((PlayerService.PlayerBinder) service).getService();
 
+			if (player.getCurrentTrack() != null) {
+				displayTrackDetails();
+			}
+
 			if (player.isPlaying()) {
 				startCountdown();
-				displayTrackDetails();
 			}
 
 			LocalBroadcastManager.getInstance(PlayerActivity.this)
@@ -364,13 +368,12 @@ public class PlayerActivity extends Activity {
 				finish();
 			}
 
-			Log.i("Active track",
-					"Received player event "
-							+ (PlayerEvent) intent
-									.getSerializableExtra(BroadcastConstants.EXTRA_EVENT));
+			PlayerEvent event = (PlayerEvent) intent
+					.getSerializableExtra(BroadcastConstants.EXTRA_EVENT);
 
-			switch ((PlayerEvent) intent
-					.getSerializableExtra(BroadcastConstants.EXTRA_EVENT)) {
+			Log.i("Active track", "Received player event " + event);
+
+			switch (event) {
 			case NEW_TRACK:
 				displayTrackDetails();
 
@@ -402,8 +405,8 @@ public class PlayerActivity extends Activity {
 							Toast.LENGTH_LONG).show();
 				}
 
-				((TextView) findViewById(R.id.view_uri)).setText("");
-				((TextView) findViewById(R.id.view_tags)).setText("");
+				((TextView) findViewById(R.id.player_view_uri)).setText("");
+				((TextView) findViewById(R.id.player_view_tags)).setText("");
 
 				finish();
 
