@@ -1,6 +1,5 @@
 package pconley.vamp.player;
 
-import pconley.vamp.library.db.TrackDAO;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.PowerManager;
@@ -63,10 +62,6 @@ public class PlayerFactory {
 		player.setWakeMode(service.getApplicationContext(),
 				PowerManager.PARTIAL_WAKE_LOCK);
 		return player;
-	}
-
-	public TrackDAO createDAO() {
-		return new TrackDAO(service.getApplicationContext());
 	}
 
 }

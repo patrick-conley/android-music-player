@@ -47,9 +47,6 @@ import android.support.v4.content.LocalBroadcastManager;
 @Config(emulateSdk = 18, manifest = "../vamp/AndroidManifest.xml")
 public class PlayerServiceTest {
 
-	// Robolectric gets its assets relative to vamp/assets/
-	private static final String ASSET_PATH = "../../vamp-test/assets/";
-
 	private static BroadcastReceiver receiver;
 	private static String latestBroadcastMessage;
 	private static List<PlayerEvent> broadcastEvents;
@@ -103,10 +100,10 @@ public class PlayerServiceTest {
 		flac = new File(musicFolder, "sample.flac");
 
 		tracks = new LinkedList<Track>();
-		tracks.add(AssetUtils.addAssetToFolder(context, ASSET_PATH
-				+ AssetUtils.OGG, ogg));
-		tracks.add(AssetUtils.addAssetToFolder(context, ASSET_PATH
-				+ AssetUtils.FLAC, flac));
+		tracks.add(AssetUtils.addAssetToFolder(context,
+				AssetUtils.ROBO_ASSET_PATH + AssetUtils.OGG, ogg));
+		tracks.add(AssetUtils.addAssetToFolder(context,
+				AssetUtils.ROBO_ASSET_PATH + AssetUtils.FLAC, flac));
 
 		missing = new LinkedList<Track>();
 		missing.add(AssetUtils.getTrack(new File(musicFolder, "missing.mp3")));

@@ -2,6 +2,7 @@ package pconley.vamp.library.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.util.LinkedList;
@@ -169,6 +170,11 @@ public class LibraryActivityTest {
 	public void testScannerLaunchedOnClick() {
 		// Given
 		startActivity();
+
+		assertNull(
+				"Progress dialog is not visible by default",
+				activity.getFragmentManager().findFragmentByTag(
+						ScannerProgressDialogFragment.TAG));
 
 		// When
 		activity.onOptionsItemSelected(new TestMenuItem(R.id.action_rescan));

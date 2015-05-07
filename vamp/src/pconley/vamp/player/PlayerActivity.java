@@ -191,7 +191,8 @@ public class PlayerActivity extends Activity {
 
 		((TextView) findViewById(R.id.player_view_uri)).setText(track.getUri()
 				.toString());
-		((TextView) findViewById(R.id.player_view_tags)).setText(track.tagsToString());
+		((TextView) findViewById(R.id.player_view_tags)).setText(track
+				.tagsToString());
 
 		drawTime();
 	}
@@ -221,8 +222,8 @@ public class PlayerActivity extends Activity {
 			progressBar.setProgress(0);
 			progressBar.setMax(0);
 
-			positionView.setText(R.string.activity_player_blank_time);
-			durationView.setText(R.string.activity_player_blank_time);
+			positionView.setText(R.string.player_blank_time);
+			durationView.setText(R.string.player_blank_time);
 		}
 
 	}
@@ -298,9 +299,12 @@ public class PlayerActivity extends Activity {
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			player = ((PlayerService.PlayerBinder) service).getService();
 
+			if (player.getCurrentTrack() != null) {
+				displayTrackDetails();
+			}
+
 			if (player.isPlaying()) {
 				startCountdown();
-				displayTrackDetails();
 			}
 
 			LocalBroadcastManager.getInstance(PlayerActivity.this)
@@ -364,13 +368,12 @@ public class PlayerActivity extends Activity {
 				finish();
 			}
 
-			Log.i("Active track",
-					"Received player event "
-							+ (PlayerEvent) intent
-									.getSerializableExtra(BroadcastConstants.EXTRA_EVENT));
+			PlayerEvent event = (PlayerEvent) intent
+					.getSerializableExtra(BroadcastConstants.EXTRA_EVENT);
 
-			switch ((PlayerEvent) intent
-					.getSerializableExtra(BroadcastConstants.EXTRA_EVENT)) {
+			Log.i("Active track", "Received player event " + event);
+
+			switch (event) {
 			case NEW_TRACK:
 				displayTrackDetails();
 

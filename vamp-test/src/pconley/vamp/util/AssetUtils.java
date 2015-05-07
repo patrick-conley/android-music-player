@@ -30,6 +30,12 @@ public final class AssetUtils {
 	public static final String FLAC = "sample.flac_";
 
 	/**
+	 * Tests using Robolectric must prefix their assets with this string, as it
+	 * uses the app's manifest (by configuration).
+	 */
+	public static final String ROBO_ASSET_PATH = "../../vamp-test/assets/";
+
+	/**
 	 * Private constructor: static members only
 	 */
 	private AssetUtils() {
