@@ -57,7 +57,6 @@ public class LibraryActivityTest {
 	@Before
 	public void setUpTest() {
 		context = Robolectric.getShadowApplication().getApplicationContext();
-
 	}
 
 	@After
@@ -103,8 +102,7 @@ public class LibraryActivityTest {
 		// Then
 		ListView trackListView = (ListView) activity
 				.findViewById(R.id.library_view_tracks);
-		Adapter adapter = ((ListView) activity
-				.findViewById(R.id.library_view_tracks)).getAdapter();
+		Adapter adapter = trackListView.getAdapter();
 
 		List<Track> tracks = new LinkedList<Track>();
 		tracks.add(AssetUtils.getTrack(ogg));

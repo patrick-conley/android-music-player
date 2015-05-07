@@ -6,7 +6,6 @@ import pconley.vamp.util.BroadcastConstants;
 import android.app.DialogFragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -78,13 +77,6 @@ public class ScannerProgressDialogFragment extends DialogFragment {
 		totalsView = (TextView) view.findViewById(R.id.scanner_view_totals);
 
 		return view;
-	}
-
-	@Override
-	public void onCancel(DialogInterface dialog) {
-		getActivity().finish();
-
-		super.onCancel(dialog);
 	}
 
 	private void setMax(int max) {

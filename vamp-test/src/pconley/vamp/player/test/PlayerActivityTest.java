@@ -12,13 +12,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.util.ServiceController;
 
 import pconley.vamp.R;
@@ -45,6 +45,7 @@ public class PlayerActivityTest {
 
 	private PlayerActivity activity;
 	private PlayerService service;
+	private ShadowActivity shadowActivity;
 
 	private List<Track> tracks;
 
@@ -80,11 +81,6 @@ public class PlayerActivityTest {
 				.setComponentNameAndServiceForBindService(null, binder);
 	}
 
-	@After
-	public void tearDownTest() {
-		Playlist.setInstance(null);
-	}
-
 	/**
 	 * When I start the activity, then it tries to bind to the player service.
 	 */
@@ -96,8 +92,8 @@ public class PlayerActivityTest {
 
 		// Then
 		assertEquals("The player activity binds to the player service",
-				new Intent(activity, PlayerService.class), Robolectric
-						.shadowOf(activity).getNextStartedService());
+				new Intent(activity, PlayerService.class),
+				shadowActivity.getNextStartedService());
 	}
 
 	/**
@@ -345,8 +341,8 @@ public class PlayerActivityTest {
 		service.onCompletion(null);
 
 		// Then
-		assertTrue("Activity is closed by completed track", Robolectric
-				.shadowOf(activity).isFinishing());
+		assertTrue("Activity is closed by completed track",
+				shadowActivity.isFinishing());
 
 	}
 
@@ -418,6 +414,7 @@ public class PlayerActivityTest {
 
 		activity = Robolectric.buildActivity(PlayerActivity.class).create()
 				.start().resume().visible().get();
+		shadowActivity = Robolectric.shadowOf(activity);
 	}
 
 }
