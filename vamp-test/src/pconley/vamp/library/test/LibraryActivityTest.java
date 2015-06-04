@@ -105,8 +105,8 @@ public class LibraryActivityTest {
 		Adapter adapter = trackListView.getAdapter();
 
 		List<Track> tracks = new LinkedList<Track>();
-		tracks.add(AssetUtils.getTrack(ogg));
-		tracks.add(AssetUtils.getTrack(flac));
+		tracks.add(AssetUtils.buildTrack(ogg));
+		tracks.add(AssetUtils.buildTrack(flac));
 
 		assertEquals("Track list is showing", View.VISIBLE,
 				trackListView.getVisibility());

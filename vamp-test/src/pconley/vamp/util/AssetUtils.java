@@ -20,7 +20,8 @@ import android.test.InstrumentationTestCase;
 public final class AssetUtils {
 
 	/**
-	 * Sample Ogg Vorbis file with several comments: see {@link #getTrack(File)}
+	 * Sample Ogg Vorbis file with several comments: see
+	 * {@link #buildTrack(File)}
 	 */
 	public static final String OGG = "sample.ogg_";
 
@@ -28,6 +29,17 @@ public final class AssetUtils {
 	 * Sample FLAC file with several comments.
 	 */
 	public static final String FLAC = "sample.flac_";
+
+	/**
+	 * Sample MP4 file with several comments.
+	 */
+	public static final String MP4 = "sample.m4a_";
+
+	/*
+	 * Vendor string. Brittle, but unavoidable.
+	 */
+	private static final String OGG_VENDOR = "Xiph.Org libVorbis I 20101101 (Schaufenugget)";
+	private static final String FLAC_VENDOR = "reference libFLAC 1.3.0 20130526";
 
 	/**
 	 * Tests using Robolectric must prefix their assets with this string, as it
@@ -106,7 +118,7 @@ public final class AssetUtils {
 		inStream.close();
 		outStream.close();
 
-		return getTrack(destination);
+		return buildTrack(destination);
 	}
 
 	/**
@@ -139,7 +151,7 @@ public final class AssetUtils {
 		dao.openWritableDatabase();
 
 		for (int i = 0; i < files.length; i++) {
-			Track track = getTrack(files[i]);
+			Track track = buildTrack(files[i]);
 
 			ids[i] = dao.insertTrack(track.getUri());
 
@@ -155,14 +167,31 @@ public final class AssetUtils {
 		return ids;
 	}
 
-	public static Track getTrack(File path) {
-		return new Track.Builder(0, Uri.fromFile(path))
+	public static Track buildTrack(File path) {
+		Track.Builder builder = new Track.Builder(0, Uri.fromFile(path))
 				.add(new Tag(0, "album", "MyAlbum"))
 				.add(new Tag(0, "artist", "MyArtist"))
 				.add(new Tag(0, "composer", "MyComposer"))
 				.add(new Tag(0, "genre", "Silence"))
 				.add(new Tag(0, "title", "MyTitle"))
 				.add(new Tag(0, "tracknumber", "3"))
-				.add(new Tag(0, "discnumber", "1")).build();
+				.add(new Tag(0, "discnumber", "1"));
+
+		String extension = path.toString().substring(
+				path.toString().lastIndexOf('.'));
+
+		if (extension.equals(".ogg") || extension.equals(".flac")) {
+			builder.add(new Tag(0, "conductor", "MyConductor"))
+					.add(new Tag(0, "comments", "MyComment"))
+					.add(new Tag(0, "date", "1970"))
+					.add(new Tag(0, "uniquetag", "MyUniqueTag"));
+
+			if (extension.equals(".ogg")) {
+				builder.add(new Tag(0, "vendor", OGG_VENDOR));
+			} else {
+				builder.add(new Tag(0, "vendor", FLAC_VENDOR));
+			}
+		}
+		return builder.build();
 	}
 }

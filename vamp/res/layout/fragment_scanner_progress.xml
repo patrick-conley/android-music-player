@@ -16,7 +16,7 @@
         android:minLines="2"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/player_seek"
+        android:layout_below="@id/scanner_progress"
         android:layout_toLeftOf="@+id/scanner_view_totals"
         android:text="@string/fragment_progress_counting"
         android:textSize="@dimen/text_size" />
@@ -26,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_below="@id/player_seek"
+        android:layout_below="@id/scanner_progress"
         android:paddingLeft="@dimen/generic_padding"
         android:textSize="@dimen/text_size" />
 

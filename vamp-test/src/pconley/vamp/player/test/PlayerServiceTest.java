@@ -106,7 +106,7 @@ public class PlayerServiceTest {
 				AssetUtils.ROBO_ASSET_PATH + AssetUtils.FLAC, flac));
 
 		missing = new LinkedList<Track>();
-		missing.add(AssetUtils.getTrack(new File(musicFolder, "missing.mp3")));
+		missing.add(AssetUtils.buildTrack(new File(musicFolder, "missing.mp3")));
 
 		Playlist.setInstance(null);
 		playlist = Playlist.getInstance();

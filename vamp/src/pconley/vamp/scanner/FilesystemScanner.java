@@ -1,8 +1,14 @@
 package pconley.vamp.scanner;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import pconley.vamp.library.db.TrackDAO;
+import pconley.vamp.scanner.strategy.GenericTagStrategy;
+import pconley.vamp.scanner.strategy.TagStrategy;
+import pconley.vamp.scanner.strategy.VorbisCommentTagStrategy;
 import pconley.vamp.util.BroadcastConstants;
 import android.content.Context;
 import android.content.Intent;
@@ -10,7 +16,6 @@ import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.util.SparseArray;
 
 /**
  * Scan for media files in the Media Folder defined in the app's preferences;
@@ -29,32 +34,17 @@ public class FilesystemScanner {
 	private File musicFolder;
 	private TrackDAO dao;
 	private LocalBroadcastManager broadcastManager;
+	
+	private static TagStrategy defaultVorbisStrategy;
+	private static TagStrategy defaultGenericStrategy;
 
 	private MediaMetadataRetriever metadataRetriever;
-
-	private SparseArray<String> metadataKeys;
 
 	public FilesystemScanner(Context context, File musicFolder) {
 		this.musicFolder = musicFolder;
 
 		dao = new TrackDAO(context);
 		broadcastManager = LocalBroadcastManager.getInstance(context);
-
-		// Define a mapping between a minimal set of metadata keys and
-		// appropriate names.
-		metadataKeys = new SparseArray<String>();
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_ALBUM, "album");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST,
-				"albumartist");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_ARTIST, "artist");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_GENRE, "genre");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER,
-				"tracknumber");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_DISC_NUMBER,
-				"discnumber");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_COMPOSER,
-				"composer");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_TITLE, "title");
 	}
 
 	/**
@@ -149,8 +139,6 @@ public class FilesystemScanner {
 	}
 
 	private void scanFile(File file) {
-		long trackId;
-
 		progress++;
 
 		if (!file.canRead()) {
@@ -159,35 +147,64 @@ public class FilesystemScanner {
 
 		// Update the count
 		Log.v(TAG, "Scanning file " + file.toString());
-
 		Intent intent = new Intent(BroadcastConstants.FILTER_SCANNER);
 		intent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.UPDATE);
 		intent.putExtra(BroadcastConstants.EXTRA_PROGRESS, progress);
 		broadcastManager.sendBroadcast(intent);
 
-		// Scan the file. Identifying the MIME type is a bit finnicky, so let
-		// the retriever determine what it can read.
+		TagStrategy strategy;
+
+		// Identify the strategy to use
+		String extension = file.toString().substring(
+				file.toString().lastIndexOf('.'));
+		switch (extension) {
+		case ".ogg":
+		case ".mkv":
+		case ".flac":
+			strategy = getDefaultVorbisCommentTagStrategy();
+			break;
+		default:
+			strategy = getDefaultGenericTagStrategy();
+			break;
+		}
+
+		// Read tags
+		Map<String, List<String>> tags = null;
 		try {
-			metadataRetriever.setDataSource(file.getAbsolutePath());
-		} catch (RuntimeException e) {
-			if (e.getMessage().endsWith("0xFFFFFFEA")) {
-				Log.v(TAG, "Skipping file (not media)");
-				return;
-			} else {
-				throw e;
-			}
+			tags = strategy.getTags(file);
+		} catch (Exception e) {
+			Log.e(TAG, e.getMessage());
+			return;
 		}
 
-		trackId = dao.insertTrack(Uri.fromFile(file));
-
-		// Read and store data for each key
-		for (int i = 0; i < metadataKeys.size(); i++) {
-			String metadata = metadataRetriever.extractMetadata(metadataKeys
-					.keyAt(i));
-			if (metadata != null) {
-				dao.insertTag(trackId, metadataKeys.valueAt(i), metadata);
-			}
+		if (tags == null) {
+			return;
 		}
 
+		// Write the track and tags
+		long trackId = dao.insertTrack(Uri.fromFile(file));
+
+		for (Entry<String, List<String>> tag : tags.entrySet()) {
+			for (String value : tag.getValue()) {
+				dao.insertTag(trackId, tag.getKey(), value);
+			}
+		}
 	}
+
+	private TagStrategy getDefaultVorbisCommentTagStrategy() {
+		if (defaultVorbisStrategy == null) {
+			defaultVorbisStrategy = new VorbisCommentTagStrategy();
+		}
+
+		return defaultVorbisStrategy;
+	}
+
+	private TagStrategy getDefaultGenericTagStrategy() {
+		if (defaultGenericStrategy == null) {
+			defaultGenericStrategy = new GenericTagStrategy(metadataRetriever);
+		}
+
+		return defaultGenericStrategy;
+	}
+
 }
