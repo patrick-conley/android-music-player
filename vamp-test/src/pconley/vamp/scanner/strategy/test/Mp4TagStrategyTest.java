@@ -7,8 +7,8 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 
 import pconley.vamp.library.model.Track;
+import pconley.vamp.scanner.strategy.Mp4TagStrategy;
 import pconley.vamp.scanner.strategy.TagStrategy;
-import pconley.vamp.scanner.strategy.VorbisCommentTagStrategy;
 import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.Constants;
 import android.content.Context;
@@ -16,7 +16,7 @@ import android.net.Uri;
 import android.test.InstrumentationTestCase;
 import android.test.RenamingDelegatingContext;
 
-public class VorbisCommentTagStrategyTest extends InstrumentationTestCase {
+public class Mp4TagStrategyTest extends InstrumentationTestCase {
 
 	private Context testContext;
 
@@ -40,40 +40,19 @@ public class VorbisCommentTagStrategyTest extends InstrumentationTestCase {
 	 * Given a single Ogg Vorbis file, when I scan the file, then the database
 	 * contains the file and its tags.
 	 */
-	public void testOgg() throws Exception {
-		File ogg = new File(musicFolder, "sample.ogg");
-		TagStrategy strategy = new VorbisCommentTagStrategy();
+	public void testMp4() throws Exception {
+		File mp4 = new File(musicFolder, "sample.m4a");
+		TagStrategy strategy = new Mp4TagStrategy();
 
 		// Given
 		Track expected = AssetUtils.addAssetToFolder(testContext,
-				AssetUtils.OGG, ogg);
+				AssetUtils.MP4, mp4);
 
 		// When
-		Map<String, List<String>> tags = strategy.getTags(ogg);
+		Map<String, List<String>> tags = strategy.getTags(mp4);
 
 		// Then
-		assertEquals("Vorbis comments are read correctly in Ogg streams.",
-				expected, TagStrategyUtils.buildTrack(Uri.fromFile(ogg), tags));
+		assertEquals("MP4 comments are read correctly.", expected,
+				TagStrategyUtils.buildTrack(Uri.fromFile(mp4), tags));
 	}
-
-	/**
-	 * Given a single Flac Vorbis file, when I scan the file, then the database
-	 * contains the file and its tags.
-	 */
-	public void testFlac() throws Exception {
-		File flac = new File(musicFolder, "sample.flac");
-		TagStrategy strategy = new VorbisCommentTagStrategy();
-
-		// Given
-		Track expected = AssetUtils.addAssetToFolder(testContext,
-				AssetUtils.FLAC, flac);
-
-		// When
-		Map<String, List<String>> tags = strategy.getTags(flac);
-
-		// Then
-		assertEquals("Vorbis comments are read correctly in FLAC files",
-				expected, TagStrategyUtils.buildTrack(Uri.fromFile(flac), tags));
-	}
-
 }

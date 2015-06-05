@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
 import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
@@ -31,9 +30,7 @@ public class VorbisCommentTagStrategy implements TagStrategy {
 	public Map<String, List<String>> getTags(File file) throws Exception {
 		Map<String, List<String>> comments = new HashMap<String, List<String>>();
 
-		AudioFile audioFile = AudioFileIO.read(file);
-
-		Iterator<TagField> tags = audioFile.getTag().getFields();
+		Iterator<TagField> tags = AudioFileIO.read(file).getTag().getFields();
 		while (tags.hasNext()) {
 			TagField tag = tags.next();
 			String key = tag.getId().toLowerCase(Locale.US);

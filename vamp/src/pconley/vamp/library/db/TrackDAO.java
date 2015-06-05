@@ -14,6 +14,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.util.Log;
 
 /**
  * Methods to read and write track data from the database.
@@ -188,23 +189,33 @@ public class TrackDAO {
 	 * 
 	 * @param trackId
 	 *            ID of a track in the database.
-	 * @param tag
+	 * @param name
 	 *            Name of a tag ("title", "composer", etc.)
 	 * @param value
 	 *            Value of the tag
 	 * @throws SQLException
-	 *             If the track doesn't exist
+	 *             If the track ID is invalid
+	 * @throws NullPointerException
+	 *             If either the name or value is missing
 	 */
-	public void insertTag(long trackId, String tag, String value)
-			throws SQLException {
+	public void insertTag(long trackId, String name, String value)
+			throws SQLException, NullPointerException {
 
 		long tagId = -1;
+
+		if (name == null) {
+			Log.w("TrackDAO", "Tag for " + value + " is null");
+			throw new NullPointerException("Missing tag");
+		} else if (value == null) {
+			Log.w("TrackDAO", name + " is null");
+			throw new NullPointerException("Missing value for tag " + name);
+		}
 
 		// Check whether the tag exists already
 		Cursor results = library.query(TagEntry.NAME,
 				new String[] { TagEntry.COLUMN_ID }, String.format(
 						"%s = ? AND %s = ?", TagEntry.COLUMN_TAG,
-						TagEntry.COLUMN_VAL), new String[] { tag, value },
+						TagEntry.COLUMN_VAL), new String[] { name, value },
 				null, null, null);
 
 		if (results.getCount() > 0) {
@@ -221,7 +232,7 @@ public class TrackDAO {
 			// Insert the tag
 			if (tagId == -1) {
 				values = new ContentValues();
-				values.put(TagEntry.COLUMN_TAG, tag);
+				values.put(TagEntry.COLUMN_TAG, name);
 				values.put(TagEntry.COLUMN_VAL, value);
 
 				tagId = library.insertOrThrow(TagEntry.NAME, null, values);

@@ -25,7 +25,7 @@ public class GenericTagStrategy implements TagStrategy {
 	public GenericTagStrategy(MediaMetadataRetriever metadataRetriever) {
 		this.metadataRetriever = metadataRetriever;
 
-		buildKeyList();
+		buildKeyMap();
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public class GenericTagStrategy implements TagStrategy {
 		for (int i = 0; i < metadataKeys.size(); i++) {
 			String metadata = metadataRetriever.extractMetadata(metadataKeys
 					.keyAt(i));
-			if (metadata != null) {
+			if (metadata != null && !metadata.equals("0")) {
 				List<String> tag = new LinkedList<String>();
 				tags.put(metadataKeys.valueAt(i), tag);
 				tag.add(metadata);
@@ -66,15 +66,17 @@ public class GenericTagStrategy implements TagStrategy {
 		return tags;
 	}
 
-	private void buildKeyList() {
+	/*
+	 * Identify the relevant keys, which are just stored as global ints in
+	 * MediaMetadataRetriever.
+	 */
+	private void buildKeyMap() {
 		metadataKeys = new SparseArray<String>();
 		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_ALBUM, "album");
 		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST,
 				"albumartist");
 		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_ARTIST, "artist");
 		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_AUTHOR, "author");
-		metadataKeys
-				.put(MediaMetadataRetriever.METADATA_KEY_BITRATE, "bitrate");
 		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER,
 				"tracknumber");
 		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_COMPILATION,

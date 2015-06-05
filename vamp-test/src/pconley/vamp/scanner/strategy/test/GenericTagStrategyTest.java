@@ -20,7 +20,6 @@ import android.test.RenamingDelegatingContext;
 public class GenericTagStrategyTest extends InstrumentationTestCase {
 
 	private Context testContext;
-	private Context targetContext;
 
 	private File musicFolder;
 	private MediaMetadataRetriever metadataRetriever;
@@ -29,7 +28,7 @@ public class GenericTagStrategyTest extends InstrumentationTestCase {
 		super.setUp();
 
 		testContext = getInstrumentation().getContext();
-		targetContext = new RenamingDelegatingContext(getInstrumentation()
+		Context targetContext = new RenamingDelegatingContext(getInstrumentation()
 				.getTargetContext(), Constants.DB_PREFIX);
 
 		musicFolder = AssetUtils.setupMusicFolder(targetContext);
@@ -45,21 +44,19 @@ public class GenericTagStrategyTest extends InstrumentationTestCase {
 	 * Given a single Ogg Vorbis file, when I scan the file, then the database
 	 * contains the file and its tags.
 	 */
-	// FIXME: MediaMetadataRetriever doesn't consistently read tags
-	/* public void testMp4() throws Exception {
-		File mp4 = new File(musicFolder, "sample.mp4");
+	public void testMp3() throws Exception {
+		File mp3 = new File(musicFolder, "sample.mp3");
 		TagStrategy strategy = new GenericTagStrategy(metadataRetriever);
 
 		// Given
 		Track expected = AssetUtils.addAssetToFolder(testContext,
-				AssetUtils.MP4, mp4);
+				AssetUtils.MP3, mp3);
 
 		// When
-		Map<String, List<String>> tags = strategy.getTags(mp4);
+		Map<String, List<String>> tags = strategy.getTags(mp3);
 
 		// Then
-		assertEquals("MP4 comments are read correctly.",
-				expected, TagStrategyUtils.buildTrack(Uri.fromFile(mp4), tags));
+		assertEquals("MP3 comments are read correctly.", expected,
+				TagStrategyUtils.buildTrack(Uri.fromFile(mp3), tags));
 	}
-	*/
 }

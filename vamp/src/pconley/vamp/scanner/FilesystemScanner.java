@@ -5,13 +5,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import pconley.vamp.R;
 import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.scanner.strategy.GenericTagStrategy;
+import pconley.vamp.scanner.strategy.Mp4TagStrategy;
 import pconley.vamp.scanner.strategy.TagStrategy;
 import pconley.vamp.scanner.strategy.VorbisCommentTagStrategy;
 import pconley.vamp.util.BroadcastConstants;
 import android.content.Context;
 import android.content.Intent;
+import android.database.SQLException;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.support.v4.content.LocalBroadcastManager;
@@ -31,16 +34,20 @@ public class FilesystemScanner {
 	private int progress = 0;
 	private int total = 0;
 
+	private Context context;
 	private File musicFolder;
+
 	private TrackDAO dao;
 	private LocalBroadcastManager broadcastManager;
-	
-	private static TagStrategy defaultVorbisStrategy;
-	private static TagStrategy defaultGenericStrategy;
+
+	private TagStrategy defaultVorbisStrategy;
+	private TagStrategy defaultGenericStrategy;
+	private TagStrategy defaultMp4Strategy;
 
 	private MediaMetadataRetriever metadataRetriever;
 
 	public FilesystemScanner(Context context, File musicFolder) {
+		this.context = context;
 		this.musicFolder = musicFolder;
 
 		dao = new TrackDAO(context);
@@ -68,7 +75,17 @@ public class FilesystemScanner {
 		dao.openWritableDatabase();
 		dao.wipeDatabase();
 
-		scanDir(musicFolder, false);
+		try {
+			scanDir(musicFolder, false);
+		} catch (SQLException e) {
+			Log.e(TAG, e.getMessage());
+
+			Intent intent = new Intent(BroadcastConstants.FILTER_SCANNER);
+			intent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.UPDATE);
+			intent.putExtra(BroadcastConstants.EXTRA_MESSAGE,
+					context.getString(R.string.scan_error_db, e.getMessage()));
+			broadcastManager.sendBroadcast(intent);
+		}
 
 		dao.close();
 		metadataRetriever.release();
@@ -92,7 +109,7 @@ public class FilesystemScanner {
 	}
 
 	// FIXME: directory loops will cause an infinite recursion
-	private void scanDir(File path, boolean countOnly) {
+	private void scanDir(File path, boolean countOnly) throws SQLException {
 
 		// Check the directory is readable
 		if (!path.exists() || !path.isDirectory() || !path.canExecute()) {
@@ -122,7 +139,6 @@ public class FilesystemScanner {
 			intent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.UPDATE);
 			intent.putExtra(BroadcastConstants.EXTRA_TOTAL, total);
 			intent.putExtra(BroadcastConstants.EXTRA_MESSAGE, folder);
-
 			broadcastManager.sendBroadcast(intent);
 		}
 
@@ -138,7 +154,7 @@ public class FilesystemScanner {
 		}
 	}
 
-	private void scanFile(File file) {
+	private void scanFile(File file) throws SQLException {
 		progress++;
 
 		if (!file.canRead()) {
@@ -163,6 +179,10 @@ public class FilesystemScanner {
 		case ".flac":
 			strategy = getDefaultVorbisCommentTagStrategy();
 			break;
+		case ".mp4":
+		case ".m4a":
+			strategy = getDefaultMp4TagStrategy();
+			break;
 		default:
 			strategy = getDefaultGenericTagStrategy();
 			break;
@@ -184,10 +204,25 @@ public class FilesystemScanner {
 		// Write the track and tags
 		long trackId = dao.insertTrack(Uri.fromFile(file));
 
-		for (Entry<String, List<String>> tag : tags.entrySet()) {
-			for (String value : tag.getValue()) {
-				dao.insertTag(trackId, tag.getKey(), value);
+		// Insert tags; abandon the track if any is invalid
+		// TODO: mark the track somehow in the DB
+		try {
+			for (Entry<String, List<String>> tag : tags.entrySet()) {
+				for (String value : tag.getValue()) {
+					dao.insertTag(trackId, tag.getKey(), value);
+				}
 			}
+		} catch (NullPointerException e) {
+			Log.e(TAG, e.getMessage());
+
+			intent = new Intent(BroadcastConstants.FILTER_SCANNER);
+			intent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.UPDATE);
+			intent.putExtra(
+					BroadcastConstants.EXTRA_MESSAGE,
+					context.getString(R.string.scan_error_invalid_tag,
+							file.toString()));
+			broadcastManager.sendBroadcast(intent);
+
 		}
 	}
 
@@ -205,6 +240,14 @@ public class FilesystemScanner {
 		}
 
 		return defaultGenericStrategy;
+	}
+
+	private TagStrategy getDefaultMp4TagStrategy() {
+		if (defaultMp4Strategy == null) {
+			defaultMp4Strategy = new Mp4TagStrategy();
+		}
+
+		return defaultMp4Strategy;
 	}
 
 }

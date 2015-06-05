@@ -23,17 +23,22 @@ public final class AssetUtils {
 	 * Sample Ogg Vorbis file with several comments: see
 	 * {@link #buildTrack(File)}
 	 */
-	public static final String OGG = "sample.ogg_";
+	public static final String OGG = "sample.ogg";
 
 	/**
 	 * Sample FLAC file with several comments.
 	 */
-	public static final String FLAC = "sample.flac_";
+	public static final String FLAC = "sample.flac";
 
 	/**
 	 * Sample MP4 file with several comments.
 	 */
-	public static final String MP4 = "sample.m4a_";
+	public static final String MP4 = "sample.m4a";
+
+	/**
+	 * Sample MP3 file with several comments
+	 */
+	public static final String MP3 = "sample.mp3";
 
 	/*
 	 * Vendor string. Brittle, but unavoidable.
@@ -183,7 +188,6 @@ public final class AssetUtils {
 		if (extension.equals(".ogg") || extension.equals(".flac")) {
 			builder.add(new Tag(0, "conductor", "MyConductor"))
 					.add(new Tag(0, "comments", "MyComment"))
-					.add(new Tag(0, "date", "1970"))
 					.add(new Tag(0, "uniquetag", "MyUniqueTag"));
 
 			if (extension.equals(".ogg")) {
@@ -191,6 +195,8 @@ public final class AssetUtils {
 			} else {
 				builder.add(new Tag(0, "vendor", FLAC_VENDOR));
 			}
+		} else if (extension.equals(".mp3")) {
+			builder.add(new Tag(0, "tracktotal", "1"));
 		}
 		return builder.build();
 	}
