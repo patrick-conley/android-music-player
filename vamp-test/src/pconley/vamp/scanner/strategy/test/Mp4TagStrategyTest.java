@@ -2,10 +2,10 @@ package pconley.vamp.scanner.strategy.test;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 
+import pconley.vamp.library.model.Tag;
 import pconley.vamp.library.model.Track;
 import pconley.vamp.scanner.strategy.Mp4TagStrategy;
 import pconley.vamp.scanner.strategy.TagStrategy;
@@ -49,7 +49,7 @@ public class Mp4TagStrategyTest extends InstrumentationTestCase {
 				AssetUtils.MP4, mp4);
 
 		// When
-		Map<String, List<String>> tags = strategy.getTags(mp4);
+		List<Tag> tags = strategy.getTags(mp4);
 
 		// Then
 		assertEquals("MP4 comments are read correctly.", expected,

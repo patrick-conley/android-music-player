@@ -1,11 +1,10 @@
 package pconley.vamp.scanner.strategy;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
+import pconley.vamp.library.model.Tag;
 import android.media.MediaMetadataRetriever;
 import android.util.Log;
 import android.util.SparseArray;
@@ -18,7 +17,7 @@ import android.util.SparseArray;
 public class GenericTagStrategy implements TagStrategy {
 	private static final String TAG = "TagStrategy";
 
-	private SparseArray<String> metadataKeys = null;
+	private SparseArray<String> keys = null;
 
 	MediaMetadataRetriever metadataRetriever;
 
@@ -29,8 +28,8 @@ public class GenericTagStrategy implements TagStrategy {
 	}
 
 	@Override
-	public Map<String, List<String>> getTags(File file) throws Exception {
-		Map<String, List<String>> tags = new HashMap<String, List<String>>();
+	public List<Tag> getTags(File file) throws Exception {
+		List<Tag> tags = new LinkedList<Tag>();
 
 		// Scan the file. Identifying the MIME type is a bit tricky, so let the
 		// retriever determine what it can read.
@@ -53,13 +52,10 @@ public class GenericTagStrategy implements TagStrategy {
 		}
 
 		// Read and store data for each key
-		for (int i = 0; i < metadataKeys.size(); i++) {
-			String metadata = metadataRetriever.extractMetadata(metadataKeys
-					.keyAt(i));
-			if (metadata != null && !metadata.equals("0")) {
-				List<String> tag = new LinkedList<String>();
-				tags.put(metadataKeys.valueAt(i), tag);
-				tag.add(metadata);
+		for (int i = 0; i < keys.size(); i++) {
+			String value = metadataRetriever.extractMetadata(keys.keyAt(i));
+			if (value != null && !value.equals("0")) {
+				tags.add(new Tag(keys.valueAt(i), value));
 			}
 		}
 
@@ -71,29 +67,23 @@ public class GenericTagStrategy implements TagStrategy {
 	 * MediaMetadataRetriever.
 	 */
 	private void buildKeyMap() {
-		metadataKeys = new SparseArray<String>();
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_ALBUM, "album");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST,
-				"albumartist");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_ARTIST, "artist");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_AUTHOR, "author");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER,
+		keys = new SparseArray<String>();
+		keys.put(MediaMetadataRetriever.METADATA_KEY_ALBUM, "album");
+		keys.put(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST, "albumartist");
+		keys.put(MediaMetadataRetriever.METADATA_KEY_ARTIST, "artist");
+		keys.put(MediaMetadataRetriever.METADATA_KEY_AUTHOR, "author");
+		keys.put(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER,
 				"tracknumber");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_COMPILATION,
-				"compilation");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_COMPOSER,
-				"composer");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_DATE, "date");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_DISC_NUMBER,
-				"discnumber");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_GENRE, "genre");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_LOCATION,
-				"location");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_NUM_TRACKS,
-				"tracktotal");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_TITLE, "title");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_WRITER, "writer");
-		metadataKeys.put(MediaMetadataRetriever.METADATA_KEY_YEAR, "year");
+		keys.put(MediaMetadataRetriever.METADATA_KEY_COMPILATION, "compilation");
+		keys.put(MediaMetadataRetriever.METADATA_KEY_COMPOSER, "composer");
+		keys.put(MediaMetadataRetriever.METADATA_KEY_DATE, "date");
+		keys.put(MediaMetadataRetriever.METADATA_KEY_DISC_NUMBER, "discnumber");
+		keys.put(MediaMetadataRetriever.METADATA_KEY_GENRE, "genre");
+		keys.put(MediaMetadataRetriever.METADATA_KEY_LOCATION, "location");
+		keys.put(MediaMetadataRetriever.METADATA_KEY_NUM_TRACKS, "tracktotal");
+		keys.put(MediaMetadataRetriever.METADATA_KEY_TITLE, "title");
+		keys.put(MediaMetadataRetriever.METADATA_KEY_WRITER, "writer");
+		keys.put(MediaMetadataRetriever.METADATA_KEY_YEAR, "year");
 	}
 
 }

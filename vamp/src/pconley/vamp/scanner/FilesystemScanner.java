@@ -2,11 +2,10 @@ package pconley.vamp.scanner;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import pconley.vamp.R;
 import pconley.vamp.library.db.TrackDAO;
+import pconley.vamp.library.model.Tag;
 import pconley.vamp.scanner.strategy.GenericTagStrategy;
 import pconley.vamp.scanner.strategy.Mp4TagStrategy;
 import pconley.vamp.scanner.strategy.TagStrategy;
@@ -189,7 +188,7 @@ public class FilesystemScanner {
 		}
 
 		// Read tags
-		Map<String, List<String>> tags = null;
+		List<Tag> tags = null;
 		try {
 			tags = strategy.getTags(file);
 		} catch (Exception e) {
@@ -207,10 +206,8 @@ public class FilesystemScanner {
 		// Insert tags; abandon the track if any is invalid
 		// TODO: mark the track somehow in the DB
 		try {
-			for (Entry<String, List<String>> tag : tags.entrySet()) {
-				for (String value : tag.getValue()) {
-					dao.insertTag(trackId, tag.getKey(), value);
-				}
+			for (Tag tag : tags) {
+				dao.insertTag(trackId, tag.getName(), tag.getValue());
 			}
 		} catch (NullPointerException e) {
 			Log.e(TAG, e.getMessage());

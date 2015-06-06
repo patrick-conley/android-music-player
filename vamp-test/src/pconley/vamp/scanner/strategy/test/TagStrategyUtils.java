@@ -1,8 +1,6 @@
 package pconley.vamp.scanner.strategy.test;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import pconley.vamp.library.model.Tag;
 import pconley.vamp.library.model.Track;
@@ -20,13 +18,11 @@ public class TagStrategyUtils {
 	 * @param tags
 	 * @return
 	 */
-	public static Track buildTrack(Uri uri, Map<String, List<String>> tags) {
+	public static Track buildTrack(Uri uri, List<Tag> tags) {
 		Track.Builder builder = new Track.Builder(0, uri);
 
-		for (Entry<String, List<String>> entry : tags.entrySet()) {
-			for (String value : entry.getValue()) {
-				builder.add(new Tag(0, entry.getKey(), value));
-			}
+		for (Tag tag : tags) {
+			builder.add(tag);
 		}
 
 		return builder.build();

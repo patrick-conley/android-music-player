@@ -2,7 +2,8 @@ package pconley.vamp.scanner.strategy;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
+
+import pconley.vamp.library.model.Tag;
 
 /**
  * 
@@ -18,6 +19,6 @@ public interface TagStrategy {
 	 * @param file
 	 * @return Key/value pairs, supporting multi-valued keys.
 	 */
-	public Map<String, List<String>> getTags(File file) throws Exception;
+	public List<Tag> getTags(File file) throws Exception;
 
 }

@@ -2,10 +2,10 @@ package pconley.vamp.scanner.strategy.test;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 
+import pconley.vamp.library.model.Tag;
 import pconley.vamp.library.model.Track;
 import pconley.vamp.scanner.strategy.GenericTagStrategy;
 import pconley.vamp.scanner.strategy.TagStrategy;
@@ -53,7 +53,7 @@ public class GenericTagStrategyTest extends InstrumentationTestCase {
 				AssetUtils.MP3, mp3);
 
 		// When
-		Map<String, List<String>> tags = strategy.getTags(mp3);
+		List<Tag> tags = strategy.getTags(mp3);
 
 		// Then
 		assertEquals("MP3 comments are read correctly.", expected,

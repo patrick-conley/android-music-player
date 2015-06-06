@@ -2,10 +2,10 @@ package pconley.vamp.scanner.strategy.test;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 
+import pconley.vamp.library.model.Tag;
 import pconley.vamp.library.model.Track;
 import pconley.vamp.scanner.strategy.TagStrategy;
 import pconley.vamp.scanner.strategy.VorbisCommentTagStrategy;
@@ -49,7 +49,7 @@ public class VorbisCommentTagStrategyTest extends InstrumentationTestCase {
 				AssetUtils.OGG, ogg);
 
 		// When
-		Map<String, List<String>> tags = strategy.getTags(ogg);
+		List<Tag> tags = strategy.getTags(ogg);
 
 		// Then
 		assertEquals("Vorbis comments are read correctly in Ogg streams.",
@@ -69,7 +69,7 @@ public class VorbisCommentTagStrategyTest extends InstrumentationTestCase {
 				AssetUtils.FLAC, flac);
 
 		// When
-		Map<String, List<String>> tags = strategy.getTags(flac);
+		List<Tag> tags = strategy.getTags(flac);
 
 		// Then
 		assertEquals("Vorbis comments are read correctly in FLAC files",
