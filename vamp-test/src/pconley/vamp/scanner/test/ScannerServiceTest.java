@@ -1,11 +1,15 @@
 package pconley.vamp.scanner.test;
 
+import static android.test.MoreAsserts.assertEmpty;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.io.FileUtils;
 
 import pconley.vamp.R;
 import pconley.vamp.library.db.TrackDAO;
@@ -64,7 +68,7 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 				Context.MODE_PRIVATE);
 		SettingsHelper.setPreferences(preferences);
 
-		dao = new TrackDAO(context);
+		dao = new TrackDAO(context).openWritableDatabase();
 
 		scannerIntent = new Intent(getContext(), ScannerService.class);
 
@@ -81,7 +85,6 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 
 		preferences.edit().putBoolean(SettingsHelper.KEY_DEBUG, false).commit();
 
-		dao.openWritableDatabase();
 		dao.wipeDatabase();
 		dao.close();
 
@@ -180,15 +183,38 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 		latch = new CountDownLatch(1);
 		startService(scannerIntent);
 		assertTrue("Scanner completes on time",
+				latch.await(WAIT_TIME*2, TimeUnit.MILLISECONDS));
+
+		// Then
+		assertEquals("Scan completed",
+				getContext().getString(R.string.scan_done), finalStatus);
+		assertEquals("Scanner writes to the library",
+				Arrays.asList(new Track[] { expected }), dao.getTracks());
+
+		FileUtils.deleteDirectory(musicFolder);
+	}
+
+	/**
+	 * Given the database contains a track, when I run the scanner, then the
+	 * database is first cleared.
+	 */
+	public void testDatabaseIsCleared() throws IOException,
+			InterruptedException {
+		File musicFolder = AssetUtils.setupMusicFolder(getContext());
+		AssetUtils.addTrackToDb(getContext(), musicFolder);
+
+		// When
+		latch = new CountDownLatch(1);
+		startService(scannerIntent);
+		assertTrue("Scanner completes on time",
 				latch.await(WAIT_TIME, TimeUnit.MILLISECONDS));
 
 		// Then
 		assertEquals("Scan completed",
 				getContext().getString(R.string.scan_done), finalStatus);
-		dao.openReadableDatabase();
-		assertEquals("Scanner writes to the library",
-				Arrays.asList(new Track[] { expected }), dao.getTracks());
+		assertEmpty("Library is cleared", dao.getTracks());
 
+		FileUtils.deleteDirectory(musicFolder);
 	}
 
 	/**

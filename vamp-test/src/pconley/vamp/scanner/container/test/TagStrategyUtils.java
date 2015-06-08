@@ -1,4 +1,4 @@
-package pconley.vamp.scanner.strategy.test;
+package pconley.vamp.scanner.container.test;
 
 import java.util.List;
 

@@ -75,9 +75,7 @@ public class TrackDAO {
 	 * Close this DAO's reference to the database.
 	 */
 	public void close() {
-		if (library != null) {
-			library.close();
-		}
+		library.close();
 	}
 
 	/**

@@ -1,4 +1,4 @@
-package pconley.vamp.scanner.strategy.test;
+package pconley.vamp.scanner.container.test;
 
 import java.io.File;
 import java.util.List;
@@ -7,8 +7,8 @@ import org.apache.commons.io.FileUtils;
 
 import pconley.vamp.library.model.Tag;
 import pconley.vamp.library.model.Track;
-import pconley.vamp.scanner.strategy.GenericTagStrategy;
-import pconley.vamp.scanner.strategy.TagStrategy;
+import pconley.vamp.scanner.container.GenericTagStrategy;
+import pconley.vamp.scanner.container.TagStrategy;
 import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.Constants;
 import android.content.Context;

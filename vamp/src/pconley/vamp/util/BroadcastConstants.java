@@ -2,9 +2,9 @@ package pconley.vamp.util;
 
 import pconley.vamp.player.PlayerEvent;
 import pconley.vamp.player.PlayerService;
-import pconley.vamp.scanner.FilesystemScanner;
 import pconley.vamp.scanner.ScannerEvent;
 import pconley.vamp.scanner.ScannerService;
+import pconley.vamp.scanner.filesystem.FileScanVisitor;
 
 public final class BroadcastConstants {
 
@@ -30,7 +30,7 @@ public final class BroadcastConstants {
 	public static final String EXTRA_MESSAGE = "pconley.vamp.broadcast.message";
 
 	/**
-	 * Number of files scanned so far by {@link FilesystemScanner}. If either
+	 * Number of files scanned so far by {@link FileScanVisitor}. If either
 	 * this or {@link #EXTRA_TOTAL} is set, then a broadcast with FILTER_SCANNER
 	 * is assumed to be an update. Otherwise a broadcast announces the scanner
 	 * is finished. {@link #EXTRA_MESSAGE} might be used for information about

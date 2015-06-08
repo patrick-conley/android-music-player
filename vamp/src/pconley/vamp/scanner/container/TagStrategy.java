@@ -1,4 +1,4 @@
-package pconley.vamp.scanner.strategy;
+package pconley.vamp.scanner.container;
 
 import java.io.File;
 import java.util.List;

@@ -1,4 +1,4 @@
-package pconley.vamp.scanner.strategy.test;
+package pconley.vamp.scanner.container.test;
 
 import java.io.File;
 import java.util.List;
@@ -7,8 +7,8 @@ import org.apache.commons.io.FileUtils;
 
 import pconley.vamp.library.model.Tag;
 import pconley.vamp.library.model.Track;
-import pconley.vamp.scanner.strategy.TagStrategy;
-import pconley.vamp.scanner.strategy.VorbisCommentTagStrategy;
+import pconley.vamp.scanner.container.TagStrategy;
+import pconley.vamp.scanner.container.VorbisCommentTagStrategy;
 import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.Constants;
 import android.content.Context;
@@ -37,8 +37,8 @@ public class VorbisCommentTagStrategyTest extends InstrumentationTestCase {
 	}
 
 	/**
-	 * Given a single Ogg Vorbis file, when I scan the file, then the database
-	 * contains the file and its tags.
+	 * Given a single Ogg Vorbis file, when I scan the file, then I get the file
+	 * and its tags.
 	 */
 	public void testOgg() throws Exception {
 		File ogg = new File(musicFolder, "sample.ogg");
@@ -57,8 +57,8 @@ public class VorbisCommentTagStrategyTest extends InstrumentationTestCase {
 	}
 
 	/**
-	 * Given a single Flac Vorbis file, when I scan the file, then the database
-	 * contains the file and its tags.
+	 * Given a single Flac file, when I scan the file, then I get the file and
+	 * its tags.
 	 */
 	public void testFlac() throws Exception {
 		File flac = new File(musicFolder, "sample.flac");
