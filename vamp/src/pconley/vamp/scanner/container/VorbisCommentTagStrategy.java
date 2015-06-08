@@ -13,7 +13,7 @@ import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.tag.TagException;
 import org.jaudiotagger.tag.TagField;
 
-import pconley.vamp.library.model.Tag;
+import pconley.vamp.model.Tag;
 
 public class VorbisCommentTagStrategy implements TagStrategy {
 

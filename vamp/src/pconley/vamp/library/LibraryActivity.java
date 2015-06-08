@@ -4,7 +4,7 @@ import java.util.List;
 
 import pconley.vamp.R;
 import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.library.model.Track;
+import pconley.vamp.model.Track;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.preferences.SettingsActivity;

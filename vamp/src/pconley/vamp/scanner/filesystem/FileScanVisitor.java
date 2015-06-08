@@ -5,7 +5,10 @@ import java.util.List;
 
 import pconley.vamp.R;
 import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.library.model.Tag;
+import pconley.vamp.model.Tag;
+import pconley.vamp.model.filesystem.MediaFile;
+import pconley.vamp.model.filesystem.MediaFolder;
+import pconley.vamp.model.filesystem.MediaVisitorBase;
 import pconley.vamp.scanner.ScannerEvent;
 import pconley.vamp.scanner.container.ScannerFactory;
 import pconley.vamp.scanner.container.TagStrategy;

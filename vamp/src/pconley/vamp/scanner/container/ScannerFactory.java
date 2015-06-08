@@ -1,6 +1,6 @@
 package pconley.vamp.scanner.container;
 
-import pconley.vamp.scanner.filesystem.MediaFile;
+import pconley.vamp.model.filesystem.MediaFile;
 
 public class ScannerFactory {
 

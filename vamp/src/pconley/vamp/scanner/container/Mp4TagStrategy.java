@@ -12,7 +12,7 @@ import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.TagField;
 import org.jaudiotagger.tag.mp4.Mp4FieldKey;
 
-import pconley.vamp.library.model.Tag;
+import pconley.vamp.model.Tag;
 
 public class Mp4TagStrategy implements TagStrategy {
 

@@ -1,7 +1,7 @@
-package pconley.vamp.library.model.test;
+package pconley.vamp.model.test;
 
 import static android.test.MoreAsserts.checkEqualsAndHashCodeMethods;
-import pconley.vamp.library.model.Tag;
+import pconley.vamp.model.Tag;
 import android.test.AndroidTestCase;
 
 public class TagTest extends AndroidTestCase {

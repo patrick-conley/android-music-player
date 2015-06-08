@@ -22,7 +22,7 @@ import org.robolectric.tester.android.view.TestMenuItem;
 import pconley.vamp.R;
 import pconley.vamp.library.LibraryActivity;
 import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.library.model.Track;
+import pconley.vamp.model.Track;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.preferences.SettingsActivity;

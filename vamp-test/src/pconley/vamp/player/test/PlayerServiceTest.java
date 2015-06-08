@@ -28,7 +28,7 @@ import org.robolectric.shadows.ShadowAudioManager;
 import org.robolectric.shadows.ShadowMediaPlayer;
 
 import pconley.vamp.R;
-import pconley.vamp.library.model.Track;
+import pconley.vamp.model.Track;
 import pconley.vamp.player.PlayerEvent;
 import pconley.vamp.player.PlayerFactory;
 import pconley.vamp.player.PlayerService;

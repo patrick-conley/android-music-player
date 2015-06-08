@@ -2,11 +2,11 @@ package pconley.vamp.scanner;
 
 import pconley.vamp.R;
 import pconley.vamp.library.db.TrackDAO;
+import pconley.vamp.model.filesystem.MediaFolder;
+import pconley.vamp.model.filesystem.MediaVisitorBase;
 import pconley.vamp.preferences.SettingsHelper;
 import pconley.vamp.scanner.filesystem.FileCountVisitor;
 import pconley.vamp.scanner.filesystem.FileScanVisitor;
-import pconley.vamp.scanner.filesystem.MediaFolder;
-import pconley.vamp.scanner.filesystem.MediaVisitorBase;
 import pconley.vamp.util.BroadcastConstants;
 import android.app.IntentService;
 import android.content.Intent;

@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
-import pconley.vamp.library.model.Tag;
-import pconley.vamp.library.model.Track;
+import pconley.vamp.model.Tag;
+import pconley.vamp.model.Track;
 import pconley.vamp.scanner.container.Mp4TagStrategy;
 import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.Constants;

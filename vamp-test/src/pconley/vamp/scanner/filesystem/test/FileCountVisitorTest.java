@@ -2,9 +2,9 @@ package pconley.vamp.scanner.filesystem.test;
 
 import java.io.File;
 
+import pconley.vamp.model.filesystem.MediaFile;
+import pconley.vamp.model.filesystem.MediaFolder;
 import pconley.vamp.scanner.filesystem.FileCountVisitor;
-import pconley.vamp.scanner.filesystem.MediaFile;
-import pconley.vamp.scanner.filesystem.MediaFolder;
 import android.test.AndroidTestCase;
 
 public class FileCountVisitorTest extends AndroidTestCase {

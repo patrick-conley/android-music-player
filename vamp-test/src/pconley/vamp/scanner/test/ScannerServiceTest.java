@@ -13,7 +13,7 @@ import org.apache.commons.io.FileUtils;
 
 import pconley.vamp.R;
 import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.library.model.Track;
+import pconley.vamp.model.Track;
 import pconley.vamp.preferences.SettingsHelper;
 import pconley.vamp.scanner.ScannerEvent;
 import pconley.vamp.scanner.ScannerService;

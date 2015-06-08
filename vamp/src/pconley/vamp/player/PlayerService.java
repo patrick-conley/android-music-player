@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import pconley.vamp.R;
-import pconley.vamp.library.model.Track;
+import pconley.vamp.model.Track;
 import pconley.vamp.util.BroadcastConstants;
 import pconley.vamp.util.Playlist;
 import pconley.vamp.util.PlaylistIterator;

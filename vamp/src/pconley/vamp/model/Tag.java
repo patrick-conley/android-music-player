@@ -1,4 +1,4 @@
-package pconley.vamp.library.model;
+package pconley.vamp.model;
 
 /**
  * A piece of music metadata, represented by a unique key-value pair.

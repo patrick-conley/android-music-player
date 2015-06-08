@@ -2,8 +2,8 @@ package pconley.vamp.scanner.container.test;
 
 import java.util.List;
 
-import pconley.vamp.library.model.Tag;
-import pconley.vamp.library.model.Track;
+import pconley.vamp.model.Tag;
+import pconley.vamp.model.Track;
 import android.net.Uri;
 
 public class TagStrategyUtils {

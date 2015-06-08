@@ -3,7 +3,7 @@ package pconley.vamp.scanner.container;
 import java.io.File;
 import java.util.List;
 
-import pconley.vamp.library.model.Tag;
+import pconley.vamp.model.Tag;
 
 /**
  * 

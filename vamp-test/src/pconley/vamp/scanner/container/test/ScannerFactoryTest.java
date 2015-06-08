@@ -2,12 +2,12 @@ package pconley.vamp.scanner.container.test;
 
 import java.io.File;
 
+import pconley.vamp.model.filesystem.MediaFile;
 import pconley.vamp.scanner.container.GenericTagStrategy;
 import pconley.vamp.scanner.container.Mp4TagStrategy;
 import pconley.vamp.scanner.container.ScannerFactory;
 import pconley.vamp.scanner.container.TagStrategy;
 import pconley.vamp.scanner.container.VorbisCommentTagStrategy;
-import pconley.vamp.scanner.filesystem.MediaFile;
 import android.test.AndroidTestCase;
 
 public class ScannerFactoryTest extends AndroidTestCase {

@@ -1,4 +1,4 @@
-package pconley.vamp.scanner.filesystem;
+package pconley.vamp.model.filesystem;
 
 /**
  * Traverse a hierarchical filesystem. Methods in subclasses of

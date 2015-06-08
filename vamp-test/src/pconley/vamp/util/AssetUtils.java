@@ -9,8 +9,8 @@ import java.io.OutputStream;
 import org.apache.commons.io.FileUtils;
 
 import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.library.model.Tag;
-import pconley.vamp.library.model.Track;
+import pconley.vamp.model.Tag;
+import pconley.vamp.model.Track;
 import pconley.vamp.preferences.SettingsHelper;
 import android.content.Context;
 import android.content.SharedPreferences;

@@ -1,11 +1,12 @@
-package pconley.vamp.scanner.filesystem.test;
+package pconley.vamp.model.filesystem.test;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
-import pconley.vamp.scanner.filesystem.MediaFile;
+import pconley.vamp.model.filesystem.MediaFile;
+import pconley.vamp.scanner.filesystem.test.AccessCountVisitor;
 import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.Constants;
 import android.content.Context;

@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
-import pconley.vamp.library.model.Tag;
+import pconley.vamp.model.Tag;
 import android.media.MediaMetadataRetriever;
 import android.util.Log;
 import android.util.SparseArray;

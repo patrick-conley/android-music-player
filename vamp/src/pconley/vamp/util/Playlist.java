@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import pconley.vamp.library.model.Track;
+import pconley.vamp.model.Track;
 
 /**
  * A list of tracks. Built around a {@link List}, but with its {@link Iterator}

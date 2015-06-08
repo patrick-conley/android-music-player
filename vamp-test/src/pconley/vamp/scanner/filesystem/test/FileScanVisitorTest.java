@@ -18,11 +18,11 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.library.model.Track;
+import pconley.vamp.model.Track;
+import pconley.vamp.model.filesystem.MediaFile;
+import pconley.vamp.model.filesystem.MediaFolder;
 import pconley.vamp.scanner.ScannerEvent;
 import pconley.vamp.scanner.filesystem.FileScanVisitor;
-import pconley.vamp.scanner.filesystem.MediaFile;
-import pconley.vamp.scanner.filesystem.MediaFolder;
 import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.BroadcastConstants;
 import android.content.BroadcastReceiver;

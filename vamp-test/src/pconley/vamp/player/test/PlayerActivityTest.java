@@ -22,7 +22,7 @@ import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.util.ServiceController;
 
 import pconley.vamp.R;
-import pconley.vamp.library.model.Track;
+import pconley.vamp.model.Track;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.util.AssetUtils;

@@ -1,5 +1,9 @@
 package pconley.vamp.scanner.filesystem;
 
+import pconley.vamp.model.filesystem.MediaFile;
+import pconley.vamp.model.filesystem.MediaFolder;
+import pconley.vamp.model.filesystem.MediaVisitorBase;
+
 /**
  * Visit part of a filesystem, counting media files.
  * 

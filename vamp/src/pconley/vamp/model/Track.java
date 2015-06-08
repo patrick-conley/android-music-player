@@ -1,4 +1,4 @@
-package pconley.vamp.library.model;
+package pconley.vamp.model;
 
 import java.util.Collections;
 import java.util.HashMap;
