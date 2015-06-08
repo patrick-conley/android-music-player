@@ -8,11 +8,9 @@ import org.apache.commons.io.FileUtils;
 import pconley.vamp.library.model.Tag;
 import pconley.vamp.library.model.Track;
 import pconley.vamp.scanner.container.GenericTagStrategy;
-import pconley.vamp.scanner.container.TagStrategy;
 import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.Constants;
 import android.content.Context;
-import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.test.InstrumentationTestCase;
 import android.test.RenamingDelegatingContext;
@@ -22,7 +20,7 @@ public class GenericTagStrategyTest extends InstrumentationTestCase {
 	private Context testContext;
 
 	private File musicFolder;
-	private MediaMetadataRetriever metadataRetriever;
+	private GenericTagStrategy strategy;
 
 	public void setUp() throws Exception {
 		super.setUp();
@@ -32,11 +30,11 @@ public class GenericTagStrategyTest extends InstrumentationTestCase {
 				.getTargetContext(), Constants.DB_PREFIX);
 
 		musicFolder = AssetUtils.setupMusicFolder(targetContext);
-		metadataRetriever = new MediaMetadataRetriever();
+		strategy = new GenericTagStrategy();
 	}
 
 	public void tearDown() throws Exception {
-		metadataRetriever.release();
+		strategy.release();
 		FileUtils.deleteDirectory(musicFolder);
 	}
 
@@ -46,7 +44,6 @@ public class GenericTagStrategyTest extends InstrumentationTestCase {
 	 */
 	public void testMp3() throws Exception {
 		File mp3 = new File(musicFolder, "sample.mp3");
-		TagStrategy strategy = new GenericTagStrategy(metadataRetriever);
 
 		// Given
 		Track expected = AssetUtils.addAssetToFolder(testContext,

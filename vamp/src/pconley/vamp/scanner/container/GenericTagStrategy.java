@@ -21,10 +21,17 @@ public class GenericTagStrategy implements TagStrategy {
 
 	MediaMetadataRetriever metadataRetriever;
 
-	public GenericTagStrategy(MediaMetadataRetriever metadataRetriever) {
-		this.metadataRetriever = metadataRetriever;
+	public GenericTagStrategy() {
+		this.metadataRetriever = new MediaMetadataRetriever();
 
 		buildKeyMap();
+	}
+
+	/**
+	 * Release native resources.
+	 */
+	public void release() {
+		metadataRetriever.release();
 	}
 
 	@Override

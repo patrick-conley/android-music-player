@@ -7,7 +7,6 @@ import org.apache.commons.io.FileUtils;
 
 import pconley.vamp.library.model.Tag;
 import pconley.vamp.library.model.Track;
-import pconley.vamp.scanner.container.TagStrategy;
 import pconley.vamp.scanner.container.VorbisCommentTagStrategy;
 import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.Constants;
@@ -42,14 +41,13 @@ public class VorbisCommentTagStrategyTest extends InstrumentationTestCase {
 	 */
 	public void testOgg() throws Exception {
 		File ogg = new File(musicFolder, "sample.ogg");
-		TagStrategy strategy = new VorbisCommentTagStrategy();
 
 		// Given
 		Track expected = AssetUtils.addAssetToFolder(testContext,
 				AssetUtils.OGG, ogg);
 
 		// When
-		List<Tag> tags = strategy.getTags(ogg);
+		List<Tag> tags = new VorbisCommentTagStrategy().getTags(ogg);
 
 		// Then
 		assertEquals("Vorbis comments are read correctly in Ogg streams.",
@@ -62,14 +60,13 @@ public class VorbisCommentTagStrategyTest extends InstrumentationTestCase {
 	 */
 	public void testFlac() throws Exception {
 		File flac = new File(musicFolder, "sample.flac");
-		TagStrategy strategy = new VorbisCommentTagStrategy();
 
 		// Given
 		Track expected = AssetUtils.addAssetToFolder(testContext,
 				AssetUtils.FLAC, flac);
 
 		// When
-		List<Tag> tags = strategy.getTags(flac);
+		List<Tag> tags = new VorbisCommentTagStrategy().getTags(flac);
 
 		// Then
 		assertEquals("Vorbis comments are read correctly in FLAC files",

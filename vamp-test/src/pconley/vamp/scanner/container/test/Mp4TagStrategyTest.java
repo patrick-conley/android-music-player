@@ -8,7 +8,6 @@ import org.apache.commons.io.FileUtils;
 import pconley.vamp.library.model.Tag;
 import pconley.vamp.library.model.Track;
 import pconley.vamp.scanner.container.Mp4TagStrategy;
-import pconley.vamp.scanner.container.TagStrategy;
 import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.Constants;
 import android.content.Context;
@@ -42,14 +41,13 @@ public class Mp4TagStrategyTest extends InstrumentationTestCase {
 	 */
 	public void testMp4() throws Exception {
 		File mp4 = new File(musicFolder, "sample.m4a");
-		TagStrategy strategy = new Mp4TagStrategy();
 
 		// Given
 		Track expected = AssetUtils.addAssetToFolder(testContext,
 				AssetUtils.MP4, mp4);
 
 		// When
-		List<Tag> tags = strategy.getTags(mp4);
+		List<Tag> tags = new Mp4TagStrategy().getTags(mp4);
 
 		// Then
 		assertEquals("MP4 comments are read correctly.", expected,

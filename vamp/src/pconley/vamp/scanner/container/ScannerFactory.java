@@ -1,15 +1,12 @@
 package pconley.vamp.scanner.container;
 
 import pconley.vamp.scanner.filesystem.MediaFile;
-import android.media.MediaMetadataRetriever;
 
 public class ScannerFactory {
 
 	private static TagStrategy defaultVorbisStrategy;
 	private static TagStrategy defaultGenericStrategy;
 	private static TagStrategy defaultMp4Strategy;
-
-	private static MediaMetadataRetriever metadataRetriever;
 
 	/**
 	 * Private constructor.
@@ -45,8 +42,8 @@ public class ScannerFactory {
 	 * Release native resources. Call this when finished.
 	 */
 	public static void release() {
-		if (metadataRetriever != null) {
-			metadataRetriever.release();
+		if (defaultGenericStrategy != null) {
+			((GenericTagStrategy) defaultGenericStrategy).release();
 			defaultGenericStrategy = null;
 		}
 	}
@@ -61,8 +58,7 @@ public class ScannerFactory {
 
 	private static TagStrategy getDefaultGenericTagStrategy() {
 		if (defaultGenericStrategy == null) {
-			metadataRetriever = new MediaMetadataRetriever();
-			defaultGenericStrategy = new GenericTagStrategy(metadataRetriever);
+			defaultGenericStrategy = new GenericTagStrategy();
 		}
 
 		return defaultGenericStrategy;

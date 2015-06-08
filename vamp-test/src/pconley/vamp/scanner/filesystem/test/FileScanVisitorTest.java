@@ -81,7 +81,6 @@ public class FileScanVisitorTest {
 	 */
 	@Test
 	public void testVisitRoot() {
-
 		// When
 		visitor.visit(new MediaFolder(musicFolder));
 
@@ -95,6 +94,7 @@ public class FileScanVisitorTest {
 	 */
 	@Test
 	public void testVisitChildFolder() {
+		// Given
 		String name = "album";
 		File file = new File(musicFolder, name);
 		file.mkdir();
