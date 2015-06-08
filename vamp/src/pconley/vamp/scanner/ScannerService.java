@@ -1,23 +1,32 @@
 package pconley.vamp.scanner;
 
 import pconley.vamp.R;
+import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.preferences.SettingsHelper;
+import pconley.vamp.scanner.filesystem.FileCountVisitor;
+import pconley.vamp.scanner.filesystem.FileScanVisitor;
+import pconley.vamp.scanner.filesystem.MediaFolder;
+import pconley.vamp.scanner.filesystem.MediaVisitorBase;
 import pconley.vamp.util.BroadcastConstants;
 import android.app.IntentService;
 import android.content.Intent;
+import android.database.SQLException;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 /**
- * Scan the media folder defined in the app's preferences. Work is performed in
- * a worker thread.
- * 
  * Scan for media files in the Media Folder defined in the app's preferences;
- * add conventional metadata from these files to the app database. A ".nomedia"
- * file is respected. Work is done in a background thread.
+ * add conventional metadata from these files to the app database. ".nomedia"
+ * files are respected. Work is done in a background thread.
  * 
- * When a scan is complete a broadcast message with
- * {@link BroadcastConstants#FILTER_SCANNER} will be sent.
+ * Sends a broadcast with {@link BroadcastConstants#FILTER_SCANNER} when
+ * <ul>
+ * <li>It enters a folder (includes folder name, total files)
+ * <li>It looks at a file (includes progress)
+ * <li>If a file couldn't be scanned because of an invalid tag
+ * <li>On completion
+ * <li>If the scan was aborted because of invalid settings or a DB error.
+ * </ul>
  * 
  * @author pconley
  */
@@ -42,37 +51,54 @@ public class ScannerService extends IntentService {
 			Log.w(TAG, "Abort scan: debug mode is set");
 			broadcastResult(R.string.scan_error_debug_mode);
 			return;
-		} else if (settings.getMusicFolder() == null) {
+		}
+
+		if (settings.getMusicFolder() == null) {
 			Log.w(TAG, "Abort scan: no music folder set");
 			broadcastResult(R.string.scan_error_no_music_folder);
 			return;
 		}
 
-		FilesystemScanner scanner = new FilesystemScanner(getBaseContext(),
-				settings.getMusicFolder());
+		// Clear the database
+		TrackDAO dao = new TrackDAO(getBaseContext()).openWritableDatabase();
+		dao.wipeDatabase();
+		dao.close();
 
-		// Count the number of expected files to get a limit for the progress
-		// bar.
-		int count = scanner.countMusicFiles();
+		MediaFolder musicFolder = new MediaFolder(settings.getMusicFolder());
 
-		Intent broadcastIntent = new Intent(BroadcastConstants.FILTER_SCANNER);
-		broadcastIntent.putExtra(BroadcastConstants.EXTRA_EVENT,
+		// Count
+		MediaVisitorBase visitor = new FileCountVisitor();
+		musicFolder.accept(visitor);
+
+		Intent countIntent = new Intent(BroadcastConstants.FILTER_SCANNER);
+		countIntent.putExtra(BroadcastConstants.EXTRA_EVENT,
 				ScannerEvent.UPDATE);
-		broadcastIntent.putExtra(BroadcastConstants.EXTRA_TOTAL, count);
-		LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
+		countIntent.putExtra(BroadcastConstants.EXTRA_TOTAL,
+				((FileCountVisitor) visitor).getCount());
+		LocalBroadcastManager.getInstance(this).sendBroadcast(countIntent);
 
-		// Run the scan.
-		scanner.scanMusicFolder();
+		// Scan
+		visitor = new FileScanVisitor(settings.getMusicFolder(),
+				getBaseContext());
+
+		try {
+			musicFolder.accept(visitor);
+		} catch (SQLException e) {
+			Log.e(TAG, e.getMessage());
+			broadcastResult(R.string.scan_error_db, e.getMessage());
+		}
+
+		((FileScanVisitor) visitor).close();
 
 		Log.i(TAG, "Scan complete");
 		broadcastResult(R.string.scan_done);
 	}
 
-	private void broadcastResult(int scanStatus) {
+	private void broadcastResult(int scanStatus, Object... args) {
 		Intent intent = new Intent(BroadcastConstants.FILTER_SCANNER);
-
 		intent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.FINISHED);
-		intent.putExtra(BroadcastConstants.EXTRA_MESSAGE, getString(scanStatus));
+		intent.putExtra(BroadcastConstants.EXTRA_MESSAGE,
+				getString(scanStatus, args));
 
 		LocalBroadcastManager.getInstance(getBaseContext()).sendBroadcast(
 				intent);

@@ -12,6 +12,23 @@ public final class Tag {
 	private String name;
 	private String value;
 
+	/**
+	 * Use this constructor when the tag's ID is unknown and unneeded.
+	 * 
+	 * @param name
+	 * @param value
+	 */
+	public Tag(String name, String value) {
+		this(-1, name, value);
+	}
+
+	/**
+	 * Constructor for tags coming out of the database.
+	 * 
+	 * @param id
+	 * @param name
+	 * @param value
+	 */
 	public Tag(long id, String name, String value) {
 		this.id = id;
 		this.name = name;

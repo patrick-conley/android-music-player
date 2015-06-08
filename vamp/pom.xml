@@ -18,6 +18,11 @@
 			<artifactId>support-v4</artifactId>
 			<version>19.0.1</version>
 		</dependency>
+		<dependency>
+			<groupId>org.bitbucket.ijabz</groupId>
+			<artifactId>jaudiotagger</artifactId>
+			<version>Version2_2_2</version>
+		</dependency>
 	</dependencies>
 
 </project>

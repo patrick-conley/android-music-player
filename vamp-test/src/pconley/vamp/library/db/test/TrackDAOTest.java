@@ -276,7 +276,7 @@ public class TrackDAOTest extends AndroidTestCase {
 
 		// Given
 		Cursor results = library.query(TrackEntry.NAME,
-				new String[] { TrackEntry.COLUMN_ID }, null, null, null, null,
+				new String[] { TrackEntry.COLUMN_URI }, null, null, null, null,
 				null);
 
 		assertEquals("Database is initially empty", 0, results.getCount());
@@ -309,7 +309,7 @@ public class TrackDAOTest extends AndroidTestCase {
 		// Given
 		insertTrack(sampleUri, null, null);
 		Cursor results = library.query(TrackEntry.NAME,
-				new String[] { TrackEntry.COLUMN_ID }, null, null, null, null,
+				new String[] { TrackEntry.COLUMN_URI }, null, null, null, null,
 				null);
 
 		assertEquals("Database is initially not empty", 1, results.getCount());
@@ -492,6 +492,44 @@ public class TrackDAOTest extends AndroidTestCase {
 			dao.insertTag(trackId + 1, sampleTagNames[0], sampleTagValues[0]);
 			fail("Inserting a tag without a corresponding track is an exception");
 		} catch (SQLException e) {
+
+		}
+	}
+
+	/**
+	 * Given the database contains a track, when I insert a tag with a null
+	 * name, then an exception is thrown.
+	 */
+	public void testInsertTagWithMissingKey() {
+		dao.openWritableDatabase();
+
+		// Given
+		long trackId = insertSampleTrack().getId();
+
+		// When
+		try {
+			dao.insertTag(trackId, null, sampleTagValues[0]);
+			fail("Inserting a tag without a name is an exception");
+		} catch (NullPointerException e) {
+
+		}
+	}
+
+	/**
+	 * Given the database contains a track, when I insert a tag with a null
+	 * value, then an exception is thrown.
+	 */
+	public void testInsertTagWithMissingValue() {
+		dao.openWritableDatabase();
+
+		// Given
+		long trackId = insertSampleTrack().getId();
+
+		// When
+		try {
+			dao.insertTag(trackId, sampleTagNames[0], null);
+			fail("Inserting a tag without a value is an exception");
+		} catch (NullPointerException e) {
 
 		}
 	}
