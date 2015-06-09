@@ -132,8 +132,8 @@ public class FileScanVisitorTest {
 	}
 
 	/**
-	 * Given the music folder contains a non-music file, when I visit it files
-	 * several times, then I receive a progress broadcast each time.
+	 * Given the music folder contains a non-music file, when I visit it several
+	 * times, then I receive a progress broadcast each time.
 	 */
 	@Test
 	public void testMultipleVisits() throws IOException {
@@ -142,19 +142,43 @@ public class FileScanVisitorTest {
 		file.createNewFile();
 
 		// When
+		List<ScannerEvent> events = new LinkedList<ScannerEvent>();
 		MediaFile media = new MediaFile(file);
 		visitor.visit(media);
+		events.add(ScannerEvent.UPDATE);
 		visitor.visit(media);
+		events.add(ScannerEvent.UPDATE);
 		visitor.visit(media);
+		events.add(ScannerEvent.UPDATE);
 
 		// Then
-		assertEquals(
-				"Progress broadcasts received",
-				Arrays.asList(new ScannerEvent[] { ScannerEvent.UPDATE,
-						ScannerEvent.UPDATE, ScannerEvent.UPDATE }),
-				broadcastEvents);
+		assertEquals("Progress broadcasts received", events, broadcastEvents);
 		assertEquals("Correct number of files scanned", 3,
 				finalBroadcastProgress);
+	}
+
+	/**
+	 * Given the music folder contains a music file, when I visit it twice, then
+	 * I receive a broadcast with an error message.
+	 */
+	@Test
+	public void testDuplicateVisit() throws IOException {
+		// Given
+		File file = new File(musicFolder, "sample.ogg");
+		AssetUtils.addAssetToFolder(context, AssetUtils.ROBO_ASSET_PATH
+				+ AssetUtils.OGG, file);
+
+		// When
+		List<ScannerEvent> events = new LinkedList<ScannerEvent>();
+		MediaFile media = new MediaFile(file);
+		visitor.visit(media);
+		events.add(ScannerEvent.UPDATE);
+		visitor.visit(media);
+		events.add(ScannerEvent.UPDATE);
+		events.add(ScannerEvent.ERROR);
+
+		// Then
+		assertEquals("Error broadcast received", events, broadcastEvents);
 	}
 
 	/**
@@ -180,13 +204,6 @@ public class FileScanVisitorTest {
 		assertEquals("Vorbis comments are scanned correctly",
 				Arrays.asList(new Track[] { expected }), dao.getTracks());
 	}
-
-	/**
-	 * Test that close() works:
-	 * 
-	 * Given I have called close(), if I scan a media file, then an error
-	 * occurs.
-	 */
 
 	private static class ScannerReceiver extends BroadcastReceiver {
 

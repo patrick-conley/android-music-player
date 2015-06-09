@@ -162,7 +162,7 @@ public final class AssetUtils {
 
 			for (String name : track.getTagNames()) {
 				for (Tag tag : track.getTags(name)) {
-					dao.insertTag(ids[i], tag.getName(), tag.getValue());
+					dao.insertTag(ids[i], tag);
 				}
 			}
 		}

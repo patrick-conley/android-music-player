@@ -35,9 +35,14 @@ public class TrackDAOTest extends AndroidTestCase {
 	private static final String[] sampleTagNames = { "title", "album", "artist" };
 	private static final String[] sampleTagValues = { "SampleTrack",
 			"SampleAlbum", "SampleArtist" };
+	private static Tag sampleTag;
 
 	private SQLiteDatabase library;
 	private TrackDAO dao;
+
+	public TrackDAOTest() {
+		sampleTag = new Tag(sampleTagNames[0], sampleTagValues[0]);
+	}
 
 	public void setUp() throws Exception {
 		super.setUp();
@@ -378,7 +383,7 @@ public class TrackDAOTest extends AndroidTestCase {
 		long trackId = insertTrack(uri, null, null).getId();
 
 		// When
-		dao.insertTag(trackId, sampleTagNames[0], sampleTagValues[0]);
+		dao.insertTag(trackId, sampleTag);
 
 		// Then
 
@@ -426,8 +431,8 @@ public class TrackDAOTest extends AndroidTestCase {
 		long id2 = insertTrack(sampleUri, null, null).getId();
 
 		// When
-		dao.insertTag(id1, sampleTagNames[0], sampleTagValues[0]);
-		dao.insertTag(id2, sampleTagNames[0], sampleTagValues[0]);
+		dao.insertTag(id1, sampleTag);
+		dao.insertTag(id2, sampleTag);
 
 		// Then
 
@@ -470,7 +475,7 @@ public class TrackDAOTest extends AndroidTestCase {
 
 		// When
 		try {
-			dao.insertTag(trackId, sampleTagNames[0], sampleTagValues[0]);
+			dao.insertTag(trackId, sampleTag);
 			fail("Inserting a duplicate tag on one track is an exception");
 		} catch (SQLException e) {
 
@@ -489,7 +494,7 @@ public class TrackDAOTest extends AndroidTestCase {
 
 		// When
 		try {
-			dao.insertTag(trackId + 1, sampleTagNames[0], sampleTagValues[0]);
+			dao.insertTag(trackId + 1, sampleTag);
 			fail("Inserting a tag without a corresponding track is an exception");
 		} catch (SQLException e) {
 
@@ -497,46 +502,8 @@ public class TrackDAOTest extends AndroidTestCase {
 	}
 
 	/**
-	 * Given the database contains a track, when I insert a tag with a null
-	 * name, then an exception is thrown.
-	 */
-	public void testInsertTagWithMissingKey() {
-		dao.openWritableDatabase();
-
-		// Given
-		long trackId = insertSampleTrack().getId();
-
-		// When
-		try {
-			dao.insertTag(trackId, null, sampleTagValues[0]);
-			fail("Inserting a tag without a name is an exception");
-		} catch (NullPointerException e) {
-
-		}
-	}
-
-	/**
-	 * Given the database contains a track, when I insert a tag with a null
-	 * value, then an exception is thrown.
-	 */
-	public void testInsertTagWithMissingValue() {
-		dao.openWritableDatabase();
-
-		// Given
-		long trackId = insertSampleTrack().getId();
-
-		// When
-		try {
-			dao.insertTag(trackId, sampleTagNames[0], null);
-			fail("Inserting a tag without a value is an exception");
-		} catch (NullPointerException e) {
-
-		}
-	}
-
-	/**
-	 * Given the database contains tracks and tags, when I try to empty the
-	 * database, then it contains nothing.
+	 * Given the database contains tracks and tags, when I empty the database,
+	 * then it contains nothing.
 	 */
 	public void testWipeDatabase() {
 		dao.openWritableDatabase();
@@ -563,6 +530,21 @@ public class TrackDAOTest extends AndroidTestCase {
 				null, null);
 		assertEquals("Relation is empty", 0, results.getCount());
 
+	}
+
+	/**
+	 * When I insert a null tag, then the database throws an exception.
+	 */
+	public void testInsertNullTag() {
+		dao.openWritableDatabase();
+
+		// When
+		try {
+			dao.insertTag(0, null);
+			fail("Inserting a null tag is an exception");
+		} catch (NullPointerException e) {
+
+		}
 	}
 
 	/*

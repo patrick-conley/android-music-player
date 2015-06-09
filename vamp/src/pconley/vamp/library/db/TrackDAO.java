@@ -22,6 +22,7 @@ import android.util.Log;
  * @author pconley
  */
 public class TrackDAO {
+	private static final String TAG = "TrackDAO";
 
 	private LibraryOpenHelper libraryOpenHelper;
 	private SQLiteDatabase library;
@@ -163,6 +164,33 @@ public class TrackDAO {
 	}
 
 	/**
+	 * Insert a track with its tags. This method is only to be used when
+	 * populating an empty database. A transaction is used.
+	 * 
+	 * @param uri
+	 * @param tags
+	 * @throws SQLException
+	 *             If the track is already in the database.
+	 * @throws NullPointerException
+	 *             If any input is null.
+	 */
+	public void insertTrack(Uri uri, Iterable<Tag> tags) throws SQLException,
+			NullPointerException {
+
+		library.beginTransaction();
+		try {
+			long trackId = insertTrack(uri);
+
+			for (Tag tag : tags) {
+				insertTag(trackId, tag);
+			}
+			library.setTransactionSuccessful();
+		} finally {
+			library.endTransaction();
+		}
+	}
+
+	/**
 	 * Insert a track. This method is only to be used when populating a database
 	 * from scratch: inserting a duplicate track URI is an error.
 	 * 
@@ -181,40 +209,34 @@ public class TrackDAO {
 	}
 
 	/**
-	 * Insert a tag, and associate it with a track that uses it. If the tag
-	 * given by the parameters (tag, value) is a duplicate, then return the
-	 * original tag's ID.
+	 * Insert a tag, and associate it with a track that uses it.
 	 * 
 	 * @param trackId
 	 *            ID of a track in the database.
-	 * @param name
-	 *            Name of a tag ("title", "composer", etc.)
-	 * @param value
-	 *            Value of the tag
+	 * @param tag
+	 *            A tag.
 	 * @throws SQLException
 	 *             If the track ID is invalid
 	 * @throws NullPointerException
 	 *             If either the name or value is missing
 	 */
-	public void insertTag(long trackId, String name, String value)
-			throws SQLException, NullPointerException {
+	public void insertTag(long trackId, Tag tag) throws SQLException,
+			NullPointerException {
 
 		long tagId = -1;
 
-		if (name == null) {
-			Log.w("TrackDAO", "Tag for " + value + " is null");
+		if (tag == null) {
+			Log.w(TAG, "Null tag for track " + String.valueOf(trackId));
 			throw new NullPointerException("Missing tag");
-		} else if (value == null) {
-			Log.w("TrackDAO", name + " is null");
-			throw new NullPointerException("Missing value for tag " + name);
 		}
 
 		// Check whether the tag exists already
 		Cursor results = library.query(TagEntry.NAME,
 				new String[] { TagEntry.COLUMN_ID }, String.format(
 						"%s = ? AND %s = ?", TagEntry.COLUMN_TAG,
-						TagEntry.COLUMN_VAL), new String[] { name, value },
-				null, null, null);
+						TagEntry.COLUMN_VAL),
+				new String[] { tag.getName(), tag.getValue() }, null, null,
+				null);
 
 		if (results.getCount() > 0) {
 			results.moveToFirst();
@@ -230,8 +252,8 @@ public class TrackDAO {
 			// Insert the tag
 			if (tagId == -1) {
 				values = new ContentValues();
-				values.put(TagEntry.COLUMN_TAG, name);
-				values.put(TagEntry.COLUMN_VAL, value);
+				values.put(TagEntry.COLUMN_TAG, tag.getName());
+				values.put(TagEntry.COLUMN_VAL, tag.getValue());
 
 				tagId = library.insertOrThrow(TagEntry.NAME, null, values);
 			}

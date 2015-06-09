@@ -133,6 +133,13 @@ public class ScannerProgressDialogFragment extends DialogFragment {
 				}
 
 				break;
+			case ERROR:
+
+				Toast.makeText(
+						getActivity(),
+						intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
+						Toast.LENGTH_SHORT).show();
+				break;
 			}
 		}
 	}

@@ -38,15 +38,16 @@ public class SettingsFragment extends PreferenceFragment {
 
 						int error = -1;
 						if (!dir.exists()) {
-							error = R.string.scan_error_no_such_path;
+							error = R.string.setting_library_error_no_such_path;
 						} else if (!dir.isDirectory()) {
-							error = R.string.scan_error_not_a_folder;
+							error = R.string.setting_library_error_not_a_folder;
 						} else if (!dir.canExecute()) {
-							error = R.string.scan_error_not_readable;
+							error = R.string.setting_library_error_not_readable;
 						}
 
 						if (error >= 0) {
-							Toast.makeText(getActivity(), error, Toast.LENGTH_LONG).show();
+							Toast.makeText(getActivity(), error,
+									Toast.LENGTH_LONG).show();
 						}
 
 						return error == -1;

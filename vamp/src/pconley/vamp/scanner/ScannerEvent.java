@@ -5,7 +5,8 @@ import pconley.vamp.util.BroadcastConstants;
 public enum ScannerEvent {
 
 	/**
-	 * The scan is finished. EXTRA_MESSAGE has the scan status.
+	 * The scan is finished. {@link BroadcastConstants#EXTRA_MESSAGE} has the
+	 * scan status.
 	 */
 	FINISHED,
 
@@ -16,6 +17,12 @@ public enum ScannerEvent {
 	 * {@link BroadcastConstants#EXTRA_MESSAGE} may indicate the directory being
 	 * scanned.
 	 */
-	UPDATE
+	UPDATE,
+
+	/**
+	 * Something went wrong, but not fatally.
+	 * {@link BroadcastConstants#EXTRA_MESSAGE} holds an explanation.
+	 */
+	ERROR
 
 }

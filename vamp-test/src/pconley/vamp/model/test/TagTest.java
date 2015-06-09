@@ -7,6 +7,30 @@ import android.test.AndroidTestCase;
 public class TagTest extends AndroidTestCase {
 
 	/**
+	 * When I make a tag without a name, then an exception is thrown.
+	 */
+	public void testNullName() {
+		try {
+			new Tag(null, "bar");
+			fail("A null tag name is invalid");
+		} catch (NullPointerException e) {
+
+		}
+	}
+
+	/**
+	 * When I make a tag without a value, then an exception is thrown.
+	 */
+	public void testNullValue() {
+		try {
+			new Tag("foo", null);
+			fail("A null tag value is invalid");
+		} catch (NullPointerException e) {
+
+		}
+	}
+
+	/**
 	 * See {@link Object#hashCode()} and {@link Object#equals()} for contracts.
 	 */
 	public void testHashCodeEqualsContract() {

@@ -30,6 +30,14 @@ public final class Tag {
 	 * @param value
 	 */
 	public Tag(long id, String name, String value) {
+		if (name == null) {
+			throw new NullPointerException("Null tag name");
+		}
+
+		if (value == null) {
+			throw new NullPointerException("Null value for tag " + name);
+		}
+
 		this.id = id;
 		this.name = name;
 		this.value = value;

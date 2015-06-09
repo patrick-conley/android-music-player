@@ -23,6 +23,9 @@
     <string name="setting_library_path_summary">Set the folder to scan for music</string>
     <string name="setting_debug_title">Use Sample Library</string>
     <string name="setting_debug_summary">Use a small library of sample tracks to aid debugging</string>
+    <string name="setting_library_error_no_such_path">Path does not exist</string>
+    <string name="setting_library_error_not_a_folder">Path doesn\'t point to a folder</string>
+    <string name="setting_library_error_not_readable">Directory contents are not readable</string>
 
     <!-- Library -->
     <string name="activity_library_name">Library</string>
@@ -30,14 +33,11 @@
 
     <!-- Media scanner -->
     <string name="scan_done">Scan complete</string>
-    <string name="scan_error_no_such_path">Path does not exist</string>
-    <string name="scan_error_not_a_folder">Path doesn\'t point to a folder</string>
-    <string name="scan_error_not_readable">Directory contents are not readable</string>
     <string name="scan_error_debug_mode">Scan aborted: prohibited in debug mode</string>
     <string name="scan_error_no_music_folder">Scan aborted: Music folder has not been set</string>
-    <string name="scan_error_invalid_tag">Invalid tag in file %1$s</string>
-    <string name="scan_error_db">Database error %1$s</string>
-    
+    <string name="scan_warning_invalid_tag">Invalid tag in file %1$s</string>
+    <string name="scan_warning_duplicate">Duplicate track %1$s</string>
+
     <!-- Scanner progress dialog -->
     <string name="fragment_progress_name">Scanning media folders</string>
     <string name="fragment_progress_counting">Counting music files</string>

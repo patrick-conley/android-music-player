@@ -15,6 +15,7 @@ import pconley.vamp.scanner.container.TagStrategy;
 import pconley.vamp.util.BroadcastConstants;
 import android.content.Context;
 import android.content.Intent;
+import android.database.SQLException;
 import android.net.Uri;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -37,11 +38,13 @@ public class FileScanVisitor implements MediaVisitorBase {
 
 	private Intent dirIntent;
 	private Intent fileIntent;
+	private Intent errorIntent;
 
 	public FileScanVisitor(File musicFolder, Context context) {
 		this.musicFolderName = musicFolder.toString();
+		this.context = context;
+		
 		this.broadcastManager = LocalBroadcastManager.getInstance(context);
-
 		this.dao = new TrackDAO(context);
 		dao.openWritableDatabase();
 
@@ -51,6 +54,10 @@ public class FileScanVisitor implements MediaVisitorBase {
 		fileIntent = new Intent(BroadcastConstants.FILTER_SCANNER);
 		fileIntent
 				.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.UPDATE);
+
+		errorIntent = new Intent(BroadcastConstants.FILTER_SCANNER);
+		errorIntent.putExtra(BroadcastConstants.EXTRA_EVENT,
+				ScannerEvent.ERROR);
 	}
 
 	/**
@@ -70,8 +77,7 @@ public class FileScanVisitor implements MediaVisitorBase {
 	public void visit(MediaFolder dir) {
 
 		// Get the directory's name, relative to the music folder
-		String relativeName = dir.toString()
-				.replace(musicFolderName, "");
+		String relativeName = dir.toString().replace(musicFolderName, "");
 		// Remove the leading slash
 		if (relativeName.length() > 0) {
 			relativeName = relativeName.substring(1);
@@ -110,27 +116,28 @@ public class FileScanVisitor implements MediaVisitorBase {
 		if (tags == null) {
 			return;
 		}
+		
+		Uri uri = Uri.fromFile(file.getFile());
 
-		// Write the track and tags
-		long trackId = dao.insertTrack(Uri.fromFile(file.getFile()));
-
-		// Insert tags; abandon the track if any is invalid
-		// TODO: mark the track somehow in the DB if it fails
 		try {
-			for (Tag tag : tags) {
-				dao.insertTag(trackId, tag.getName(), tag.getValue());
-			}
+			dao.insertTrack(uri, tags);
 		} catch (NullPointerException e) {
 			Log.e(TAG, e.getMessage());
 
-			Intent intent = new Intent(BroadcastConstants.FILTER_SCANNER);
-			intent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.UPDATE);
-			intent.putExtra(
+			errorIntent.putExtra(
 					BroadcastConstants.EXTRA_MESSAGE,
-					context.getString(R.string.scan_error_invalid_tag,
+					context.getString(R.string.scan_warning_invalid_tag,
 							file.toString()));
-			broadcastManager.sendBroadcast(intent);
+			broadcastManager.sendBroadcast(errorIntent);
 
+		} catch (SQLException e) {
+			Log.e(TAG, e.getMessage());
+
+			errorIntent.putExtra(
+					BroadcastConstants.EXTRA_MESSAGE,
+					context.getString(R.string.scan_warning_duplicate,
+							file.toString()));
+			broadcastManager.sendBroadcast(errorIntent);
 		}
 	}
 
