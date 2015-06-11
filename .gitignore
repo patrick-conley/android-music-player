@@ -1,7 +1,12 @@
-# Android Studio
+# Files referring to project path
 /.idea/workspace.xml
-/.idea/libraries
+/.idea/gradle.xml
+/.idea/modules.xml
+/.idea/.name
 /local.properties
+
+# Caches
+/.idea/libraries
 
 # Config that changes on a whim
 *.iml
