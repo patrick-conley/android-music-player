@@ -26,7 +26,7 @@ import pconley.vamp.model.Track;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.util.AssetUtils;
-import pconley.vamp.util.Playlist;
+import pconley.vamp.model.Playlist;
 import android.content.Context;
 import android.content.Intent;
 import android.view.View;
@@ -36,7 +36,7 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(emulateSdk = 18, manifest = "../vamp/AndroidManifest.xml")
+@Config(emulateSdk = 18, manifest = "src/main/AndroidManifest.xml")
 public class PlayerActivityTest {
 
 	private Context context;

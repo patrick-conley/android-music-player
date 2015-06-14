@@ -1,8 +1,5 @@
 # Files referring to project path
-/.idea/workspace.xml
-/.idea/gradle.xml
-/.idea/modules.xml
-/.idea/.name
+/.idea
 /local.properties
 
 # Caches

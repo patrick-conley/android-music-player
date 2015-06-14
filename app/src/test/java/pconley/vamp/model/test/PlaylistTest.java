@@ -1,24 +1,35 @@
-package pconley.vamp.util.test;
+package pconley.vamp.model.test;
 
-import static android.test.MoreAsserts.assertEmpty;
-import static android.test.MoreAsserts.assertNotEmpty;
-import static android.test.MoreAsserts.checkEqualsAndHashCodeMethods;
+import android.net.Uri;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import pconley.vamp.model.Playlist;
 import pconley.vamp.model.Track;
-import pconley.vamp.util.Playlist;
-import android.net.Uri;
-import android.test.AndroidTestCase;
 
-public class PlaylistTest extends AndroidTestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+@RunWith(RobolectricTestRunner.class)
+@Config(emulateSdk = 18, manifest = "src/main/AndroidManifest.xml")
+public class PlaylistTest {
 
 	private List<Track> tracks;
 	private Playlist playlist;
 
+	@Before
 	public void setUp() {
 		tracks = new LinkedList<Track>();
 
@@ -32,6 +43,7 @@ public class PlaylistTest extends AndroidTestCase {
 		playlist = new Playlist(tracks);
 	}
 
+	@After
 	public void tearDown() {
 		Playlist.setInstance(null);
 	}
@@ -39,18 +51,20 @@ public class PlaylistTest extends AndroidTestCase {
 	/**
 	 * Given the playlist has no tracks, then it is marked as empty.
 	 */
+	@Test
 	public void testEmptyPlaylistSize() {
 		playlist = new Playlist();
 
-		assertEmpty(playlist);
+		assertEquals("Playlist is empty", 0, playlist.size());
 		assertEquals("Playlist has 0 tracks.", 0, playlist.size());
 	}
 
 	/**
 	 * When I add several tracks to the playlist, then its size is correct.
 	 */
+	@Test
 	public void testPlaylistSize() {
-		assertNotEmpty(playlist);
+		assertFalse("Playlist is empty", playlist.size() == 0);
 		assertEquals("Playlist has the correct size", tracks.size(),
 				playlist.size());
 	}
@@ -59,6 +73,7 @@ public class PlaylistTest extends AndroidTestCase {
 	 * When I add several tracks to the playlist, then its iterator returns the
 	 * expected output.
 	 */
+	@Test
 	public void testPlaylistContents() {
 		Iterator<Track> iter = playlist.iterator();
 		for (Track track : tracks) {
@@ -73,6 +88,7 @@ public class PlaylistTest extends AndroidTestCase {
 	 * Given the playlist has been constructed from a list of tracks, when I
 	 * remove a track from the list, then the playlist is not modified.
 	 */
+	@Test
 	public void testPlaylistSourceModified() {
 		// Given
 		playlist = new Playlist(tracks);
@@ -90,19 +106,22 @@ public class PlaylistTest extends AndroidTestCase {
 	 * When I set the global playlist and create a new playlist instance, then I
 	 * can recover the original global instance.
 	 */
+	@Test
 	public void testStaticInstanceIsPersistent() {
-		
+
 		// When
 		Playlist.setInstance(playlist);
 		new Playlist();
-		
+
 		// Then
 		assertSame("Global instance can be recovered", playlist, Playlist.getInstance());
 	}
 
 	/**
-	 * See {@link Object#hashCode()} and {@link Object#equals()} for contracts.
+	 * See {@link Object#hashCode()} and {@link Object#equals(Object)} for
+	 * contracts.
 	 */
+	@Test
 	public void testHashCodeEqualsContract() {
 		Playlist x = new Playlist();
 		Playlist y = new Playlist();
@@ -120,25 +139,34 @@ public class PlaylistTest extends AndroidTestCase {
 
 		d.add(tracks.get(0));
 
-		checkEqualsAndHashCodeMethods("Different types are not equal", x, list,
-				false);
-		checkEqualsAndHashCodeMethods("Null is never equal (x,null)", x, null,
-				false);
-		checkEqualsAndHashCodeMethods("Null is never equal (d,null)", d, null,
-				false);
+		/*
+		 * Equals is correct
+		 */
+		assertTrue("Equals is correct (x,y)", x.equals(y));
+		assertTrue("Equals is correct (x,z)", x.equals(z));
+		assertFalse("Equals is correct (x,d)", x.equals(d));
+
+		assertEquals("HashCode is correct (x,y)", x.hashCode(), y.hashCode());
+		assertEquals("HashCode is correct (x,z)", x.hashCode(), z.hashCode());
+
+		assertFalse("Different types are not equal", x.equals(list));
+		assertFalse("Null is never equal (x,null)", x.equals(null));
+		assertFalse("Null is never equal (d,null)", d.equals(null));
 
 		/*
 		 * Equals is reflexive
 		 */
-		checkEqualsAndHashCodeMethods("Equals is reflexive (x)", x, x, true);
-		checkEqualsAndHashCodeMethods("Equals is reflexive (d)", d, d, true);
+		assertTrue("Equals is reflexive (x)", x.equals(x));
+		assertEquals("HashCode() is consistent (x)", x.hashCode(), x.hashCode());
+		assertTrue("Equals is reflexive (d)", d.equals(d));
+		assertEquals("HashCode() is consistent (d)", d.hashCode(), d.hashCode());
 
 		/*
 		 * Equals is symmetric
 		 */
-		checkEqualsAndHashCodeMethods("Equals is symmetric (x,y)", x, y, true);
-		checkEqualsAndHashCodeMethods("Equals is symmetric (x,z)", x, z, true);
-		checkEqualsAndHashCodeMethods("Equals is symmetric (x,d)", x, d, false);
+		assertEquals("Equals is symmetric (x,y)", x.equals(y), y.equals(x));
+		assertEquals("Equals is symmetric (x,z)", x.equals(z), z.equals(x));
+		assertEquals("Equals is symmetric (x,d)", x.equals(d), d.equals(x));
 
 		/*
 		 * Equals is transitive

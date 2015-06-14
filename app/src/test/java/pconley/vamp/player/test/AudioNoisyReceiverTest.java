@@ -17,7 +17,7 @@ import android.content.Intent;
 import android.media.AudioManager;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(emulateSdk = 18, manifest = "../vamp/AndroidManifest.xml")
+@Config(emulateSdk = 18, manifest = "src/main/AndroidManifest.xml")
 public class AudioNoisyReceiverTest {
 
 	/**

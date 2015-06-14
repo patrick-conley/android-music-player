@@ -87,10 +87,7 @@ public final class Track {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(uri).append("\n").append(tagsToString());
-
-		return sb.toString();
+		return uri + "\n" + tagsToString();
 	}
 
 	@Override

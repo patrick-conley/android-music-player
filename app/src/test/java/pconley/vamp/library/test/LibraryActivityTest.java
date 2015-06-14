@@ -1,16 +1,13 @@
 package pconley.vamp.library.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
+import android.content.Context;
+import android.content.Intent;
+import android.view.View;
+import android.widget.Adapter;
+import android.widget.ListView;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -18,6 +15,10 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.tester.android.view.TestMenuItem;
+
+import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 
 import pconley.vamp.R;
 import pconley.vamp.library.LibraryActivity;
@@ -29,15 +30,14 @@ import pconley.vamp.preferences.SettingsActivity;
 import pconley.vamp.scanner.ScannerProgressDialogFragment;
 import pconley.vamp.scanner.ScannerService;
 import pconley.vamp.util.AssetUtils;
-import pconley.vamp.util.Playlist;
-import android.content.Context;
-import android.content.Intent;
-import android.view.View;
-import android.widget.Adapter;
-import android.widget.ListView;
+import pconley.vamp.model.Playlist;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(emulateSdk = 18, manifest = "../vamp/AndroidManifest.xml")
+@Config(emulateSdk = 18, manifest = "src/main/AndroidManifest.xml")
 public class LibraryActivityTest {
 
 	private LibraryActivity activity;
@@ -45,14 +45,8 @@ public class LibraryActivityTest {
 
 	private Context context;
 
-	private static File ogg;
-	private static File flac;
-
-	@BeforeClass
-	public static void setUp() {
-		ogg = new File("sample.ogg");
-		flac = new File("sample.flac");
-	}
+	private static File ogg = new File("sample.ogg");
+	private static File flac = new File("sample.flac");
 
 	@Before
 	public void setUpTest() {

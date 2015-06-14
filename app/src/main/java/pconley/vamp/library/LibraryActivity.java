@@ -11,7 +11,7 @@ import pconley.vamp.preferences.SettingsActivity;
 import pconley.vamp.scanner.ScannerProgressDialogFragment;
 import pconley.vamp.scanner.ScannerService;
 import pconley.vamp.util.BroadcastConstants;
-import pconley.vamp.util.Playlist;
+import pconley.vamp.model.Playlist;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;

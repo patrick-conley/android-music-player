@@ -1,16 +1,29 @@
-package pconley.vamp.util.test;
+package pconley.vamp.model.test;
+
+import android.net.Uri;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import pconley.vamp.model.Playlist;
+import pconley.vamp.model.PlaylistIterator;
 import pconley.vamp.model.Track;
-import pconley.vamp.util.Playlist;
-import pconley.vamp.util.PlaylistIterator;
-import android.net.Uri;
-import android.test.AndroidTestCase;
 
-public class PlaylistIteratorTest extends AndroidTestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+@RunWith(RobolectricTestRunner.class)
+@Config(emulateSdk = 18, manifest = "src/main/AndroidManifest.xml")
+public class PlaylistIteratorTest {
 
 	private List<Track> tracks;
 	private Playlist playlist;
@@ -34,6 +47,7 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 		}
 	}
 
+	@Before
 	public void setUp() {
 		emptyIter = new Playlist().playlistIterator();
 		iter = playlist.playlistIterator();
@@ -44,53 +58,41 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 	 * Given I have an iterator to an empty list, when I advance to the next
 	 * item, then it throws an exception.
 	 */
-	public void testNextOnEmptyList() {
+	@Test(expected = NoSuchElementException.class)
+	public void testNextOnEmptyList() throws NoSuchElementException {
 		assertFalse("hasNext() is false on empty input", emptyIter.hasNext());
 
-		try {
-			emptyIter.next();
-			fail("next() fails on empty input");
-		} catch (NoSuchElementException e) {
-		}
+		emptyIter.next();
 	}
 
 	/**
 	 * Given I have an iterator to an empty list, when I reverse to the previous
 	 * item, then it throws an exception.
 	 */
-	public void testPreviousOnEmptyList() {
+	@Test(expected = NoSuchElementException.class)
+	public void testPreviousOnEmptyList() throws NoSuchElementException {
 		assertFalse("hasPrevious() is false on empty input",
 				emptyIter.hasPrevious());
 
-		try {
-			emptyIter.previous();
-			fail("previous() fails on empty input");
-		} catch (NoSuchElementException e) {
-		}
+		emptyIter.previous();
 	}
 
 	/**
 	 * Given I have an iterator to a populated list, when I select a position
 	 * outside the list, then it throws an exception.
 	 */
-	public void testSetPositionInvalidIndex() {
-		try {
-			iter = playlist.playlistIterator(playlist.size());
-			fail("setPosition() fails on invalid input");
-		} catch (IndexOutOfBoundsException e) {
-		}
+	@Test(expected = IndexOutOfBoundsException.class)
+	public void testSetPositionInvalidIndex() throws IndexOutOfBoundsException {
+		iter = playlist.playlistIterator(playlist.size());
 	}
 
 	/**
 	 * Given I have an iterator to a populated list, when I retrieve the current
 	 * item before one is available, then it throws an exception.
 	 */
-	public void testCurrentOutOfRange() {
-		try {
-			iter.current();
-			fail("current() fails if next() has not been called");
-		} catch (IllegalStateException e) {
-		}
+	@Test(expected = IllegalStateException.class)
+	public void testCurrentOutOfRange() throws IllegalStateException {
+		iter.current();
 	}
 
 	/**
@@ -98,17 +100,14 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 	 * a valid position, when I reverse past the beginning, then it throws an
 	 * exception.
 	 */
-	public void testPreviousAtStart() {
+	@Test(expected = IndexOutOfBoundsException.class)
+	public void testPreviousAtStart() throws IndexOutOfBoundsException {
 		iter.next();
 
 		assertFalse("Iterator has no previous item", iter.hasPrevious());
 		assertTrue("Iterator has a next item", iter.hasNext());
 
-		try {
-			iter.previous();
-			fail("previous() fails at the start of the list");
-		} catch (IndexOutOfBoundsException e) {
-		}
+		iter.previous();
 	}
 
 	/**
@@ -116,24 +115,22 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 	 * a valid position, when I advance past the end, then it throws an
 	 * exception.
 	 */
-	public void testNextAtEnd() {
+	@Test(expected = IndexOutOfBoundsException.class)
+	public void testNextAtEnd() throws IndexOutOfBoundsException {
 		iter = playlist.playlistIterator(playlist.size() - 1);
 		iter.next(); // Get the last item
 
 		assertTrue("Iterator has a previous item", iter.hasPrevious());
 		assertFalse("Iterator has no next item", iter.hasNext());
 
-		try {
-			iter.next();
-			fail("previous() fails at the start of the list");
-		} catch (IndexOutOfBoundsException e) {
-		}
+		iter.next();
 	}
 
 	/**
 	 * Given I have an iterator to a populated list, when I advance to the first
 	 * item, then it returns the first item.
 	 */
+	@Test
 	public void testNextIsCorrect() {
 		for (int i = 0; iter.hasNext(); i++) {
 			Track track = iter.next();
@@ -148,6 +145,7 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 	 * list and retrieve the current item, then both methods return the same
 	 * item.
 	 */
+	@Test
 	public void testCurrentMatchesNext() {
 		for (int i = 0; iter.hasNext(); i++) {
 			Track track = iter.next();
@@ -162,6 +160,7 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 	 * list and retrieve the current item, then both methods return the same
 	 * item.
 	 */
+	@Test
 	public void testCurrentMatchesPrevious() {
 		iter = playlist.playlistIterator(playlist.size() - 1);
 
@@ -179,6 +178,7 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 	 * within the list and retrieve the current item, then it returns the
 	 * correct item.
 	 */
+	@Test
 	public void testSetPositionIsCorrect() {
 		for (int i = 0; i < playlist.size(); i++) {
 			iter = playlist.playlistIterator(i);
@@ -193,14 +193,12 @@ public class PlaylistIteratorTest extends AndroidTestCase {
 	 * a valid position, when I remove the current item, then it throws an
 	 * exception.
 	 */
-	public void testRemoveUnsupported() {
+	@Test(expected = UnsupportedOperationException.class)
+	public void testRemoveUnsupported() throws UnsupportedOperationException {
 		iter.next();
 
-		try {
-			iter.remove();
-			fail("remove() throws an exception.");
-		} catch (UnsupportedOperationException e) {
-		}
+		iter.remove();
+		fail("remove() throws an exception.");
 	}
 
 }

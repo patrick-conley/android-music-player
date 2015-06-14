@@ -35,7 +35,7 @@ import pconley.vamp.player.PlayerFactory;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.BroadcastConstants;
-import pconley.vamp.util.Playlist;
+import pconley.vamp.model.Playlist;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -45,7 +45,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(emulateSdk = 18, manifest = "../vamp/AndroidManifest.xml")
+@Config(emulateSdk = 18, manifest = "src/main/AndroidManifest.xml")
 public class PlayerServiceTest {
 
 	private static BroadcastReceiver receiver;

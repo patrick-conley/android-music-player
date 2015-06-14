@@ -1,12 +1,10 @@
 package pconley.vamp.scanner.filesystem.test;
 
-import static junit.framework.Assert.assertEquals;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.support.v4.content.LocalBroadcastManager;
 
 import org.junit.After;
 import org.junit.Before;
@@ -17,6 +15,12 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
 import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.model.Track;
 import pconley.vamp.model.filesystem.MediaFile;
@@ -25,14 +29,11 @@ import pconley.vamp.scanner.ScannerEvent;
 import pconley.vamp.scanner.filesystem.FileScanVisitor;
 import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.BroadcastConstants;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.support.v4.content.LocalBroadcastManager;
+
+import static junit.framework.Assert.assertEquals;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(emulateSdk = 18, manifest = "../vamp/AndroidManifest.xml")
+@Config(emulateSdk = 18, manifest = "src/main/AndroidManifest.xml")
 public class FileScanVisitorTest {
 
 	private static ScannerReceiver receiver;

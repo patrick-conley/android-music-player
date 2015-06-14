@@ -5,15 +5,19 @@ import java.io.File;
 import pconley.vamp.model.filesystem.MediaFile;
 import pconley.vamp.model.filesystem.MediaFolder;
 import pconley.vamp.scanner.filesystem.FileCountVisitor;
-import android.test.AndroidTestCase;
 
-public class FileCountVisitorTest extends AndroidTestCase {
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
+public class FileCountVisitorTest {
 
 	private File file = new File("foo");
 
 	/**
 	 * When I visit a folder, then the counter is not incremented.
 	 */
+	@Test
 	public void testFolder() {
 		FileCountVisitor visitor = new FileCountVisitor();
 
@@ -27,6 +31,7 @@ public class FileCountVisitorTest extends AndroidTestCase {
 	/**
 	 * When I visit a file, then the counter is incremented.
 	 */
+	@Test
 	public void testFile() {
 		FileCountVisitor visitor = new FileCountVisitor();
 
@@ -41,6 +46,7 @@ public class FileCountVisitorTest extends AndroidTestCase {
 	 * Given I have visited a file, when I visit a folder, then the counter is
 	 * not reset.
 	 */
+	@Test
 	public void testFileThenFolder() {
 		FileCountVisitor visitor = new FileCountVisitor();
 

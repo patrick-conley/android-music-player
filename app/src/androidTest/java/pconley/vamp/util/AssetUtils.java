@@ -50,7 +50,7 @@ public final class AssetUtils {
 	 * Tests using Robolectric must prefix their assets with this string, as it
 	 * uses the app's manifest (by configuration).
 	 */
-	public static final String ROBO_ASSET_PATH = "../../vamp-test/assets/";
+	public static final String ROBO_ASSET_PATH = "../../androidTest/assets/";
 
 	/**
 	 * Private constructor: static members only
