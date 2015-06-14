@@ -4,12 +4,11 @@ import pconley.vamp.util.BroadcastConstants;
 
 /**
  * Events that can be broadcast from the player to clients within the app.
- * 
+ * <p/>
  * Retrieve events with
  * {@code (PlayerEvent) intent.getSerializableExtra(EXTRA_EVENT)}.
- * 
- * @author pconley
  *
+ * @author pconley
  */
 public enum PlayerEvent {
 

@@ -1,14 +1,15 @@
 package pconley.vamp.library.db;
 
-import pconley.vamp.library.db.LibrarySchema.TagEntry;
-import pconley.vamp.library.db.LibrarySchema.TrackEntry;
-import pconley.vamp.library.db.LibrarySchema.TrackTagRelation;
-import pconley.vamp.preferences.SettingsHelper;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import pconley.vamp.library.db.LibrarySchema.TagEntry;
+import pconley.vamp.library.db.LibrarySchema.TrackEntry;
+import pconley.vamp.library.db.LibrarySchema.TrackTagRelation;
+import pconley.vamp.preferences.SettingsHelper;
 
 public class LibraryOpenHelper extends SQLiteOpenHelper {
 
@@ -19,17 +20,19 @@ public class LibraryOpenHelper extends SQLiteOpenHelper {
 	private Context context;
 
 	/**
-	 * Create a helper object to open a database. If the settings item
-	 * "Use Sample Library" is set, then it replaces the database with a small,
+	 * Create a helper object to open a database. If the settings item "Use
+	 * Sample Library" is set, then it replaces the database with a small,
 	 * prepopulated database of sample tracks.
-	 * 
+	 *
 	 * @param context
 	 */
 	public LibraryOpenHelper(Context context) {
 		super(
 				context,
-				new SettingsHelper(context).getDebugMode() ? DEBUG_DATABASE_NAME
-						: DATABASE_NAME, null, DATABASE_VERSION);
+				new SettingsHelper(context).getDebugMode() ?
+				DEBUG_DATABASE_NAME
+				                                           : DATABASE_NAME,
+				null, DATABASE_VERSION);
 
 		this.context = context;
 	}
@@ -59,7 +62,7 @@ public class LibraryOpenHelper extends SQLiteOpenHelper {
 	 * Insert some sample tracks, and their tags into the database.
 	 *
 	 * @throws SQLException
-	 *             If any of the tracks or tags already exists in the database
+	 * 		If any of the tracks or tags already exists in the database
 	 */
 	private void populateSampleLibrary(SQLiteDatabase db) throws SQLException {
 
@@ -70,34 +73,21 @@ public class LibraryOpenHelper extends SQLiteOpenHelper {
 		long[] trackIds = new long[13];
 		String[] uris = new String[] {
 				// Test: MP4 tracks with "standard" tags
-				musicPath
-						+ "popular/They Might Be Giants/They Might Be Giants/01 Everything Right Is Wrong Again.m4a",
-				musicPath
-						+ "popular/They Might Be Giants/They Might Be Giants/02 Put Your Hand Inside the Puppet Head.m4a",
-				musicPath
-						+ "popular/They Might Be Giants/They Might Be Giants/03 Number Three.m4a",
-				musicPath
-						+ "popular/They Might Be Giants/They Might Be Giants/17 Alienation's for the Rich.m4a",
-				musicPath
-						+ "popular/They Might Be Giants/They Might Be Giants/18 The Day.m4a",
-				musicPath
-						+ "popular/They Might Be Giants/They Might Be Giants/19 Rhythm Section Want Ad.m4a",
+				musicPath + "popular/They Might Be Giants/They Might Be Giants/01 Everything Right Is Wrong Again.m4a",
+				musicPath + "popular/They Might Be Giants/They Might Be Giants/02 Put Your Hand Inside the Puppet Head.m4a",
+				musicPath + "popular/They Might Be Giants/They Might Be Giants/03 Number Three.m4a",
+				musicPath + "popular/They Might Be Giants/They Might Be Giants/17 Alienation's for the Rich.m4a",
+				musicPath + "popular/They Might Be Giants/They Might Be Giants/18 The Day.m4a",
+				musicPath + "popular/They Might Be Giants/They Might Be Giants/19 Rhythm Section Want Ad.m4a",
 				// Test: Ogg Vorbis tracks with unusual metadata
-				musicPath
-						+ "classical/Schoenberg, Arnold (1874-1951)/Concerto for Violin and Orchestra, op 36/00-01 Poco allegro.ogg",
-				musicPath
-						+ "classical/Schoenberg, Arnold (1874-1951)/Concerto for Violin and Orchestra, op 36/00-02 Andante grazioso.ogg",
-				musicPath
-						+ "classical/Schoenberg, Arnold (1874-1951)/Concerto for Violin and Orchestra, op 36/00-03 Finale Allegro.ogg",
-				musicPath
-						+ "classical/Sibelius, Jean (1865-1957)/Concerto for Violin and Orchestra in D minor, Op. 47/00-04 Allegro moderato.ogg",
-				musicPath
-						+ "classical/Sibelius, Jean (1865-1957)/Concerto for Violin and Orchestra in D minor, Op. 47/00-05 Adagio di molto.ogg",
-				musicPath
-						+ "classical/Sibelius, Jean (1865-1957)/Concerto for Violin and Orchestra in D minor, Op. 47/00-06 Allegro, ma non tanto.ogg",
+				musicPath + "classical/Schoenberg, Arnold (1874-1951)/Concerto for Violin and Orchestra, op 36/00-01 Poco allegro.ogg",
+				musicPath + "classical/Schoenberg, Arnold (1874-1951)/Concerto for Violin and Orchestra, op 36/00-02 Andante grazioso.ogg",
+				musicPath + "classical/Schoenberg, Arnold (1874-1951)/Concerto for Violin and Orchestra, op 36/00-03 Finale Allegro.ogg",
+				musicPath + "classical/Sibelius, Jean (1865-1957)/Concerto for Violin and Orchestra in D minor, Op. 47/00-04 Allegro moderato.ogg",
+				musicPath + "classical/Sibelius, Jean (1865-1957)/Concerto for Violin and Orchestra in D minor, Op. 47/00-05 Adagio di molto.ogg",
+				musicPath + "classical/Sibelius, Jean (1865-1957)/Concerto for Violin and Orchestra in D minor, Op. 47/00-06 Allegro, ma non tanto.ogg",
 				// Test: missing track
-				musicPath
-						+ "popular/Elvis Presley/Girls! Girls! Girls!/Return to Sender.mp3", };
+				musicPath + "popular/Elvis Presley/Girls! Girls! Girls!/Return to Sender.mp3", };
 
 		for (int i = 0; i < uris.length; i++) {
 			ContentValues value = new ContentValues();

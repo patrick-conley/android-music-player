@@ -1,14 +1,5 @@
 package pconley.vamp.player;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
-
-import pconley.vamp.R;
-import pconley.vamp.model.Track;
-import pconley.vamp.preferences.SettingsActivity;
-import pconley.vamp.util.BroadcastConstants;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -28,6 +19,16 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
+import pconley.vamp.R;
+import pconley.vamp.model.Track;
+import pconley.vamp.preferences.SettingsActivity;
+import pconley.vamp.util.BroadcastConstants;
+
 public class PlayerActivity extends Activity {
 
 	private static final int SEC = 1000;
@@ -42,7 +43,6 @@ public class PlayerActivity extends Activity {
 	private CountDownTimer progressTimer;
 
 	private TextView positionView;
-	private TextView durationView;
 
 	// Countdown timer can advance the progress bar only if a user isn't
 	// dragging it
@@ -90,17 +90,17 @@ public class PlayerActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.action_settings:
-			startActivity(new Intent(this, SettingsActivity.class));
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
+			case R.id.action_settings:
+				startActivity(new Intent(this, SettingsActivity.class));
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
 		}
 	}
 
 	/**
 	 * Bind to the running instance of the player.
-	 *
+	 * <p/>
 	 * The player's broadcast receiver would normally be registered from here,
 	 * but to guarantee synchrony it must be registered from
 	 * PlayerServiceConnection.onServiceConnected.
@@ -110,7 +110,7 @@ public class PlayerActivity extends Activity {
 		super.onStart();
 
 		bindService(new Intent(this, PlayerService.class), playerConnection,
-				Context.BIND_AUTO_CREATE);
+		            Context.BIND_AUTO_CREATE);
 	}
 
 	/**
@@ -134,7 +134,7 @@ public class PlayerActivity extends Activity {
 
 	/**
 	 * Callback for the play/pause button.
-	 * 
+	 * <p/>
 	 * Start/resume playback if in the "prepared" or "paused" states; pause
 	 * playback if in the "started" state. Does nothing if in any other state.
 	 *
@@ -142,8 +142,8 @@ public class PlayerActivity extends Activity {
 	 */
 	public void onPlayPauseClick(View view) {
 
-		// Player may be null if an attentive user presses play/pause before the
-		// service is bound.
+		// Player may be null if an attentive user presses play/pause before
+		// the service is bound.
 		if (player != null) {
 			if (player.isPlaying()) {
 				player.pause();
@@ -155,7 +155,7 @@ public class PlayerActivity extends Activity {
 
 	/**
 	 * Callback for the Previous Track button.
-	 *
+	 * <p/>
 	 * Go to the beginning of the previous track, if possible. Does nothing if
 	 * the player is not prepared.
 	 *
@@ -170,7 +170,7 @@ public class PlayerActivity extends Activity {
 
 	/**
 	 * Callback for the Next Track button.
-	 * 
+	 * <p/>
 	 * Go to the beginning of the next track, if possible. Does nothing if the
 	 * player is not prepared.
 	 *
@@ -190,9 +190,10 @@ public class PlayerActivity extends Activity {
 		Track track = player.getCurrentTrack();
 
 		((TextView) findViewById(R.id.player_view_uri)).setText(track.getUri()
-				.toString());
+		                                                             .toString
+				                                                             ());
 		((TextView) findViewById(R.id.player_view_tags)).setText(track
-				.tagsToString());
+				                                                         .tagsToString());
 
 		drawTime();
 	}
@@ -210,7 +211,8 @@ public class PlayerActivity extends Activity {
 		final int duration = player.getDuration();
 
 		positionView = (TextView) findViewById(R.id.player_view_position);
-		durationView = (TextView) findViewById(R.id.player_view_duration);
+		TextView durationView = (TextView) findViewById(
+				R.id.player_view_duration);
 
 		if (position != -1) {
 			progressBar.setProgress(position / SEC);
@@ -229,8 +231,8 @@ public class PlayerActivity extends Activity {
 	}
 
 	/*
-	 * Start the progress bar countdown. Call this method after a seek operation
-	 * to restart counting at the correct place.
+	 * Start the progress bar countdown. Call this method after a seek
+	 * operation to restart counting at the correct place.
 	 */
 	private void startCountdown() {
 		if (progressTimer != null) {
@@ -243,7 +245,7 @@ public class PlayerActivity extends Activity {
 		final int duration = player.getDuration();
 
 		Log.i("Active track", String.format("Starting timer at %d of %d",
-				position / SEC, duration / SEC));
+		                                    position / SEC, duration / SEC));
 
 		progressTimer = new CountDownTimer(duration - position, SEC) {
 
@@ -252,9 +254,13 @@ public class PlayerActivity extends Activity {
 				if (canTimerCountDown) {
 					int position = duration - (int) remaining;
 					progressBar.setProgress(position / SEC);
-					positionView.setText(dateFormat.format(new Date(position)));
+					positionView.setText(dateFormat.format(new Date
+							                                       (position)));
 					Log.v("Active track", String.format("Progress is %d of %d",
-							(duration - (int) remaining) / SEC, duration / SEC));
+					                                    (duration -
+					                                     (int) remaining) /
+					                                    SEC,
+					                                    duration / SEC));
 				}
 			}
 
@@ -308,10 +314,11 @@ public class PlayerActivity extends Activity {
 			}
 
 			LocalBroadcastManager.getInstance(PlayerActivity.this)
-					.registerReceiver(
-							playerReceiver,
-							new IntentFilter(
-									BroadcastConstants.FILTER_PLAYER_EVENT));
+			                     .registerReceiver(
+					                     playerReceiver,
+					                     new IntentFilter(
+							                     BroadcastConstants
+									                     .FILTER_PLAYER_EVENT));
 		}
 
 		/**
@@ -364,7 +371,7 @@ public class PlayerActivity extends Activity {
 
 			if (!intent.hasExtra(BroadcastConstants.EXTRA_EVENT)) {
 				Log.e("Active track",
-						"Broadcast from Player missing required event.");
+				      "Broadcast from Player missing required event.");
 				finish();
 			}
 
@@ -374,43 +381,47 @@ public class PlayerActivity extends Activity {
 			Log.i("Active track", "Received player event " + event);
 
 			switch (event) {
-			case NEW_TRACK:
-				displayTrackDetails();
+				case NEW_TRACK:
+					displayTrackDetails();
 
-				break;
-			case PAUSE:
-				stopCountdown();
+					break;
+				case PAUSE:
+					stopCountdown();
 
-				if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
-					Toast.makeText(
-							PlayerActivity.this,
-							intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
-							Toast.LENGTH_LONG).show();
-				}
+					if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
+						Toast.makeText(
+								PlayerActivity.this,
+								intent.getStringExtra(
+										BroadcastConstants.EXTRA_MESSAGE),
+								Toast.LENGTH_LONG).show();
+					}
 
-				break;
+					break;
 
-			case PLAY:
-				startCountdown();
+				case PLAY:
+					startCountdown();
 
-				break;
+					break;
 
-			case STOP:
-				clearCountdown();
+				case STOP:
+					clearCountdown();
 
-				if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
-					Toast.makeText(
-							PlayerActivity.this,
-							intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
-							Toast.LENGTH_LONG).show();
-				}
+					if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
+						Toast.makeText(
+								PlayerActivity.this,
+								intent.getStringExtra(
+										BroadcastConstants.EXTRA_MESSAGE),
+								Toast.LENGTH_LONG).show();
+					}
 
-				((TextView) findViewById(R.id.player_view_uri)).setText("");
-				((TextView) findViewById(R.id.player_view_tags)).setText("");
+					((TextView) findViewById(R.id.player_view_uri)).setText
+							("");
+					((TextView) findViewById(R.id.player_view_tags))
+							.setText("");
 
-				finish();
+					finish();
 
-				break;
+					break;
 
 			}
 

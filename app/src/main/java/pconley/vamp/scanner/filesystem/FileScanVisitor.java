@@ -1,5 +1,12 @@
 package pconley.vamp.scanner.filesystem;
 
+import android.content.Context;
+import android.content.Intent;
+import android.database.SQLException;
+import android.net.Uri;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
+
 import java.io.File;
 import java.util.List;
 
@@ -13,16 +20,10 @@ import pconley.vamp.scanner.ScannerEvent;
 import pconley.vamp.scanner.container.ScannerFactory;
 import pconley.vamp.scanner.container.TagStrategy;
 import pconley.vamp.util.BroadcastConstants;
-import android.content.Context;
-import android.content.Intent;
-import android.database.SQLException;
-import android.net.Uri;
-import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 /**
  * Visit part of a filesystem, scanning its files for audio metadata.
- * 
+ *
  * @author pconley
  */
 public class FileScanVisitor implements MediaVisitorBase {
@@ -43,13 +44,14 @@ public class FileScanVisitor implements MediaVisitorBase {
 	public FileScanVisitor(File musicFolder, Context context) {
 		this.musicFolderName = musicFolder.toString();
 		this.context = context;
-		
+
 		this.broadcastManager = LocalBroadcastManager.getInstance(context);
 		this.dao = new TrackDAO(context);
 		dao.openWritableDatabase();
 
 		dirIntent = new Intent(BroadcastConstants.FILTER_SCANNER);
-		dirIntent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.UPDATE);
+		dirIntent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent
+				.UPDATE);
 
 		fileIntent = new Intent(BroadcastConstants.FILTER_SCANNER);
 		fileIntent
@@ -57,7 +59,7 @@ public class FileScanVisitor implements MediaVisitorBase {
 
 		errorIntent = new Intent(BroadcastConstants.FILTER_SCANNER);
 		errorIntent.putExtra(BroadcastConstants.EXTRA_EVENT,
-				ScannerEvent.ERROR);
+		                     ScannerEvent.ERROR);
 	}
 
 	/**
@@ -105,7 +107,7 @@ public class FileScanVisitor implements MediaVisitorBase {
 		TagStrategy strategy = ScannerFactory.getStrategy(file);
 
 		// Read tags
-		List<Tag> tags = null;
+		List<Tag> tags;
 		try {
 			tags = strategy.getTags(file.getFile());
 		} catch (Exception e) {
@@ -116,7 +118,7 @@ public class FileScanVisitor implements MediaVisitorBase {
 		if (tags == null) {
 			return;
 		}
-		
+
 		Uri uri = Uri.fromFile(file.getFile());
 
 		try {
@@ -127,7 +129,7 @@ public class FileScanVisitor implements MediaVisitorBase {
 			errorIntent.putExtra(
 					BroadcastConstants.EXTRA_MESSAGE,
 					context.getString(R.string.scan_warning_invalid_tag,
-							file.toString()));
+					                  file.toString()));
 			broadcastManager.sendBroadcast(errorIntent);
 
 		} catch (SQLException e) {
@@ -136,7 +138,7 @@ public class FileScanVisitor implements MediaVisitorBase {
 			errorIntent.putExtra(
 					BroadcastConstants.EXTRA_MESSAGE,
 					context.getString(R.string.scan_warning_duplicate,
-							file.toString()));
+					                  file.toString()));
 			broadcastManager.sendBroadcast(errorIntent);
 		}
 	}

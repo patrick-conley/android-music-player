@@ -6,7 +6,7 @@ import pconley.vamp.model.filesystem.MediaVisitorBase;
 
 /**
  * Visit part of a filesystem, counting media files.
- * 
+ *
  * @author pconley
  */
 public class FileCountVisitor implements MediaVisitorBase {

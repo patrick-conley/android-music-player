@@ -13,8 +13,9 @@ public enum ScannerEvent {
 	/**
 	 * A new file or directory has been scanned.
 	 * {@link BroadcastConstants#EXTRA_PROGRESS} or
-	 * {@link BroadcastConstants#EXTRA_MAX} may have updated values;
-	 * {@link BroadcastConstants#EXTRA_MESSAGE} may indicate the directory being
+	 * {@link BroadcastConstants#EXTRA_TOTAL} may have updated values;
+	 * {@link BroadcastConstants#EXTRA_MESSAGE} may indicate the directory
+	 * being
 	 * scanned.
 	 */
 	UPDATE,

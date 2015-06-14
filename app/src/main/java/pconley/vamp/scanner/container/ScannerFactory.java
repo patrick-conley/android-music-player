@@ -17,24 +17,23 @@ public class ScannerFactory {
 	/**
 	 * Identify the appropriate tag-reading strategy using the media file's
 	 * extension.
-	 * 
+	 *
 	 * @param file
-	 * @return
 	 */
 	public static TagStrategy getStrategy(MediaFile file) {
 		String extension = file.toString().substring(
 				file.toString().lastIndexOf('.'));
 
 		switch (extension) {
-		case ".ogg":
-		case ".mkv":
-		case ".flac":
-			return getDefaultVorbisCommentTagStrategy();
-		case ".mp4":
-		case ".m4a":
-			return getDefaultMp4TagStrategy();
-		default:
-			return getDefaultGenericTagStrategy();
+			case ".ogg":
+			case ".mkv":
+			case ".flac":
+				return getDefaultVorbisCommentTagStrategy();
+			case ".mp4":
+			case ".m4a":
+				return getDefaultMp4TagStrategy();
+			default:
+				return getDefaultGenericTagStrategy();
 		}
 	}
 

@@ -1,8 +1,5 @@
 package pconley.vamp.scanner;
 
-import pconley.vamp.R;
-import pconley.vamp.library.LibraryActivity;
-import pconley.vamp.util.BroadcastConstants;
 import android.app.DialogFragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -17,9 +14,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import pconley.vamp.R;
+import pconley.vamp.library.LibraryActivity;
+import pconley.vamp.util.BroadcastConstants;
+
 /**
- * Fragment monitoring progress of the {@link FilesystemScanner}.
- * 
+ * Fragment monitoring progress of the {@link ScannerService}.
+ *
  * @author pconley
  */
 public class ScannerProgressDialogFragment extends DialogFragment {
@@ -68,7 +69,7 @@ public class ScannerProgressDialogFragment extends DialogFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_scanner_progress,
-				container, false);
+		                             container, false);
 
 		getDialog().setTitle(R.string.fragment_progress_name);
 
@@ -102,44 +103,50 @@ public class ScannerProgressDialogFragment extends DialogFragment {
 
 			switch ((ScannerEvent) intent
 					.getSerializableExtra(BroadcastConstants.EXTRA_EVENT)) {
-			case FINISHED:
-				LibraryActivity activity = (LibraryActivity) getActivity();
-				activity.loadLibrary();
+				case FINISHED:
+					LibraryActivity activity = (LibraryActivity) getActivity();
+					activity.loadLibrary();
 
-				Toast.makeText(
-						activity,
-						intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
-						Toast.LENGTH_LONG).show();
+					Toast.makeText(
+							activity,
+							intent.getStringExtra(
+									BroadcastConstants.EXTRA_MESSAGE),
+							Toast.LENGTH_LONG).show();
 
-				dismiss();
+					dismiss();
 
-				break;
-			case UPDATE:
+					break;
+				case UPDATE:
 
-				if (intent.hasExtra(BroadcastConstants.EXTRA_TOTAL)) {
-					progressBar.setIndeterminate(false);
-					setMax(intent
-							.getIntExtra(BroadcastConstants.EXTRA_TOTAL, 0));
-				}
+					if (intent.hasExtra(BroadcastConstants.EXTRA_TOTAL)) {
+						progressBar.setIndeterminate(false);
+						setMax(intent
+								       .getIntExtra(
+										       BroadcastConstants.EXTRA_TOTAL,
+										       0));
+					}
 
-				if (intent.hasExtra(BroadcastConstants.EXTRA_PROGRESS)) {
-					setProgress(intent.getIntExtra(
-							BroadcastConstants.EXTRA_PROGRESS, 0));
-				}
+					if (intent.hasExtra(BroadcastConstants.EXTRA_PROGRESS)) {
+						setProgress(intent.getIntExtra(
+								BroadcastConstants.EXTRA_PROGRESS, 0));
+					}
 
-				if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
-					commentView.setText(intent
-							.getStringExtra(BroadcastConstants.EXTRA_MESSAGE));
-				}
+					if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
+						commentView.setText(intent
+								                    .getStringExtra(
+										                    BroadcastConstants
+												                    .EXTRA_MESSAGE));
+					}
 
-				break;
-			case ERROR:
+					break;
+				case ERROR:
 
-				Toast.makeText(
-						getActivity(),
-						intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
-						Toast.LENGTH_SHORT).show();
-				break;
+					Toast.makeText(
+							getActivity(),
+							intent.getStringExtra(
+									BroadcastConstants.EXTRA_MESSAGE),
+							Toast.LENGTH_SHORT).show();
+					break;
 			}
 		}
 	}

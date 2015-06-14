@@ -2,9 +2,6 @@
 /.idea
 /local.properties
 
-# Caches
-/.idea/libraries
-
 # Config that changes on a whim
 *.iml
 

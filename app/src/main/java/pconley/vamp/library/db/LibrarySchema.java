@@ -5,7 +5,7 @@ import android.provider.BaseColumns;
 public class LibrarySchema {
 
 	/* Don't allow instantiation. */
-	public LibrarySchema() {
+	private LibrarySchema() {
 	}
 
 	/**
@@ -19,8 +19,9 @@ public class LibrarySchema {
 		public static final String COLUMN_URI = "uri";
 
 		public static final String SQL_CREATE = String
-				.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY, %s TEXT UNIQUE NOT NULL);",
-						NAME, COLUMN_ID, COLUMN_URI);
+				.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY, %s TEXT " +
+						        "UNIQUE NOT NULL);",
+				        NAME, COLUMN_ID, COLUMN_URI);
 
 	}
 
@@ -34,10 +35,13 @@ public class LibrarySchema {
 		public static final String TAG_ID = "tag_id";
 
 		public static final String SQL_CREATE = String
-				.format("CREATE TABLE %s (%s INTEGER REFERENCES %s(%s) NOT NULL, %s INTEGER REFERENCES %s(%s) NOT NULL, CONSTRAINT no_dup_tracktags UNIQUE (%s, %s) ON CONFLICT FAIL);",
-						NAME, TRACK_ID, TrackEntry.NAME, TrackEntry.COLUMN_ID,
-						TAG_ID, TagEntry.NAME, TagEntry.COLUMN_ID, TRACK_ID,
-						TAG_ID);
+				.format("CREATE TABLE %s (%s INTEGER REFERENCES %s(%s) NOT " +
+						        "NULL, %s INTEGER REFERENCES %s(%s) NOT " +
+						        "NULL, CONSTRAINT no_dup_tracktags UNIQUE " +
+						        "(%s, %s) ON CONFLICT FAIL);",
+				        NAME, TRACK_ID, TrackEntry.NAME, TrackEntry.COLUMN_ID,
+				        TAG_ID, TagEntry.NAME, TagEntry.COLUMN_ID, TRACK_ID,
+				        TAG_ID);
 
 	}
 
@@ -53,9 +57,12 @@ public class LibrarySchema {
 		public static final String COLUMN_VAL = "value";
 
 		public static final String SQL_CREATE = String
-				.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY, %s TEXT NOT NULL, %s TEXT NOT NULL, CONSTRAINT no_dup_tags UNIQUE (%s, %s) ON CONFLICT FAIL);",
-						NAME, COLUMN_ID, COLUMN_TAG, COLUMN_VAL, COLUMN_TAG,
-						COLUMN_VAL);
+				.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY, %s TEXT " +
+						        "NOT NULL, %s TEXT NOT NULL, CONSTRAINT " +
+						        "no_dup_tags UNIQUE (%s, %s) ON CONFLICT " +
+						        "FAIL);",
+				        NAME, COLUMN_ID, COLUMN_TAG, COLUMN_VAL, COLUMN_TAG,
+				        COLUMN_VAL);
 
 	}
 

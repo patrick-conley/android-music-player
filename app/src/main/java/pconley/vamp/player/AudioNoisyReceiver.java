@@ -15,10 +15,11 @@ public class AudioNoisyReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 
 		if (intent.getAction() != null
-				&& intent.getAction().equals(
-						AudioManager.ACTION_AUDIO_BECOMING_NOISY)) {
+		    && intent.getAction().equals(
+				AudioManager.ACTION_AUDIO_BECOMING_NOISY)) {
 			context.startService(new Intent(context, PlayerService.class)
-					.setAction(PlayerService.ACTION_PAUSE));
+					                     .setAction(
+							                     PlayerService.ACTION_PAUSE));
 		}
 
 	}

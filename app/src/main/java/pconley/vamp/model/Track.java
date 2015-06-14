@@ -1,5 +1,7 @@
 package pconley.vamp.model;
 
+import android.net.Uri;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,12 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import android.net.Uri;
-
 /**
  * The URI of a track of music, and the metadata associated with the destination
  * file.
- * 
+ *
  * @author pconley
  */
 public final class Track {
@@ -51,10 +51,13 @@ public final class Track {
 	}
 
 	/**
+	 * Get the tags with the given name. Returns null if the track doesn't
+	 * have any appropriate tags. Values' ordering is not guaranteed to be
+	 * consistent.
+	 *
 	 * @param name
-	 *            The name of a tag
-	 * @return The tags corresponding to this tag name, or null if the tag isn't
-	 *         in the this track. The values' ordering is in no way guaranteed.
+	 * 		The name of a tag
+	 * @return The tags corresponding to this tag name.
 	 */
 	public Set<Tag> getTags(String name) {
 		// Check if the key exists: unmodifiableSet doesn't accept null input
@@ -101,30 +104,36 @@ public final class Track {
 
 	/**
 	 * Compare this instance with the specified object. Assuming both objects
-	 * are non-null Tracks, they are equal if they have the same URI and
-	 * tags.
-	 * 
+	 * are non-null Tracks, they are equal if they have the same URI and tags.
+	 *
 	 * @see Tag#equals(Object)
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		Track other = (Track) obj;
 		if (tags == null) {
-			if (other.tags != null)
+			if (other.tags != null) {
 				return false;
-		} else if (!tags.equals(other.tags))
+			}
+		} else if (!tags.equals(other.tags)) {
 			return false;
+		}
 		if (uri == null) {
-			if (other.uri != null)
+			if (other.uri != null) {
 				return false;
-		} else if (!uri.equals(other.uri))
+			}
+		} else if (!uri.equals(other.uri)) {
 			return false;
+		}
 		return true;
 	}
 
@@ -153,7 +162,7 @@ public final class Track {
 			}
 
 			tags.get(name).add(tag);
-			
+
 			return this;
 		}
 

@@ -7,7 +7,7 @@ import android.os.PowerManager;
 /**
  * Singleton injector for dependencies that may need to be mocked during unit
  * testing.
- * 
+ *
  * @author pconley
  */
 public class PlayerFactory {
@@ -21,10 +21,9 @@ public class PlayerFactory {
 
 	/**
 	 * Get the current instance of the singleton.
-	 * 
+	 *
 	 * @param service
-	 *            Player running this factory
-	 * @return
+	 * 		Player running this factory
 	 */
 	public static PlayerFactory getInstance(PlayerService service) {
 		if (instance == null) {
@@ -37,7 +36,7 @@ public class PlayerFactory {
 	/**
 	 * Set the current instance of the singleton. Use this to replace a live
 	 * factory with a mock.
-	 * 
+	 *
 	 * @param factory
 	 */
 	public static void setInstance(PlayerFactory factory) {
@@ -60,7 +59,7 @@ public class PlayerFactory {
 		player.setOnCompletionListener(service);
 		player.setOnErrorListener(service);
 		player.setWakeMode(service.getApplicationContext(),
-				PowerManager.PARTIAL_WAKE_LOCK);
+		                   PowerManager.PARTIAL_WAKE_LOCK);
 		return player;
 	}
 

@@ -1,13 +1,5 @@
 package pconley.vamp.library.db;
 
-import java.util.LinkedList;
-import java.util.List;
-
-import pconley.vamp.library.db.LibrarySchema.TagEntry;
-import pconley.vamp.library.db.LibrarySchema.TrackEntry;
-import pconley.vamp.library.db.LibrarySchema.TrackTagRelation;
-import pconley.vamp.model.Tag;
-import pconley.vamp.model.Track;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -16,9 +8,18 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.util.Log;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import pconley.vamp.library.db.LibrarySchema.TagEntry;
+import pconley.vamp.library.db.LibrarySchema.TrackEntry;
+import pconley.vamp.library.db.LibrarySchema.TrackTagRelation;
+import pconley.vamp.model.Tag;
+import pconley.vamp.model.Track;
+
 /**
  * Methods to read and write track data from the database.
- * 
+ *
  * @author pconley
  */
 public class TrackDAO {
@@ -28,29 +29,34 @@ public class TrackDAO {
 	private SQLiteDatabase library;
 
 	private static final String GET_TRACK_QUERY = String
-			.format("SELECT * FROM (SELECT * FROM (SELECT %s AS %s, %s FROM %s WHERE %s = ?) LEFT OUTER JOIN %s USING (%s)) LEFT OUTER JOIN %s ON %s = %s",
-					TrackEntry.COLUMN_ID, TrackTagRelation.TRACK_ID,
-					TrackEntry.COLUMN_URI, TrackEntry.NAME,
-					TrackEntry.COLUMN_ID, TrackTagRelation.NAME,
-					TrackTagRelation.TRACK_ID, TagEntry.NAME,
-					TrackTagRelation.TAG_ID, TagEntry.COLUMN_ID);
+			.format("SELECT * FROM (SELECT * FROM (SELECT %s AS %s, %s FROM " +
+			        "%s WHERE %s = ?) LEFT OUTER JOIN %s USING (%s)) LEFT " +
+			        "OUTER JOIN %s ON %s = %s",
+			        TrackEntry.COLUMN_ID, TrackTagRelation.TRACK_ID,
+			        TrackEntry.COLUMN_URI, TrackEntry.NAME,
+			        TrackEntry.COLUMN_ID, TrackTagRelation.NAME,
+			        TrackTagRelation.TRACK_ID, TagEntry.NAME,
+			        TrackTagRelation.TAG_ID, TagEntry.COLUMN_ID);
 
 	private static final String GET_TRACKS_QUERY = String
-			.format("SELECT * FROM (SELECT * FROM (SELECT %s AS %s, %s FROM %s) LEFT OUTER JOIN %s USING (%s)) LEFT OUTER JOIN %s ON %s = %s ORDER BY %s",
-					TrackEntry.COLUMN_ID, TrackTagRelation.TRACK_ID,
-					TrackEntry.COLUMN_URI, TrackEntry.NAME,
-					TrackTagRelation.NAME, TrackTagRelation.TRACK_ID,
-					TagEntry.NAME, TrackTagRelation.TAG_ID, TagEntry.COLUMN_ID,
-					TrackTagRelation.TRACK_ID);
+			.format("SELECT * FROM (SELECT * FROM (SELECT %s AS %s, %s FROM " +
+			        "%s) LEFT OUTER JOIN %s USING (%s)) LEFT OUTER JOIN %s " +
+			        "ON %s = %s ORDER BY %s",
+			        TrackEntry.COLUMN_ID, TrackTagRelation.TRACK_ID,
+			        TrackEntry.COLUMN_URI, TrackEntry.NAME,
+			        TrackTagRelation.NAME, TrackTagRelation.TRACK_ID,
+			        TagEntry.NAME, TrackTagRelation.TAG_ID, TagEntry.COLUMN_ID,
+			        TrackTagRelation.TRACK_ID);
 
 	public TrackDAO(Context context) {
 		libraryOpenHelper = new LibraryOpenHelper(context);
 	}
 
 	/**
-	 * Open a database connection, which may or may not be read-only. Do not run
+	 * Open a database connection, which may or may not be read-only. Do not
+	 * run
 	 * from the UI thread.
-	 * 
+	 *
 	 * @return The current TrackDAO object, for method chaining.
 	 */
 	public TrackDAO openReadableDatabase() {
@@ -61,10 +67,10 @@ public class TrackDAO {
 
 	/**
 	 * Open a writable database connection. Do not run from the UI thread.
-	 * 
+	 *
 	 * @return The current TrackDAO object, for method chaining.
 	 * @throws SQLException
-	 *             If the database cannot be opened for writing.
+	 * 		If the database cannot be opened for writing.
 	 */
 	public TrackDAO openWritableDatabase() throws SQLException {
 		library = libraryOpenHelper.getWritableDatabase();
@@ -88,7 +94,8 @@ public class TrackDAO {
 	public Track getTrack(long trackId) {
 
 		Cursor results = library.rawQuery(GET_TRACK_QUERY,
-				new String[] { String.valueOf(trackId) });
+		                                  new String[] {
+				                                  String.valueOf(trackId) });
 
 		if (results.getCount() == 0) {
 			results.close();
@@ -102,14 +109,16 @@ public class TrackDAO {
 
 		results.moveToFirst();
 
-		Track.Builder builder = new Track.Builder(trackId, Uri.parse(results
-				.getString(uriColumn)));
+		Track.Builder builder = new Track.Builder(trackId,
+		                                          Uri.parse(results.getString(
+				                                          uriColumn)));
 
 		// Add tags to the track, provided there is at least one.
 		if (!results.isNull(tagIdColumn)) {
 			for (; !results.isAfterLast(); results.moveToNext()) {
 				builder.add(new Tag(results.getLong(tagIdColumn), results
-						.getString(nameColumn), results.getString(valueColumn)));
+						.getString(nameColumn),
+				                    results.getString(valueColumn)));
 			}
 		}
 
@@ -130,34 +139,35 @@ public class TrackDAO {
 		int nameColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_TAG);
 		int valueColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_VAL);
 
-		long id = -1;
-		Track.Builder builder = null;
+		results.moveToFirst();
+		long id = results.getLong(trackIdColumn);
+		Track.Builder builder = new Track.Builder(id, Uri.parse(
+				results.getString(uriColumn)));
 
-		for (results.moveToFirst(); !results.isAfterLast(); results
-				.moveToNext()) {
-			long trackId = results.getLong(trackIdColumn);
+		while (!results.isAfterLast()) {
 
 			// Check if this row is part of a new track: add the current track
 			// to the list and begin a new track.
+			long trackId = results.getLong(trackIdColumn);
 			if (id != trackId) {
-				if (builder != null) {
-					tracks.add(builder.build());
-				}
+				tracks.add(builder.build());
 
-				builder = new Track.Builder(trackId, Uri.parse(results
-						.getString(uriColumn)));
+				builder = new Track.Builder(trackId, Uri.parse(
+						results.getString(uriColumn)));
 				id = trackId;
 			}
 
+			// Add this row's tag to the existing track
 			if (!results.isNull(nameColumn)) {
 				builder.add(new Tag(results.getLong(tagIdColumn), results
-						.getString(nameColumn), results.getString(valueColumn)));
+						.getString(nameColumn),
+				                    results.getString(valueColumn)));
 			}
+
+			results.moveToNext();
 		}
 
-		if (builder != null) {
-			tracks.add(builder.build());
-		}
+		tracks.add(builder.build());
 
 		results.close();
 		return tracks;
@@ -166,13 +176,13 @@ public class TrackDAO {
 	/**
 	 * Insert a track with its tags. This method is only to be used when
 	 * populating an empty database. A transaction is used.
-	 * 
+	 *
 	 * @param uri
 	 * @param tags
 	 * @throws SQLException
-	 *             If the track is already in the database.
+	 * 		If the track is already in the database.
 	 * @throws NullPointerException
-	 *             If any input is null.
+	 * 		If any input is null.
 	 */
 	public void insertTrack(Uri uri, Iterable<Tag> tags) throws SQLException,
 			NullPointerException {
@@ -191,14 +201,15 @@ public class TrackDAO {
 	}
 
 	/**
-	 * Insert a track. This method is only to be used when populating a database
+	 * Insert a track. This method is only to be used when populating a
+	 * database
 	 * from scratch: inserting a duplicate track URI is an error.
-	 * 
+	 *
 	 * @param uri
-	 *            URI of a new track.
+	 * 		URI of a new track.
 	 * @return The inserted track's ID.
 	 * @throws SQLException
-	 *             If the database already contains this track.
+	 * 		If the database already contains this track.
 	 */
 	public long insertTrack(Uri uri) throws SQLException {
 
@@ -210,15 +221,15 @@ public class TrackDAO {
 
 	/**
 	 * Insert a tag, and associate it with a track that uses it.
-	 * 
+	 *
 	 * @param trackId
-	 *            ID of a track in the database.
+	 * 		ID of a track in the database.
 	 * @param tag
-	 *            A tag.
+	 * 		A tag.
 	 * @throws SQLException
-	 *             If the track ID is invalid
+	 * 		If the track ID is invalid
 	 * @throws NullPointerException
-	 *             If either the name or value is missing
+	 * 		If either the name or value is missing
 	 */
 	public void insertTag(long trackId, Tag tag) throws SQLException,
 			NullPointerException {
@@ -232,15 +243,20 @@ public class TrackDAO {
 
 		// Check whether the tag exists already
 		Cursor results = library.query(TagEntry.NAME,
-				new String[] { TagEntry.COLUMN_ID }, String.format(
-						"%s = ? AND %s = ?", TagEntry.COLUMN_TAG,
-						TagEntry.COLUMN_VAL),
-				new String[] { tag.getName(), tag.getValue() }, null, null,
-				null);
+		                               new String[] { TagEntry.COLUMN_ID },
+		                               String.format(
+				                               "%s = ? AND %s = ?",
+				                               TagEntry.COLUMN_TAG,
+				                               TagEntry.COLUMN_VAL),
+		                               new String[] { tag.getName(),
+				                               tag.getValue() }, null,
+		                               null,
+		                               null);
 
 		if (results.getCount() > 0) {
 			results.moveToFirst();
-			tagId = results.getLong(results.getColumnIndex(TagEntry.COLUMN_ID));
+			tagId = results.getLong(results.getColumnIndex(TagEntry
+					                                               .COLUMN_ID));
 		}
 
 		results.close();

@@ -9,7 +9,6 @@ import java.util.List;
  * replaced with a {@link PlaylistIterator}.
  *
  * @author pconley
- *
  */
 public class Playlist implements Iterable<Track> {
 
@@ -26,7 +25,7 @@ public class Playlist implements Iterable<Track> {
 
 	/**
 	 * Constructor using a copy of a list.
-	 * 
+	 *
 	 * @param tracks
 	 */
 	public Playlist(List<Track> tracks) {
@@ -35,7 +34,7 @@ public class Playlist implements Iterable<Track> {
 
 	/**
 	 * Get the global playlist able to be shared between activities.
-	 * 
+	 *
 	 * @return The single global playlist
 	 */
 	public static Playlist getInstance() {
@@ -48,7 +47,7 @@ public class Playlist implements Iterable<Track> {
 
 	/**
 	 * Set a playlist to be used by the player.
-	 * 
+	 *
 	 * @param playlist
 	 */
 	public static void setInstance(Playlist playlist) {
@@ -63,7 +62,7 @@ public class Playlist implements Iterable<Track> {
 	 * Add a track to the playlist.
 	 *
 	 * @param track
-	 *            The track to add.
+	 * 		The track to add.
 	 * @return Whether the track was added (always true).
 	 */
 	public boolean add(Track track) {
@@ -88,7 +87,7 @@ public class Playlist implements Iterable<Track> {
 	/**
 	 * @return A {@link PlaylistIterator} to the tracks in the playlist.
 	 * @throws IndexOutOfBoundsException
-	 *             If the start location is out of bounds.
+	 * 		If the start location is out of bounds.
 	 */
 	public PlaylistIterator playlistIterator() {
 		return new PlaylistIterator(tracks);
@@ -96,11 +95,11 @@ public class Playlist implements Iterable<Track> {
 
 	/**
 	 * @param location
-	 *            Index of the first element to be returned by a call to
-	 *            {@link Iterator#next()}.
+	 * 		Index of the first element to be returned by a call to
+	 * 		{@link Iterator#next()}.
 	 * @return A {@link PlaylistIterator} to the tracks in the playlist.
 	 * @throws IndexOutOfBoundsException
-	 *             If the start location is out of bounds.
+	 * 		If the start location is out of bounds.
 	 */
 	public PlaylistIterator playlistIterator(int location)
 			throws IndexOutOfBoundsException {
@@ -121,19 +120,24 @@ public class Playlist implements Iterable<Track> {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 
 		Playlist other = (Playlist) obj;
 		if (tracks == null) {
-			if (other.tracks != null)
+			if (other.tracks != null) {
 				return false;
-		} else if (!tracks.equals(other.tracks))
+			}
+		} else if (!tracks.equals(other.tracks)) {
 			return false;
+		}
 		return true;
 	}
 

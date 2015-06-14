@@ -1,12 +1,12 @@
 package pconley.vamp.model.filesystem;
 
-import java.io.File;
-
 import android.util.Log;
+
+import java.io.File;
 
 /**
  * A visitable directory.
- * 
+ *
  * @author pconley
  */
 public class MediaFolder extends MediaFileBase {
@@ -18,7 +18,7 @@ public class MediaFolder extends MediaFileBase {
 
 	/**
 	 * Validate the directory (it must be a readable directory that
-	 * does not contain a .nomedia file), then visit it and call its childrens'
+	 * does not contain a .nomedia file), then visit it and call its children's
 	 * appropriate accept methods.
 	 */
 	@Override

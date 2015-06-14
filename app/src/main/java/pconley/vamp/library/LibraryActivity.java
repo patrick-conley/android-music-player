@@ -1,17 +1,5 @@
 package pconley.vamp.library;
 
-import java.util.List;
-
-import pconley.vamp.R;
-import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.model.Track;
-import pconley.vamp.player.PlayerActivity;
-import pconley.vamp.player.PlayerService;
-import pconley.vamp.preferences.SettingsActivity;
-import pconley.vamp.scanner.ScannerProgressDialogFragment;
-import pconley.vamp.scanner.ScannerService;
-import pconley.vamp.util.BroadcastConstants;
-import pconley.vamp.model.Playlist;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -30,13 +18,25 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import java.util.List;
+
+import pconley.vamp.R;
+import pconley.vamp.library.db.TrackDAO;
+import pconley.vamp.model.Playlist;
+import pconley.vamp.model.Track;
+import pconley.vamp.player.PlayerActivity;
+import pconley.vamp.player.PlayerService;
+import pconley.vamp.preferences.SettingsActivity;
+import pconley.vamp.scanner.ScannerProgressDialogFragment;
+import pconley.vamp.scanner.ScannerService;
+import pconley.vamp.util.BroadcastConstants;
+
 /**
  * Main activity, showing the contents of the library.
  */
 public class LibraryActivity extends Activity {
 
 	private ListView trackListView;
-	private ScannerProgressDialogFragment scanningDialog;
 
 	private LocalBroadcastManager broadcastManager;
 
@@ -60,14 +60,16 @@ public class LibraryActivity extends Activity {
 				if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
 					Toast.makeText(
 							LibraryActivity.this,
-							intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
+							intent.getStringExtra(
+									BroadcastConstants.EXTRA_MESSAGE),
 							Toast.LENGTH_LONG).show();
 				}
 
 			}
 		};
 
-		// Get the list of tracks in the library. If one is clicked, play it and
+		// Get the list of tracks in the library. If one is clicked, play it
+		// and
 		// open the Now Playing screen.
 		loadLibrary();
 
@@ -79,13 +81,13 @@ public class LibraryActivity extends Activity {
 					int position, long id) {
 
 				Intent intent = new Intent(LibraryActivity.this,
-						PlayerService.class);
+				                           PlayerService.class);
 				intent.setAction(PlayerService.ACTION_PLAY).putExtra(
 						PlayerService.EXTRA_START_POSITION, position);
 				startService(intent);
 
 				startActivity(new Intent(LibraryActivity.this,
-						PlayerActivity.class));
+				                         PlayerActivity.class));
 			}
 		});
 
@@ -96,7 +98,9 @@ public class LibraryActivity extends Activity {
 		super.onStart();
 
 		broadcastManager.registerReceiver(playerEventReceiver,
-				new IntentFilter(BroadcastConstants.FILTER_PLAYER_EVENT));
+		                                  new IntentFilter(
+				                                  BroadcastConstants
+						                                  .FILTER_PLAYER_EVENT));
 	}
 
 	@Override
@@ -108,7 +112,8 @@ public class LibraryActivity extends Activity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
+		// Inflate the menu; this adds items to the action bar if it is
+		// present.
 		getMenuInflater().inflate(R.menu.library, menu);
 		return true;
 	}
@@ -119,22 +124,23 @@ public class LibraryActivity extends Activity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		switch (item.getItemId()) {
-		case R.id.action_player:
-			startActivity(new Intent(this, PlayerActivity.class));
-			return true;
-		case R.id.action_settings:
-			startActivity(new Intent(this, SettingsActivity.class));
-			return true;
-		case R.id.action_rescan:
-			scanningDialog = new ScannerProgressDialogFragment();
-			scanningDialog.show(getFragmentManager(),
-					ScannerProgressDialogFragment.TAG);
+			case R.id.action_player:
+				startActivity(new Intent(this, PlayerActivity.class));
+				return true;
+			case R.id.action_settings:
+				startActivity(new Intent(this, SettingsActivity.class));
+				return true;
+			case R.id.action_rescan:
+				ScannerProgressDialogFragment scanningDialog
+						= new ScannerProgressDialogFragment();
+				scanningDialog.show(getFragmentManager(),
+				                    ScannerProgressDialogFragment.TAG);
 
-			startService(new Intent(this, ScannerService.class));
+				startService(new Intent(this, ScannerService.class));
 
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
 		}
 	}
 
@@ -150,7 +156,8 @@ public class LibraryActivity extends Activity {
 	 * Load the contents of the library into a TextView with execute(). Work is
 	 * done in a background thread.
 	 */
-	private class LoadTrackListTask extends AsyncTask<Void, Void, List<Track>> {
+	private class LoadTrackListTask extends AsyncTask<Void, Void,
+			List<Track>> {
 
 		private ProgressBar progress;
 		private TrackDAO dao;
@@ -159,7 +166,8 @@ public class LibraryActivity extends Activity {
 		protected void onPreExecute() {
 			super.onPreExecute();
 
-			progress = ((ProgressBar) findViewById(R.id.library_progress_load));
+			progress = ((ProgressBar) findViewById(R.id
+					                                       .library_progress_load));
 			progress.setVisibility(ProgressBar.VISIBLE);
 			dao = new TrackDAO(LibraryActivity.this);
 		}

@@ -5,9 +5,8 @@ import java.io.File;
 /**
  * Representation of a file to be used as part of a hierarchical visitor pattern
  * with {@link MediaVisitorBase}.
- * 
- * @author pconley
  *
+ * @author pconley
  */
 public abstract class MediaFileBase {
 
@@ -19,7 +18,7 @@ public abstract class MediaFileBase {
 
 	/**
 	 * Validate, then visit the file.
-	 * 
+	 *
 	 * @param visitor
 	 */
 	public abstract void accept(MediaVisitorBase visitor);

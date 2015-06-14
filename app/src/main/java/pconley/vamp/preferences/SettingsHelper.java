@@ -1,14 +1,14 @@
 package pconley.vamp.preferences;
 
-import java.io.File;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import java.io.File;
+
 /**
  * Simplify my interaction with SharedPreferences.
- * 
+ *
  * @author pconley
  */
 public class SettingsHelper {
@@ -37,7 +37,7 @@ public class SettingsHelper {
 	 */
 	public File getMusicFolder() {
 		String musicFolder = preferences.getString(KEY_MUSIC_FOLDER, null);
-		
+
 		if (musicFolder == null) {
 			return null;
 		} else {
@@ -48,9 +48,9 @@ public class SettingsHelper {
 	/**
 	 * Switch to an alternate SharedPreferences file for the remainder of the
 	 * application instance.
-	 * 
+	 * <p/>
 	 * Meant for unit testing.
-	 * 
+	 *
 	 * @param preferences
 	 */
 	public static void setPreferences(SharedPreferences preferences) {

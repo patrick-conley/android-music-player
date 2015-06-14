@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
- * An extended {@link Iterator}, specific to {@link Track}s. It adds the concept of a current
- * element, allowing it to return that element repeatedly without advancing the cursor.
+ * An extended {@link Iterator}, specific to {@link Track}s. It adds the
+ * concept of a current
+ * element, allowing it to return that element repeatedly without advancing
+ * the cursor.
  *
  * @author pconley
  */
@@ -31,7 +33,8 @@ public class PlaylistIterator implements Iterator<Track> {
 	 * @param playlist
 	 * 		List of tracks to iterate across.
 	 * @param position
-	 * 		Index of the first element to be returned by a call to {@link #next()}
+	 * 		Index of the first element to be returned by a call to {@link
+	 * 		#next()}
 	 */
 	protected PlaylistIterator(List<Track> playlist, int position) {
 		if (position < 0 || position >= playlist.size()) {
@@ -74,7 +77,8 @@ public class PlaylistIterator implements Iterator<Track> {
 	/**
 	 * @return The track under the cursor. The cursor is not advanced.
 	 * @throws IllegalStateException
-	 * 		if neither {@link PlaylistIterator#next()} nor {@link PlaylistIterator#PlaylistIterator(List,
+	 * 		if neither {@link PlaylistIterator#next()} nor {@link
+	 * 		PlaylistIterator#PlaylistIterator(List,
 	 *        int)} has been called.
 	 */
 	public Track current() throws NoSuchElementException {
