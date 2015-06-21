@@ -16,7 +16,7 @@ import java.util.Set;
  *
  * @author pconley
  */
-public final class Track {
+public final class Track implements LibraryItem {
 
 	private long id;
 	private Uri uri;
@@ -51,8 +51,8 @@ public final class Track {
 	}
 
 	/**
-	 * Get the tags with the given name. Returns null if the track doesn't
-	 * have any appropriate tags. Values' ordering is not guaranteed to be
+	 * Get the tags with the given name. Returns null if the track doesn't have
+	 * any appropriate tags. Values' ordering is not guaranteed to be
 	 * consistent.
 	 *
 	 * @param name

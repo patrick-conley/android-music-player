@@ -1,6 +1,11 @@
 package pconley.vamp.model.test;
 
+import android.os.Bundle;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import pconley.vamp.model.Tag;
 
@@ -8,6 +13,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+@RunWith(RobolectricTestRunner.class)
+@Config(emulateSdk = 18, manifest = "src/main/AndroidManifest.xml")
 public class TagTest {
 
 	/**
@@ -27,7 +34,27 @@ public class TagTest {
 	}
 
 	/**
-	 * See {@link Object#hashCode()} and {@link Object#equals(Object)} for contracts.
+	 * Given I've parceled a tag, when I unparcel it, then I get an identical
+	 * tag.
+	 */
+	@Test
+	public void testParcelable() {
+		// Given
+		Tag tag = new Tag(3, "foo", "bar");
+
+		Bundle bundle = new Bundle();
+		bundle.putParcelable("tag", tag);
+
+		// When
+		Tag actual = bundle.getParcelable("tag");
+
+		// Then
+		assertEquals("Tag can be parceled & unparceled", tag, actual);
+	}
+
+	/**
+	 * See {@link Object#hashCode()} and {@link Object#equals(Object)} for
+	 * contracts.
 	 */
 	@Test
 	public void testHashCodeEqualsContract() {
@@ -56,9 +83,11 @@ public class TagTest {
 		 * Equals is reflexive
 		 */
 		assertTrue("Equals is reflexive (x)", x.equals(x));
-		assertEquals("HashCode() is consistent (x)", x.hashCode(), x.hashCode());
+		assertEquals("HashCode() is consistent (x)", x.hashCode(),
+		             x.hashCode());
 		assertTrue("Equals is reflexive (d)", d.equals(d));
-		assertEquals("HashCode() is consistent (d)", d.hashCode(), d.hashCode());
+		assertEquals("HashCode() is consistent (d)", d.hashCode(),
+		             d.hashCode());
 
 		/*
 		 * Equals is symmetric
@@ -71,9 +100,11 @@ public class TagTest {
 		 * Equals is transitive
 		 */
 		assertEquals("Equals is transitive (x,y,z)", x.equals(z), x.equals(y)
-				&& y.equals(z));
+		                                                          && y.equals(
+				z));
 		assertEquals("Equals is transitive (x,y,d)", x.equals(d), x.equals(y)
-				&& y.equals(d));
+		                                                          && y.equals(
+				d));
 
 	}
 }

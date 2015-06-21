@@ -1,11 +1,14 @@
 package pconley.vamp.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * A piece of music metadata, represented by a unique key-value pair.
  *
  * @author pconley
  */
-public final class Tag {
+public final class Tag implements LibraryItem, Parcelable {
 
 	private long id;
 	private String name;
@@ -99,6 +102,35 @@ public final class Tag {
 			return false;
 		}
 		return true;
+	}
+
+	public static final Parcelable.Creator<Tag> CREATOR
+			= new Parcelable.Creator<Tag>() {
+		@Override
+		public Tag createFromParcel(Parcel source) {
+			String[] tag = new String[2];
+
+			long id = source.readLong();
+			source.readStringArray(tag);
+
+			return new Tag(id, tag[0], tag[1]);
+		}
+
+		@Override
+		public Tag[] newArray(int size) {
+			return new Tag[size];
+		}
+	};
+
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeLong(id);
+		dest.writeStringArray(new String[] { name, value });
 	}
 
 }

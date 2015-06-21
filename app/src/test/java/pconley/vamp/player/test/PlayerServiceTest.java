@@ -29,16 +29,17 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import pconley.vamp.R;
+import pconley.vamp.model.Playlist;
 import pconley.vamp.model.Track;
 import pconley.vamp.player.PlayerEvent;
 import pconley.vamp.player.PlayerFactory;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.util.AssetUtils;
 import pconley.vamp.util.BroadcastConstants;
-import pconley.vamp.model.Playlist;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -62,8 +63,6 @@ public class PlayerServiceTest {
 	private ShadowAudioManager audioManager;
 
 	private File musicFolder;
-	private File ogg;
-	private File flac;
 
 	private List<Track> tracks;
 	private List<Track> missing;
@@ -93,21 +92,25 @@ public class PlayerServiceTest {
 				.getSystemService(Context.AUDIO_SERVICE));
 
 		LocalBroadcastManager.getInstance(context).registerReceiver(receiver,
-				new IntentFilter(BroadcastConstants.FILTER_PLAYER_EVENT));
+		                                                            new IntentFilter(
+				                                                            BroadcastConstants.FILTER_PLAYER_EVENT));
 
 		// Set up and move files
 		musicFolder = AssetUtils.setupMusicFolder(context);
-		ogg = new File(musicFolder, "sample.ogg");
-		flac = new File(musicFolder, "sample.flac");
+		File ogg = new File(musicFolder, "sample.ogg");
+		File flac = new File(musicFolder, "sample.flac");
 
 		tracks = new LinkedList<Track>();
 		tracks.add(AssetUtils.addAssetToFolder(context,
-				AssetUtils.ROBO_ASSET_PATH + AssetUtils.OGG, ogg));
+		                                       AssetUtils.ROBO_ASSET_PATH +
+		                                       AssetUtils.OGG, ogg));
 		tracks.add(AssetUtils.addAssetToFolder(context,
-				AssetUtils.ROBO_ASSET_PATH + AssetUtils.FLAC, flac));
+		                                       AssetUtils.ROBO_ASSET_PATH +
+		                                       AssetUtils.FLAC, flac));
 
 		missing = new LinkedList<Track>();
-		missing.add(AssetUtils.buildTrack(new File(musicFolder, "missing.mp3")));
+		missing.add(
+				AssetUtils.buildTrack(new File(musicFolder, "missing.mp3")));
 
 		Playlist.setInstance(null);
 		playlist = Playlist.getInstance();
@@ -147,8 +150,8 @@ public class PlayerServiceTest {
 		bindService();
 
 		// Then
-		assertPlayerState("Unstarted service is not playing", false,
-				new LinkedList<PlayerEvent>(), null, false);
+		assertPlayerState("Not-started service is not playing", false,
+		                  new LinkedList<PlayerEvent>(), null, false);
 	}
 
 	/**
@@ -161,7 +164,7 @@ public class PlayerServiceTest {
 		bindService();
 
 		// When/Then
-		assertFalse("Unstarted service can't be paused", service.pause());
+		assertFalse("Not-started service can't be paused", service.pause());
 	}
 
 	/**
@@ -174,7 +177,7 @@ public class PlayerServiceTest {
 		bindService();
 
 		// When/Then
-		assertFalse("Unstarted service can't play", service.play());
+		assertFalse("Not-started service can't play", service.play());
 	}
 
 	/**
@@ -187,8 +190,8 @@ public class PlayerServiceTest {
 		bindService();
 
 		// When/Then
-		assertFalse("Unstarted service can't go to the next track",
-				service.next());
+		assertFalse("Not-started service can't go to the next track",
+		            service.next());
 	}
 
 	/**
@@ -201,8 +204,8 @@ public class PlayerServiceTest {
 		bindService();
 
 		// When/Then
-		assertFalse("Unstarted service can't go to the previous track",
-				service.previous());
+		assertFalse("Not-started service can't go to the previous track",
+		            service.previous());
 	}
 
 	/**
@@ -215,7 +218,7 @@ public class PlayerServiceTest {
 		bindService();
 
 		// When/Then
-		assertFalse("Unstarted service can't seek", service.seekTo(0));
+		assertFalse("Not-started service can't seek", service.seekTo(0));
 	}
 
 	/**
@@ -230,7 +233,7 @@ public class PlayerServiceTest {
 
 		// Then
 		assertTrue("Empty start intent sends no broadcasts",
-				broadcastEvents.isEmpty());
+		           broadcastEvents.isEmpty());
 	}
 
 	/**
@@ -246,7 +249,7 @@ public class PlayerServiceTest {
 
 		// Then
 		assertTrue("Pause start intent sends no broadcasts when not playing",
-				broadcastEvents.isEmpty());
+		           broadcastEvents.isEmpty());
 	}
 
 	/**
@@ -294,7 +297,7 @@ public class PlayerServiceTest {
 		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
 		events.add(PlayerEvent.STOP);
 		assertPlayerState("Player stops when sent a missing track", false,
-				events, null, false);
+		                  events, null, false);
 
 		assertTrue("Player can't read missing tracks", Pattern.matches(
 				context.getString(R.string.player_error_read, "\\S*"),
@@ -331,14 +334,15 @@ public class PlayerServiceTest {
 		playlist.setTracks(tracks.subList(0, 1));
 
 		audioManager
-				.setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
+				.setNextFocusRequestResponse(
+						AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
 
 		// When
 		startService();
 
 		// Then
 		assertPlayerState("Player plays when it can focus", true,
-				normalStartEvents, tracks.get(0), true);
+		                  normalStartEvents, tracks.get(0), true);
 	}
 
 	/**
@@ -354,7 +358,8 @@ public class PlayerServiceTest {
 		playlist.setTracks(tracks.subList(0, 1));
 
 		audioManager
-				.setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_FAILED);
+				.setNextFocusRequestResponse(
+						AudioManager.AUDIOFOCUS_REQUEST_FAILED);
 
 		// When
 		startService();
@@ -364,7 +369,7 @@ public class PlayerServiceTest {
 		events.add(PlayerEvent.NEW_TRACK);
 		events.add(PlayerEvent.PAUSE);
 		assertPlayerState("Player doesn't play when it can't focus", false,
-				events, tracks.get(0), true);
+		                  events, tracks.get(0), true);
 	}
 
 	/**
@@ -388,7 +393,7 @@ public class PlayerServiceTest {
 		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
 		events.add(PlayerEvent.PAUSE);
 		assertPlayerState("Player pauses on demand", false, events,
-				tracks.get(0), true);
+		                  tracks.get(0), true);
 	}
 
 	/**
@@ -415,7 +420,7 @@ public class PlayerServiceTest {
 		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
 		events.add(PlayerEvent.PAUSE);
 		assertPlayerState("Player pauses from intents", false, events,
-				tracks.get(0), true);
+		                  tracks.get(0), true);
 	}
 
 	/**
@@ -436,7 +441,7 @@ public class PlayerServiceTest {
 
 		// Then
 		assertPlayerState("Play does nothing when playing", true,
-				new LinkedList<PlayerEvent>(), tracks.get(0), true);
+		                  new LinkedList<PlayerEvent>(), tracks.get(0), true);
 		assertTrue("Player can play while already playing", status);
 	}
 
@@ -459,7 +464,32 @@ public class PlayerServiceTest {
 
 		// Then
 		assertPlayerState("Player can be restarted with a new intent", true,
-				normalStartEvents, tracks.get(0), true);
+		                  normalStartEvents, tracks.get(0), true);
+	}
+
+	/**
+	 * Given the player is playing, when I send a PLAY action and a distinct
+	 * playlist, then it plays the new track.
+	 */
+	@Test
+	public void testPlayIntentWithNewPlaylist() {
+		// Given
+		prepareService(1);
+		startService();
+
+		assertTrue("The service is playing", service.isPlaying());
+
+		Track initial = service.getCurrentTrack();
+
+		// When
+		Playlist.setInstance(new Playlist(tracks.subList(1, 2)));
+		audioManager.setNextFocusRequestResponse(
+				AudioManager.AUDIOFOCUS_REQUEST_FAILED);
+		startService();
+
+		// Then
+		assertNotEquals("Playing track is changed by a new playlist", initial,
+		                service.getCurrentTrack());
 	}
 
 	/**
@@ -481,7 +511,7 @@ public class PlayerServiceTest {
 
 		// Then
 		assertPlayerState("Pause does nothing when paused", false,
-				new LinkedList<PlayerEvent>(), tracks.get(0), true);
+		                  new LinkedList<PlayerEvent>(), tracks.get(0), true);
 		assertTrue("Player can pause from pause", status);
 	}
 
@@ -507,7 +537,8 @@ public class PlayerServiceTest {
 
 		// Then
 		assertPlayerState("Pause intent does nothing when already paused",
-				false, new LinkedList<PlayerEvent>(), tracks.get(0), true);
+		                  false, new LinkedList<PlayerEvent>(), tracks.get(0),
+		                  true);
 	}
 
 	/**
@@ -523,7 +554,8 @@ public class PlayerServiceTest {
 		broadcastEvents.clear();
 
 		audioManager
-				.setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
+				.setNextFocusRequestResponse(
+						AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
 
 		assertFalse("The service is paused", service.isPlaying());
 
@@ -534,7 +566,7 @@ public class PlayerServiceTest {
 		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
 		events.add(PlayerEvent.PLAY);
 		assertPlayerState("Player plays from pause", true, events,
-				tracks.get(0), true);
+		                  tracks.get(0), true);
 		assertTrue("Player can play from pause", status);
 	}
 
@@ -581,12 +613,13 @@ public class PlayerServiceTest {
 		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
 		events.add(PlayerEvent.STOP);
 		assertPlayerState("Player stops when there is no next track", false,
-				events, null, false);
+		                  events, null, false);
 	}
 
 	/**
 	 * Given the service is playing a single track, when I go to the previous
-	 * track, then it is in the Playing state and it has the same current track;
+	 * track, then it is in the Playing state and it has the same current
+	 * track;
 	 */
 	@Test
 	public void testPreviousOnSingleTrack() {
@@ -603,7 +636,7 @@ public class PlayerServiceTest {
 
 		// Then
 		assertPlayerState("Player restarts first track on previous", true,
-				new LinkedList<PlayerEvent>(), tracks.get(0), true);
+		                  new LinkedList<PlayerEvent>(), tracks.get(0), true);
 	}
 
 	/**
@@ -621,12 +654,13 @@ public class PlayerServiceTest {
 		assertTrue("The service is playing", service.isPlaying());
 
 		// When
-		player.setCurrentPosition((PlayerService.PREV_RESTART_LIMIT + 1) * 1000);
+		player.setCurrentPosition(
+				(PlayerService.PREV_RESTART_LIMIT + 1) * 1000);
 		service.previous();
 
 		// Then
 		assertPlayerState("Player can restart a track", true,
-				new LinkedList<PlayerEvent>(), tracks.get(0), true);
+		                  new LinkedList<PlayerEvent>(), tracks.get(0), true);
 	}
 
 	/**
@@ -649,7 +683,7 @@ public class PlayerServiceTest {
 		assertTrue("Player can seek", status);
 
 		assertPlayerState("Player seeks within a track", true,
-				new LinkedList<PlayerEvent>(), tracks.get(0), true);
+		                  new LinkedList<PlayerEvent>(), tracks.get(0), true);
 	}
 
 	/**
@@ -673,7 +707,7 @@ public class PlayerServiceTest {
 		assertTrue("Player can seek while paused", status);
 
 		assertPlayerState("Player seeks within a track when paused", false,
-				new LinkedList<PlayerEvent>(), tracks.get(0), true);
+		                  new LinkedList<PlayerEvent>(), tracks.get(0), true);
 	}
 
 	/**
@@ -697,12 +731,13 @@ public class PlayerServiceTest {
 		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
 		events.add(PlayerEvent.STOP);
 		assertPlayerState("Player stops when an error occurs", false, events,
-				null, false);
+		                  null, false);
 
 		assertTrue("Player sends the appropriate error message",
-				Pattern.matches(context.getString(
-								R.string.player_error_MediaPlayer, 7, 13),
-						latestBroadcastMessage));
+		           Pattern.matches(context.getString(
+				                           R.string.player_error_MediaPlayer, 7,
+				                           13),
+		                           latestBroadcastMessage));
 	}
 
 	/**
@@ -725,7 +760,7 @@ public class PlayerServiceTest {
 		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
 		events.add(PlayerEvent.STOP);
 		assertPlayerState("Player stops when finished", false, events, null,
-				false);
+		                  false);
 	}
 
 	/**
@@ -749,7 +784,7 @@ public class PlayerServiceTest {
 		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
 		events.add(PlayerEvent.PAUSE);
 		assertPlayerState("Player pauses on temporary focus loss", false,
-				events, tracks.get(0), true);
+		                  events, tracks.get(0), true);
 	}
 
 	/**
@@ -773,11 +808,11 @@ public class PlayerServiceTest {
 		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
 		events.add(PlayerEvent.STOP);
 		assertPlayerState("Player pauses on temporary focus loss", false,
-				events, null, false);
+		                  events, null, false);
 
 		assertEquals("Player sends the appropriate error message",
-				context.getString(R.string.player_focus_lost),
-				latestBroadcastMessage);
+		             context.getString(R.string.player_focus_lost),
+		             latestBroadcastMessage);
 	}
 
 	/**
@@ -802,7 +837,7 @@ public class PlayerServiceTest {
 		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
 		events.add(PlayerEvent.PLAY);
 		assertPlayerState("Player resumes playing on audio focus gain", true,
-				events, tracks.get(0), true);
+		                  events, tracks.get(0), true);
 	}
 
 	/**
@@ -844,7 +879,7 @@ public class PlayerServiceTest {
 
 		// Then
 		assertPlayerState("Player can play two tracks", true,
-				normalStartEvents, tracks.get(0), true);
+		                  normalStartEvents, tracks.get(0), true);
 	}
 
 	/**
@@ -863,7 +898,7 @@ public class PlayerServiceTest {
 
 		// Then
 		assertPlayerState("Player can start from the second track", true,
-				normalStartEvents, tracks.get(1), true);
+		                  normalStartEvents, tracks.get(1), true);
 	}
 
 	/**
@@ -886,7 +921,7 @@ public class PlayerServiceTest {
 
 		// Then
 		assertPlayerState("Player moves to the next track", true,
-				normalStartEvents, tracks.get(1), true);
+		                  normalStartEvents, tracks.get(1), true);
 	}
 
 	/**
@@ -911,7 +946,7 @@ public class PlayerServiceTest {
 
 		// Then
 		assertPlayerState("Player moves to the previous track", true,
-				normalStartEvents, tracks.get(0), true);
+		                  normalStartEvents, tracks.get(0), true);
 	}
 
 	/**
@@ -931,12 +966,13 @@ public class PlayerServiceTest {
 		assertTrue("The service is playing", service.isPlaying());
 
 		// When
-		player.setCurrentPosition((PlayerService.PREV_RESTART_LIMIT + 1) * 1000);
+		player.setCurrentPosition(
+				(PlayerService.PREV_RESTART_LIMIT + 1) * 1000);
 		service.previous();
 
 		// Then
 		assertPlayerState("Player can restart track when there are two", true,
-				new LinkedList<PlayerEvent>(), tracks.get(1), true);
+		                  new LinkedList<PlayerEvent>(), tracks.get(1), true);
 	}
 
 	/**
@@ -962,7 +998,7 @@ public class PlayerServiceTest {
 		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
 		events.add(PlayerEvent.NEW_TRACK);
 		assertPlayerState("Player can move to next while paused", false,
-				events, tracks.get(1), true);
+		                  events, tracks.get(1), true);
 	}
 
 	/**
@@ -990,7 +1026,7 @@ public class PlayerServiceTest {
 		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
 		events.add(PlayerEvent.NEW_TRACK);
 		assertPlayerState("Player can move to previous track when paused",
-				false, events, tracks.get(0), true);
+		                  false, events, tracks.get(0), true);
 	}
 
 	/**
@@ -1011,12 +1047,13 @@ public class PlayerServiceTest {
 		assertFalse("The service is not playing", service.isPlaying());
 
 		// When
-		player.setCurrentPosition((PlayerService.PREV_RESTART_LIMIT + 1) * 1000);
+		player.setCurrentPosition(
+				(PlayerService.PREV_RESTART_LIMIT + 1) * 1000);
 		service.previous();
 
 		// Then
 		assertPlayerState("Player can restart a track while paused", false,
-				new LinkedList<PlayerEvent>(), tracks.get(1), true);
+		                  new LinkedList<PlayerEvent>(), tracks.get(1), true);
 	}
 
 	/**
@@ -1029,15 +1066,14 @@ public class PlayerServiceTest {
 		// Given
 		prepareService(1);
 
-		playlist.setTracks(Arrays.asList(new Track[] { missing.get(0),
-				tracks.get(0) }));
+		playlist.setTracks(Arrays.asList(missing.get(0), tracks.get(0)));
 
 		// When
 		startService();
 
 		// Then
 		assertPlayerState("Player skips invalid tracks", true,
-				normalStartEvents, tracks.get(0), true);
+		                  normalStartEvents, tracks.get(0), true);
 	}
 
 	/**
@@ -1047,7 +1083,8 @@ public class PlayerServiceTest {
 	 */
 	private void startService() {
 		service = Robolectric.buildService(PlayerService.class)
-				.withIntent(serviceIntent).create().startCommand(0, 0).get();
+		                     .withIntent(serviceIntent).create()
+		                     .startCommand(0, 0).get();
 	}
 
 	/**
@@ -1057,29 +1094,32 @@ public class PlayerServiceTest {
 	 */
 	private void bindService() {
 		service = Robolectric.buildService(PlayerService.class)
-				.withIntent(serviceIntent).create().bind().get();
+		                     .withIntent(serviceIntent).create().bind().get();
 	}
 
 	/**
 	 * Set up the library and allow the player to gain audio focus.
 	 *
-	 * @param nTracks Number of tracks to put in the playlist
+	 * @param nTracks
+	 * 		Number of tracks to put in the playlist
 	 */
 	private void prepareService(int nTracks) {
 		playlist.setTracks(tracks.subList(0, nTracks));
 
 		serviceIntent.setAction(PlayerService.ACTION_PLAY);
 		audioManager
-				.setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
+				.setNextFocusRequestResponse(
+						AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
 	}
 
 	private void assertPlayerState(String message, boolean isPlaying,
-	                               List<PlayerEvent> events, Track track, boolean areTimesValid) {
+			List<PlayerEvent> events, Track track, boolean areTimesValid) {
 		if (track != null) {
 			assertEquals("Current track is set", track,
-					service.getCurrentTrack());
+			             service.getCurrentTrack());
 		} else {
-			assertNull("Player has no current track", service.getCurrentTrack());
+			assertNull("Player has no current track",
+			           service.getCurrentTrack());
 		}
 
 		assertEquals(message, events, broadcastEvents);

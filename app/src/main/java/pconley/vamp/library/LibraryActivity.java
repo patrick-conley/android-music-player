@@ -1,31 +1,24 @@
 package pconley.vamp.library;
 
 import android.app.Activity;
+import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import java.util.List;
-
 import pconley.vamp.R;
-import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.model.Playlist;
-import pconley.vamp.model.Track;
+import pconley.vamp.library.action.LibraryActionLocator;
+import pconley.vamp.model.LibraryItem;
 import pconley.vamp.player.PlayerActivity;
-import pconley.vamp.player.PlayerService;
 import pconley.vamp.preferences.SettingsActivity;
 import pconley.vamp.scanner.ScannerProgressDialogFragment;
 import pconley.vamp.scanner.ScannerService;
@@ -34,73 +27,35 @@ import pconley.vamp.util.BroadcastConstants;
 /**
  * Main activity, showing the contents of the library.
  */
-public class LibraryActivity extends Activity {
+public class LibraryActivity extends Activity
+		implements AdapterView.OnItemClickListener {
 
-	private ListView trackListView;
-
-	private LocalBroadcastManager broadcastManager;
+	public static final String LIBRARY_ROOT_TAG = "pconley.vamp.library.root";
 
 	/*
 	 * Receive status messages from the player. Only necessary to show errors.
 	 */
 	private BroadcastReceiver playerEventReceiver;
+	private LocalBroadcastManager broadcastManager;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_library);
 
-		broadcastManager = LocalBroadcastManager.getInstance(this);
-
-		playerEventReceiver = new BroadcastReceiver() {
-
-			@Override
-			public void onReceive(Context context, Intent intent) {
-
-				if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
-					Toast.makeText(
-							LibraryActivity.this,
-							intent.getStringExtra(
-									BroadcastConstants.EXTRA_MESSAGE),
-							Toast.LENGTH_LONG).show();
-				}
-
-			}
-		};
-
-		// Get the list of tracks in the library. If one is clicked, play it
-		// and
-		// open the Now Playing screen.
 		loadLibrary();
 
-		trackListView = (ListView) findViewById(R.id.library_view_tracks);
-		trackListView.setOnItemClickListener(new OnItemClickListener() {
-
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
-
-				Intent intent = new Intent(LibraryActivity.this,
-				                           PlayerService.class);
-				intent.setAction(PlayerService.ACTION_PLAY).putExtra(
-						PlayerService.EXTRA_START_POSITION, position);
-				startService(intent);
-
-				startActivity(new Intent(LibraryActivity.this,
-				                         PlayerActivity.class));
-			}
-		});
-
+		broadcastManager = LocalBroadcastManager.getInstance(this);
+		playerEventReceiver = new PlayerEventReceiver();
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
 
-		broadcastManager.registerReceiver(playerEventReceiver,
-		                                  new IntentFilter(
-				                                  BroadcastConstants
-						                                  .FILTER_PLAYER_EVENT));
+		IntentFilter filter = new IntentFilter(
+				BroadcastConstants.FILTER_PLAYER_EVENT);
+		broadcastManager.registerReceiver(playerEventReceiver, filter);
 	}
 
 	@Override
@@ -145,50 +100,51 @@ public class LibraryActivity extends Activity {
 	}
 
 	/**
-	 * Read the contents of the library and fill the library View. Work is done
-	 * in a background thread.
+	 * Callback for items selected in a {@Link LibraryFragment}. Selecting a Tag
+	 * will replace the fragment with a new, filtered fragment; selecting a
+	 * Track will play the fragment's contents.
+	 *
+	 * @param parent
+	 * @param view
+	 * @param position
+	 * @param id
 	 */
-	public void loadLibrary() {
-		new LoadTrackListTask().execute();
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position,
+			long id) {
+		ArrayAdapter<LibraryItem> adapter
+				= (ArrayAdapter<LibraryItem>) parent.getAdapter();
+
+		LibraryActionLocator.findAction(adapter.getItem(position))
+		             .execute(this, adapter, position);
 	}
 
-	/*
-	 * Load the contents of the library into a TextView with execute(). Work is
-	 * done in a background thread.
+	/**
+	 * Reload the library after the device is scanned. Existing filters may have
+	 * been invalidated by the scan.
 	 */
-	private class LoadTrackListTask extends AsyncTask<Void, Void,
-			List<Track>> {
+	public void loadLibrary() {
+		FragmentManager fm = getFragmentManager();
 
-		private ProgressBar progress;
-		private TrackDAO dao;
+		fm.popBackStack(LIBRARY_ROOT_TAG,
+		                FragmentManager.POP_BACK_STACK_INCLUSIVE);
+		fm.beginTransaction()
+		  .replace(R.id.library, LibraryFragment.newInstance())
+		  .commit();
+	}
 
-		@Override
-		protected void onPreExecute() {
-			super.onPreExecute();
-
-			progress = ((ProgressBar) findViewById(R.id
-					                                       .library_progress_load));
-			progress.setVisibility(ProgressBar.VISIBLE);
-			dao = new TrackDAO(LibraryActivity.this);
-		}
+	private class PlayerEventReceiver extends BroadcastReceiver {
 
 		@Override
-		protected List<Track> doInBackground(Void... params) {
-			return dao.openReadableDatabase().getTracks();
+		public void onReceive(Context context, Intent intent) {
+
+			if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
+				Toast.makeText(
+						LibraryActivity.this,
+						intent.getStringExtra(BroadcastConstants.EXTRA_MESSAGE),
+						Toast.LENGTH_LONG).show();
+			}
 		}
-
-		protected void onPostExecute(List<Track> tracks) {
-			ArrayAdapter<Track> adapter = new ArrayAdapter<Track>(
-					LibraryActivity.this, R.layout.track_list_item,
-					R.id.track_list_item, tracks);
-
-			trackListView.setAdapter(adapter);
-			Playlist.setInstance(new Playlist(tracks));
-
-			dao.close();
-			progress.setVisibility(ProgressBar.INVISIBLE);
-		}
-
 	}
 
 }

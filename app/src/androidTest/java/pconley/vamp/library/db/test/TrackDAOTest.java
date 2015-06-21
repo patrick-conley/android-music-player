@@ -83,7 +83,7 @@ public class TrackDAOTest extends AndroidTestCase {
 		try {
 			dao.getTracks();
 			fail("DAO throws an exception on read-after-close.");
-		} catch (IllegalStateException e) {
+		} catch (IllegalStateException ignored) {
 		}
 	}
 
@@ -285,6 +285,7 @@ public class TrackDAOTest extends AndroidTestCase {
 				null);
 
 		assertEquals("Database is initially empty", 0, results.getCount());
+		results.close();
 
 		// When
 		dao.insertTrack(uri);
@@ -301,7 +302,10 @@ public class TrackDAOTest extends AndroidTestCase {
 		assertEquals(
 				"Inserted track is correct",
 				uri.toString(),
-				results.getString(results.getColumnIndex(TrackEntry.COLUMN_URI)));
+				results.getString(results.getColumnIndex(
+						TrackEntry.COLUMN_URI)));
+
+		results.close();
 	}
 
 	/**
@@ -318,6 +322,7 @@ public class TrackDAOTest extends AndroidTestCase {
 				null);
 
 		assertEquals("Database is initially not empty", 1, results.getCount());
+		results.close();
 
 		// When
 		long id = dao.insertTrack(uri);
@@ -345,6 +350,7 @@ public class TrackDAOTest extends AndroidTestCase {
 		if (results.isAfterLast()) {
 			fail("Database contains the inserted track");
 		}
+		results.close();
 
 	}
 
@@ -362,12 +368,13 @@ public class TrackDAOTest extends AndroidTestCase {
 				null);
 
 		assertEquals("Database is initially not empty", 1, results.getCount());
+		results.close();
 
 		// When
 		try {
 			dao.insertTrack(uri);
 			fail("Inserting a duplicate track throws an exception");
-		} catch (SQLException e) {
+		} catch (SQLException ignored) {
 
 		}
 	}
@@ -400,7 +407,9 @@ public class TrackDAOTest extends AndroidTestCase {
 		assertEquals("Inserted tag has the right name", sampleTagNames[0],
 				results.getString(results.getColumnIndex(TagEntry.COLUMN_TAG)));
 		assertEquals("Inserted tag has the right value", sampleTagValues[0],
-				results.getString(results.getColumnIndex(TagEntry.COLUMN_VAL)));
+		             results.getString(results.getColumnIndex(
+				             TagEntry.COLUMN_VAL)));
+		results.close();
 
 		// Check the track has this tag
 		results = library.query(TrackTagRelation.NAME, new String[] {
@@ -411,12 +420,14 @@ public class TrackDAOTest extends AndroidTestCase {
 
 		results.moveToFirst();
 		assertEquals("Track in relation is correct", trackId,
-				results.getLong(results
-						.getColumnIndex(TrackTagRelation.TRACK_ID)));
+		             results.getLong(results
+				                             .getColumnIndex(
+						                             TrackTagRelation.TRACK_ID)));
 		assertEquals(
 				"Tag in relation is correct",
 				tagId,
 				results.getLong(results.getColumnIndex(TrackTagRelation.TAG_ID)));
+		results.close();
 	}
 
 	/**
@@ -447,6 +458,7 @@ public class TrackDAOTest extends AndroidTestCase {
 		results.moveToFirst();
 		long tagId = results
 				.getLong(results.getColumnIndex(TagEntry.COLUMN_ID));
+		results.close();
 
 		// Check the correct relations exist
 		results = library.query(TrackTagRelation.NAME,
@@ -460,6 +472,7 @@ public class TrackDAOTest extends AndroidTestCase {
 					results.getLong(results
 							.getColumnIndex(TrackTagRelation.TAG_ID)));
 		}
+		results.close();
 
 	}
 
@@ -477,7 +490,7 @@ public class TrackDAOTest extends AndroidTestCase {
 		try {
 			dao.insertTag(trackId, sampleTag);
 			fail("Inserting a duplicate tag on one track is an exception");
-		} catch (SQLException e) {
+		} catch (SQLException ignored) {
 
 		}
 	}
@@ -496,7 +509,7 @@ public class TrackDAOTest extends AndroidTestCase {
 		try {
 			dao.insertTag(trackId + 1, sampleTag);
 			fail("Inserting a tag without a corresponding track is an exception");
-		} catch (SQLException e) {
+		} catch (SQLException ignored) {
 
 		}
 	}
@@ -519,16 +532,19 @@ public class TrackDAOTest extends AndroidTestCase {
 				new String[] { TrackEntry.COLUMN_ID }, null, null, null, null,
 				null);
 		assertEquals("Track table is empty", 0, results.getCount());
+		results.close();
 
 		results = library.query(TagEntry.NAME,
 				new String[] { TagEntry.COLUMN_ID }, null, null, null, null,
 				null);
 		assertEquals("Tag table is empty", 0, results.getCount());
+		results.close();
 
 		results = library.query(TrackTagRelation.NAME,
 				new String[] { TrackTagRelation.TAG_ID }, null, null, null,
 				null, null);
 		assertEquals("Relation is empty", 0, results.getCount());
+		results.close();
 
 	}
 
@@ -542,7 +558,7 @@ public class TrackDAOTest extends AndroidTestCase {
 		try {
 			dao.insertTag(0, null);
 			fail("Inserting a null tag is an exception");
-		} catch (NullPointerException e) {
+		} catch (NullPointerException ignored) {
 
 		}
 	}

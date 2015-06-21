@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.util.Log;
 
+import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -28,33 +29,58 @@ public class TrackDAO {
 	private LibraryOpenHelper libraryOpenHelper;
 	private SQLiteDatabase library;
 
-	private static final String GET_TRACK_QUERY = String
-			.format("SELECT * FROM (SELECT * FROM (SELECT %s AS %s, %s FROM " +
-			        "%s WHERE %s = ?) LEFT OUTER JOIN %s USING (%s)) LEFT " +
-			        "OUTER JOIN %s ON %s = %s",
-			        TrackEntry.COLUMN_ID, TrackTagRelation.TRACK_ID,
-			        TrackEntry.COLUMN_URI, TrackEntry.NAME,
-			        TrackEntry.COLUMN_ID, TrackTagRelation.NAME,
-			        TrackTagRelation.TRACK_ID, TagEntry.NAME,
-			        TrackTagRelation.TAG_ID, TagEntry.COLUMN_ID);
-
-	private static final String GET_TRACKS_QUERY = String
-			.format("SELECT * FROM (SELECT * FROM (SELECT %s AS %s, %s FROM " +
-			        "%s) LEFT OUTER JOIN %s USING (%s)) LEFT OUTER JOIN %s " +
-			        "ON %s = %s ORDER BY %s",
-			        TrackEntry.COLUMN_ID, TrackTagRelation.TRACK_ID,
-			        TrackEntry.COLUMN_URI, TrackEntry.NAME,
+	// SELECT * FROM (SELECT * FROM
+	//     (SELECT _id AS trackId, uri FROM Tracks WHERE _id = ?)
+	//   LEFT OUTER JOIN TrackHasTags USING (trackId))
+	// LEFT OUTER JOIN Tags ON _id = tagId
+	private static final String GET_TRACK_QUERY = MessageFormat
+			.format("SELECT * FROM (SELECT * FROM "
+			        + "(SELECT {4} AS {1}, {5} FROM {3} WHERE {4} = ?)"
+			        + "LEFT OUTER JOIN {0} USING ({1}))"
+			        + "LEFT OUTER JOIN {6} ON {7} = {2}",
 			        TrackTagRelation.NAME, TrackTagRelation.TRACK_ID,
-			        TagEntry.NAME, TrackTagRelation.TAG_ID, TagEntry.COLUMN_ID,
-			        TrackTagRelation.TRACK_ID);
+			        TrackTagRelation.TAG_ID, TrackEntry.NAME,
+			        TrackEntry.COLUMN_ID, TrackEntry.COLUMN_URI, TagEntry.NAME,
+			        TagEntry.COLUMN_ID);
+
+	// SELECT * FROM Tracks INNER JOIN
+	//   (SELECT * FROM Tags INNER JOIN TrackHasTags ON tagId = _id WHERE trackId IN
+	//       (SELECT trackId FROM TrackHasTags WHERE tagId = ?))
+	//   ON Tracks._id = trackId ORDER BY (trackId);
+	private static final String GET_MATCHING_TRACKS_QUERY = MessageFormat
+			.format("SELECT * FROM {1} INNER JOIN" +
+			        "(SELECT * FROM {2} INNER JOIN {0} ON {5} = {6} WHERE {3} IN "
+			        + "(SELECT {3} FROM {0} WHERE {5} = ?)) "
+			        + "ON {1}.{4} = {3} ORDER BY ({3})",
+			        TrackTagRelation.NAME, TrackEntry.NAME, TagEntry.NAME,
+			        TrackTagRelation.TRACK_ID, TrackEntry.COLUMN_ID,
+			        TrackTagRelation.TAG_ID, TagEntry.COLUMN_ID
+			       );
+
+	// SELECT * FROM (SELECT * FROM (SELECT _id AS trackId, uri FROM Tracks)
+	//   LEFT OUTER JOIN TrackHasTags USING (trackId))
+	// LEFT OUTER JOIN Tags ON _id = tagId ORDER BY trackId
+	private static final String GET_TRACKS_QUERY = MessageFormat
+			.format("SELECT * FROM (SELECT * FROM "
+			        + "(SELECT {4} AS {1}, {5} FROM {3})"
+			        + " LEFT OUTER JOIN {0} USING ({1}))"
+			        + " LEFT OUTER JOIN {6} ON {7} = {2} ORDER BY {1}",
+			        TrackTagRelation.NAME, TrackTagRelation.TRACK_ID,
+			        TrackTagRelation.TAG_ID, TrackEntry.NAME,
+			        TrackEntry.COLUMN_ID, TrackEntry.COLUMN_URI, TagEntry.NAME,
+			        TagEntry.COLUMN_ID);
+
+	// SELECT * FROM Tags WHERE name = ?
+	private static final String GET_TAG_QUERY = MessageFormat
+			.format("SELECT * FROM {0} WHERE {1} = ?", TagEntry.NAME,
+			        TagEntry.COLUMN_TAG);
 
 	public TrackDAO(Context context) {
 		libraryOpenHelper = new LibraryOpenHelper(context);
 	}
 
 	/**
-	 * Open a database connection, which may or may not be read-only. Do not
-	 * run
+	 * Open a database connection, which may or may not be read-only. Do not run
 	 * from the UI thread.
 	 *
 	 * @return The current TrackDAO object, for method chaining.
@@ -93,84 +119,138 @@ public class TrackDAO {
 	 */
 	public Track getTrack(long trackId) {
 
-		Cursor results = library.rawQuery(GET_TRACK_QUERY,
-		                                  new String[] {
-				                                  String.valueOf(trackId) });
+		Cursor results = library
+				.rawQuery(GET_TRACK_QUERY,
+				          new String[] { String.valueOf(trackId) });
 
-		if (results.getCount() == 0) {
-			results.close();
-			return null;
-		}
+		Track track = mapTrack(results);
 
-		int uriColumn = results.getColumnIndexOrThrow(TrackEntry.COLUMN_URI);
-		int tagIdColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_ID);
-		int nameColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_TAG);
-		int valueColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_VAL);
+		results.close();
 
-		results.moveToFirst();
+		return track;
+	}
 
-		Track.Builder builder = new Track.Builder(trackId,
-		                                          Uri.parse(results.getString(
-				                                          uriColumn)));
+	/**
+	 * Get every track in the database
+	 *
+	 * @return list of Tracks
+	 */
+	public List<Track> getTracks() {
+		List<Track> tracks = new LinkedList<Track>();
+		Track track;
 
-		// Add tags to the track, provided there is at least one.
-		if (!results.isNull(tagIdColumn)) {
-			for (; !results.isAfterLast(); results.moveToNext()) {
-				builder.add(new Tag(results.getLong(tagIdColumn), results
-						.getString(nameColumn),
-				                    results.getString(valueColumn)));
-			}
+		Cursor results = library.rawQuery(GET_TRACKS_QUERY, null);
+		while ((track = mapTrack(results)) != null) {
+			tracks.add(track);
 		}
 
 		results.close();
+
+		return tracks;
+	}
+
+	/**
+	 * Find the tracks in the database which match the given tag
+	 * <p/>
+	 * TODO: test this once its API stabilizes
+	 *
+	 * @param tag
+	 * 		Tag to filter against
+	 * @return Matching tracks.
+	 */
+	public List<Track> getTracks(Tag tag) {
+		List<Track> tracks = new LinkedList<Track>();
+		Track track;
+
+		Cursor results = library
+				.rawQuery(GET_MATCHING_TRACKS_QUERY,
+				          new String[] { String.valueOf(tag.getId()) });
+
+		while ((track = mapTrack(results)) != null) {
+			tracks.add(track);
+		}
+
+		results.close();
+
+		return tracks;
+	}
+
+	/**
+	 * Extract a single track from a data cursor. The cursor must be positioned
+	 * on the first row of a track (alternatively, before the first row of the
+	 * cursor); if the cursor contains rows for multiple tracks, then each
+	 * track's rows must be contiguous.
+	 * <p/>
+	 * When done, the cursor will point at the first row of the next track, if
+	 * available.
+	 *
+	 * @param cursor
+	 * @return Track beginning at the cursor's current row, or null if
+	 * past-the-end.
+	 */
+	private Track mapTrack(Cursor cursor) {
+
+		// Initial: move to the first row
+		if (cursor.isBeforeFirst()) {
+			cursor.moveToFirst();
+		}
+
+		// Final: do nothing
+		if (cursor.isAfterLast()) {
+			return null;
+		}
+
+		int trackIdColumn = cursor
+				.getColumnIndexOrThrow(TrackTagRelation.TRACK_ID);
+		int uriColumn = cursor.getColumnIndexOrThrow(TrackEntry.COLUMN_URI);
+		int tagIdColumn = cursor.getColumnIndexOrThrow(TagEntry.COLUMN_ID);
+		int nameColumn = cursor.getColumnIndexOrThrow(TagEntry.COLUMN_TAG);
+		int valueColumn = cursor.getColumnIndexOrThrow(TagEntry.COLUMN_VAL);
+
+		long id = cursor.getLong(trackIdColumn);
+		Track.Builder builder = new Track.Builder(id, Uri.parse(
+				cursor.getString(uriColumn)));
+
+		while (!cursor.isAfterLast() && cursor.getLong(trackIdColumn) == id) {
+
+			// Add this row's tag to the existing track (a track might not
+			// have tags)
+			if (!cursor.isNull(nameColumn)) {
+				builder.add(new Tag(cursor.getLong(tagIdColumn),
+				                    cursor.getString(nameColumn),
+				                    cursor.getString(valueColumn)));
+			}
+
+			cursor.moveToNext();
+		}
 
 		return builder.build();
 	}
 
-	public List<Track> getTracks() {
-		List<Track> tracks = new LinkedList<Track>();
+	/**
+	 * Get all tags with the given name.
+	 * <p/>
+	 * TODO: test this once its API stabilizes
+	 *
+	 * @param name
+	 */
+	public List<Tag> getTag(String name) {
+		List<Tag> tags = new LinkedList<>();
 
-		Cursor results = library.rawQuery(GET_TRACKS_QUERY, null);
+		Cursor results = library.rawQuery(GET_TAG_QUERY, new String[] { name });
 
-		int trackIdColumn = results
-				.getColumnIndexOrThrow(TrackTagRelation.TRACK_ID);
-		int uriColumn = results.getColumnIndexOrThrow(TrackEntry.COLUMN_URI);
-		int tagIdColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_ID);
-		int nameColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_TAG);
+		int idColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_ID);
 		int valueColumn = results.getColumnIndexOrThrow(TagEntry.COLUMN_VAL);
 
-		results.moveToFirst();
-		long id = results.getLong(trackIdColumn);
-		Track.Builder builder = new Track.Builder(id, Uri.parse(
-				results.getString(uriColumn)));
-
-		while (!results.isAfterLast()) {
-
-			// Check if this row is part of a new track: add the current track
-			// to the list and begin a new track.
-			long trackId = results.getLong(trackIdColumn);
-			if (id != trackId) {
-				tracks.add(builder.build());
-
-				builder = new Track.Builder(trackId, Uri.parse(
-						results.getString(uriColumn)));
-				id = trackId;
-			}
-
-			// Add this row's tag to the existing track
-			if (!results.isNull(nameColumn)) {
-				builder.add(new Tag(results.getLong(tagIdColumn), results
-						.getString(nameColumn),
-				                    results.getString(valueColumn)));
-			}
-
-			results.moveToNext();
+		for (results.moveToFirst(); !results.isAfterLast();
+		     results.moveToNext()) {
+			tags.add(new Tag(results.getLong(idColumn), name,
+			                 results.getString(valueColumn)));
 		}
 
-		tracks.add(builder.build());
-
 		results.close();
-		return tracks;
+
+		return tags;
 	}
 
 	/**
@@ -201,8 +281,7 @@ public class TrackDAO {
 	}
 
 	/**
-	 * Insert a track. This method is only to be used when populating a
-	 * database
+	 * Insert a track. This method is only to be used when populating a database
 	 * from scratch: inserting a duplicate track URI is an error.
 	 *
 	 * @param uri
@@ -242,21 +321,16 @@ public class TrackDAO {
 		}
 
 		// Check whether the tag exists already
-		Cursor results = library.query(TagEntry.NAME,
-		                               new String[] { TagEntry.COLUMN_ID },
-		                               String.format(
-				                               "%s = ? AND %s = ?",
-				                               TagEntry.COLUMN_TAG,
-				                               TagEntry.COLUMN_VAL),
-		                               new String[] { tag.getName(),
-				                               tag.getValue() }, null,
-		                               null,
-		                               null);
+		Cursor results = library
+				.query(TagEntry.NAME, new String[] { TagEntry.COLUMN_ID },
+				       String.format("%s = ? AND %s = ?", TagEntry.COLUMN_TAG,
+				                     TagEntry.COLUMN_VAL),
+				       new String[] { tag.getName(), tag.getValue() }, null,
+				       null, null);
 
 		if (results.getCount() > 0) {
 			results.moveToFirst();
-			tagId = results.getLong(results.getColumnIndex(TagEntry
-					                                               .COLUMN_ID));
+			tagId = results.getLong(results.getColumnIndex(TagEntry.COLUMN_ID));
 		}
 
 		results.close();

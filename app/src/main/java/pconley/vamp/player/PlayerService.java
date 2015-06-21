@@ -66,7 +66,6 @@ public class PlayerService extends Service implements
 
 	private static final int SEC = 1000;
 
-	private Playlist playlist;
 	private PlaylistIterator trackIterator;
 
 	private boolean isPlaying = false;
@@ -99,8 +98,6 @@ public class PlayerService extends Service implements
 	@Override
 	public void onCreate() {
 		super.onCreate();
-
-		playlist = Playlist.getInstance();
 
 		notificationBase = new Notification.Builder(getApplicationContext())
 				.setContentTitle(getString(R.string.app_name))
@@ -155,6 +152,8 @@ public class PlayerService extends Service implements
 
 		switch (intent.getAction()) {
 			case ACTION_PLAY:
+
+				Playlist playlist = Playlist.getInstance();
 
 				int position = intent.getIntExtra(EXTRA_START_POSITION, 0);
 				if (position < 0 || position >= playlist.size()) {
