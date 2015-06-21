@@ -18,6 +18,7 @@ import org.robolectric.annotation.Config;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -40,6 +41,9 @@ public class FileScanVisitorTest {
 	private static List<ScannerEvent> broadcastEvents;
 	private static String finalBroadcastMessage;
 	private static int finalBroadcastProgress;
+	private static int finalBroadcastTotal;
+
+	private static final int count = 10;
 
 	private Context context;
 
@@ -59,18 +63,23 @@ public class FileScanVisitorTest {
 
 		musicFolder = AssetUtils.setupMusicFolder(context);
 		dao = new TrackDAO(context).openWritableDatabase();
-		visitor = new FileScanVisitor(musicFolder, context);
+		visitor = new FileScanVisitor(musicFolder, context, count);
 
-		LocalBroadcastManager.getInstance(context).registerReceiver(receiver,
-				new IntentFilter(BroadcastConstants.FILTER_SCANNER));
+		IntentFilter filter
+				= new IntentFilter(BroadcastConstants.FILTER_SCANNER);
+		LocalBroadcastManager.getInstance(context)
+		                     .registerReceiver(receiver, filter);
+
 		broadcastEvents.clear();
 		finalBroadcastMessage = null;
 		finalBroadcastProgress = 0;
+		finalBroadcastTotal = 0;
 	}
 
 	@After
 	public void tearDownTest() {
-		LocalBroadcastManager.getInstance(context).unregisterReceiver(receiver);
+		LocalBroadcastManager.getInstance(context).unregisterReceiver
+				(receiver);
 
 		dao.wipeDatabase();
 		dao.close();
@@ -87,11 +96,12 @@ public class FileScanVisitorTest {
 
 		// Then
 		assertEquals("Music folder is broadcast", "", finalBroadcastMessage);
+		assertEquals("Music folder sends count", count, finalBroadcastTotal);
 	}
 
 	/**
-	 * Given the music folder contains another folder, when I visit that folder,
-	 * then I receive an update with the folder's name.
+	 * Given the music folder contains another folder, when I visit that
+	 * folder, then I receive an update with the folder's name.
 	 */
 	@Test
 	public void testVisitChildFolder() {
@@ -105,12 +115,13 @@ public class FileScanVisitorTest {
 
 		// Then
 		assertEquals("Child folder name is broadcast", name,
-				finalBroadcastMessage);
+		             finalBroadcastMessage);
+		assertEquals("Child folder sends count", count, finalBroadcastTotal);
 	}
 
 	/**
-	 * Given the music folder contains a non-music file, when I visit it, then I
-	 * receive a progress broadcast but nothing is added to the database.
+	 * Given the music folder contains a non-music file, when I visit it,
+	 * then I receive a progress broadcast but nothing is added to the database.
 	 */
 	@Test
 	public void testNonMediaFile() throws IOException {
@@ -123,18 +134,18 @@ public class FileScanVisitorTest {
 
 		// Then
 		assertEquals("Progress broadcast received",
-				Arrays.asList(new ScannerEvent[] { ScannerEvent.UPDATE }),
-				broadcastEvents);
+		             Arrays.asList(new ScannerEvent[] { ScannerEvent.UPDATE }),
+		             broadcastEvents);
 		assertEquals("Correct number of files scanned", 1,
-				finalBroadcastProgress);
+		             finalBroadcastProgress);
 		assertEquals(
 				"No files are scanned from a directory without media files", 0,
 				dao.getTracks().size());
 	}
 
 	/**
-	 * Given the music folder contains a non-music file, when I visit it several
-	 * times, then I receive a progress broadcast each time.
+	 * Given the music folder contains a non-music file, when I visit it
+	 * several times, then I receive a progress broadcast each time.
 	 */
 	@Test
 	public void testMultipleVisits() throws IOException {
@@ -155,19 +166,19 @@ public class FileScanVisitorTest {
 		// Then
 		assertEquals("Progress broadcasts received", events, broadcastEvents);
 		assertEquals("Correct number of files scanned", 3,
-				finalBroadcastProgress);
+		             finalBroadcastProgress);
 	}
 
 	/**
-	 * Given the music folder contains a music file, when I visit it twice, then
-	 * I receive a broadcast with an error message.
+	 * Given the music folder contains a music file, when I visit it twice,
+	 * then I receive a broadcast with an error message.
 	 */
 	@Test
 	public void testDuplicateVisit() throws IOException {
 		// Given
 		File file = new File(musicFolder, "sample.ogg");
 		AssetUtils.addAssetToFolder(context, AssetUtils.ROBO_ASSET_PATH
-				+ AssetUtils.OGG, file);
+		                                     + AssetUtils.OGG, file);
 
 		// When
 		List<ScannerEvent> events = new LinkedList<ScannerEvent>();
@@ -183,27 +194,29 @@ public class FileScanVisitorTest {
 	}
 
 	/**
-	 * When I visit a file, then I receive a progress broadcast and its tags are
-	 * scanned.
+	 * When I visit a file, then I receive a progress broadcast and its tags
+	 * are scanned.
 	 */
 	@Test
 	public void testVisitVorbis() throws IOException {
 		// Given
 		File file = new File(musicFolder, "sample.ogg");
-		Track expected = AssetUtils.addAssetToFolder(context,
-				AssetUtils.ROBO_ASSET_PATH + AssetUtils.OGG, file);
+		Track expected
+				= AssetUtils.addAssetToFolder(context,
+				                              AssetUtils.ROBO_ASSET_PATH +
+				                              AssetUtils.OGG, file);
 
 		// When
 		visitor.visit(new MediaFile(file));
 
 		// Then
 		assertEquals("Progress broadcast received",
-				Arrays.asList(new ScannerEvent[] { ScannerEvent.UPDATE }),
-				broadcastEvents);
+		             Collections.singletonList(ScannerEvent.UPDATE),
+		             broadcastEvents);
 		assertEquals("Correct number of files scanned", 1,
-				finalBroadcastProgress);
+		             finalBroadcastProgress);
 		assertEquals("Vorbis comments are scanned correctly",
-				Arrays.asList(new Track[] { expected }), dao.getTracks());
+		             Collections.singletonList(expected), dao.getTracks());
 	}
 
 	private static class ScannerReceiver extends BroadcastReceiver {
@@ -216,6 +229,8 @@ public class FileScanVisitorTest {
 					.getStringExtra(BroadcastConstants.EXTRA_MESSAGE);
 			finalBroadcastProgress = intent.getIntExtra(
 					BroadcastConstants.EXTRA_PROGRESS, -1);
+			finalBroadcastTotal = intent
+					.getIntExtra(BroadcastConstants.EXTRA_TOTAL, -1);
 		}
 
 	}

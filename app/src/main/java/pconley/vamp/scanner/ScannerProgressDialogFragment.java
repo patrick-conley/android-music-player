@@ -80,6 +80,17 @@ public class ScannerProgressDialogFragment extends DialogFragment {
 		return view;
 	}
 
+	@Override
+	public void onDestroyView() {
+		// Magic that allows the dialog's state to be saved when its parent
+		// activity is destroyed (by rotate, Home, etc.)
+		if (getDialog() != null) {
+			getDialog().setDismissMessage(null);
+		}
+
+		super.onDestroyView();
+	}
+
 	private void setMax(int max) {
 		this.max = max;
 		progressBar.setMax(max);
