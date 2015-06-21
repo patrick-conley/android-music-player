@@ -398,10 +398,10 @@ public class PlayerService extends Service implements
 			return true; // nothing to do
 		}
 
-		int focus = audioManager.requestAudioFocus(this,
-		                                           AudioManager.STREAM_MUSIC,
-		                                           AudioManager
-				                                           .AUDIOFOCUS_GAIN);
+		int focus = audioManager
+				.requestAudioFocus(this,
+				                   AudioManager.STREAM_MUSIC,
+				                   AudioManager.AUDIOFOCUS_GAIN);
 
 		if (focus == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
 			startForeground(NOTIFICATION_ID, notificationBase.build());
@@ -456,6 +456,13 @@ public class PlayerService extends Service implements
 		if (getPosition() / SEC > PREV_RESTART_LIMIT
 		    || !trackIterator.hasPrevious()) {
 			seekTo(0);
+
+			// Reset progress & counting
+			if (isPlaying) {
+				broadcastEvent(PlayerEvent.PLAY);
+			} else {
+				broadcastEvent(PlayerEvent.NEW_TRACK);
+			}
 		} else {
 			trackIterator.previous();
 			start(isPlaying);

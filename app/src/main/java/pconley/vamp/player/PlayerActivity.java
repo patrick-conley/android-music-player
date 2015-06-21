@@ -189,11 +189,10 @@ public class PlayerActivity extends Activity {
 	private void displayTrackDetails() {
 		Track track = player.getCurrentTrack();
 
-		((TextView) findViewById(R.id.player_view_uri)).setText(track.getUri()
-		                                                             .toString
-				                                                             ());
-		((TextView) findViewById(R.id.player_view_tags)).setText(track
-				                                                         .tagsToString());
+		((TextView) findViewById(R.id.player_view_uri))
+				.setText(track.getUri().toString());
+		((TextView) findViewById(R.id.player_view_tags))
+				.setText(track.tagsToString());
 
 		drawTime();
 	}
@@ -313,12 +312,11 @@ public class PlayerActivity extends Activity {
 				startCountdown();
 			}
 
+
+			IntentFilter filter
+					= new IntentFilter(BroadcastConstants.FILTER_PLAYER_EVENT);
 			LocalBroadcastManager.getInstance(PlayerActivity.this)
-			                     .registerReceiver(
-					                     playerReceiver,
-					                     new IntentFilter(
-							                     BroadcastConstants
-									                     .FILTER_PLAYER_EVENT));
+			                     .registerReceiver(playerReceiver, filter);
 		}
 
 		/**
