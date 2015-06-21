@@ -41,10 +41,6 @@ public class ScannerService extends IntentService {
 		super("ScannerService");
 
 		setIntentRedelivery(true);
-
-		countIntent = new Intent(BroadcastConstants.FILTER_SCANNER);
-		countIntent.putExtra(BroadcastConstants.EXTRA_EVENT,
-				ScannerEvent.UPDATE);
 	}
 
 	@Override
@@ -74,13 +70,9 @@ public class ScannerService extends IntentService {
 		MediaVisitorBase visitor = new FileCountVisitor();
 		musicFolder.accept(visitor);
 
-		countIntent.putExtra(BroadcastConstants.EXTRA_TOTAL,
-				((FileCountVisitor) visitor).getCount());
-		LocalBroadcastManager.getInstance(this).sendBroadcast(countIntent);
-
 		// Scan
 		visitor = new FileScanVisitor(settings.getMusicFolder(),
-				getBaseContext());
+				getBaseContext(), ((FileCountVisitor) visitor).getCount());
 		musicFolder.accept(visitor);
 
 		((FileScanVisitor) visitor).close();

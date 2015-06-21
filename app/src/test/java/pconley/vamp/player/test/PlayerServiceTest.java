@@ -91,9 +91,10 @@ public class PlayerServiceTest {
 		audioManager = Robolectric.shadowOf((AudioManager) context
 				.getSystemService(Context.AUDIO_SERVICE));
 
-		LocalBroadcastManager.getInstance(context).registerReceiver(receiver,
-		                                                            new IntentFilter(
-				                                                            BroadcastConstants.FILTER_PLAYER_EVENT));
+		IntentFilter filter = new IntentFilter(
+				BroadcastConstants.FILTER_PLAYER_EVENT);
+		LocalBroadcastManager.getInstance(context)
+		                     .registerReceiver(receiver, filter);
 
 		// Set up and move files
 		musicFolder = AssetUtils.setupMusicFolder(context);
@@ -123,7 +124,8 @@ public class PlayerServiceTest {
 
 	@After
 	public void tearDownTest() throws IOException {
-		LocalBroadcastManager.getInstance(context).unregisterReceiver(receiver);
+		LocalBroadcastManager.getInstance(context).unregisterReceiver
+				(receiver);
 
 		if (service != null) {
 			service.stop();
@@ -150,7 +152,7 @@ public class PlayerServiceTest {
 		bindService();
 
 		// Then
-		assertPlayerState("Not-started service is not playing", false,
+		assertPlayerState("Un-started service is not playing", false,
 		                  new LinkedList<PlayerEvent>(), null, false);
 	}
 
@@ -164,7 +166,7 @@ public class PlayerServiceTest {
 		bindService();
 
 		// When/Then
-		assertFalse("Not-started service can't be paused", service.pause());
+		assertFalse("Un-started service can't be paused", service.pause());
 	}
 
 	/**
@@ -177,7 +179,7 @@ public class PlayerServiceTest {
 		bindService();
 
 		// When/Then
-		assertFalse("Not-started service can't play", service.play());
+		assertFalse("Un-started service can't play", service.play());
 	}
 
 	/**
@@ -190,7 +192,7 @@ public class PlayerServiceTest {
 		bindService();
 
 		// When/Then
-		assertFalse("Not-started service can't go to the next track",
+		assertFalse("Un-started service can't go to the next track",
 		            service.next());
 	}
 
@@ -204,7 +206,7 @@ public class PlayerServiceTest {
 		bindService();
 
 		// When/Then
-		assertFalse("Not-started service can't go to the previous track",
+		assertFalse("Un-started service can't go to the previous track",
 		            service.previous());
 	}
 
@@ -218,12 +220,12 @@ public class PlayerServiceTest {
 		bindService();
 
 		// When/Then
-		assertFalse("Not-started service can't seek", service.seekTo(0));
+		assertFalse("Un-started service can't seek", service.seekTo(0));
 	}
 
 	/**
-	 * When I start the service with an empty intent, then it does not broadcast
-	 * an event.
+	 * When I start the service with an empty intent, then it does not
+	 * broadcast an event.
 	 */
 	@Test
 	public void testEmptyStartIntent() throws InterruptedException {
@@ -323,8 +325,8 @@ public class PlayerServiceTest {
 
 	/**
 	 * Given the database contains a track and I can obtain audio focus, when I
-	 * start the service with a PLAY action, then it is in the Playing state and
-	 * it has the correct track/position/duration and it broadcasts the new
+	 * start the service with a PLAY action, then it is in the Playing state
+	 * and it has the correct track/position/duration and it broadcasts the new
 	 * track and play events.
 	 */
 	@Test
@@ -333,9 +335,8 @@ public class PlayerServiceTest {
 		serviceIntent.setAction(PlayerService.ACTION_PLAY);
 		playlist.setTracks(tracks.subList(0, 1));
 
-		audioManager
-				.setNextFocusRequestResponse(
-						AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
+		audioManager.setNextFocusRequestResponse(
+				AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
 
 		// When
 		startService();
@@ -346,10 +347,10 @@ public class PlayerServiceTest {
 	}
 
 	/**
-	 * Given the database contains a track and I cannot obtain audio focus, when
-	 * I start the service with a PLAY action, then it not in the Playing state
-	 * and it has the correct track/position/duration and it broadcasts the new
-	 * track and pause events.
+	 * Given the database contains a track and I cannot obtain audio focus,
+	 * when I start the service with a PLAY action, then it not in the Playing
+	 * state and it has the correct track/position/duration and it broadcasts
+	 * the new track and pause events.
 	 */
 	@Test
 	public void testCantObtainAudioFocus() {
@@ -357,9 +358,8 @@ public class PlayerServiceTest {
 		serviceIntent.setAction(PlayerService.ACTION_PLAY);
 		playlist.setTracks(tracks.subList(0, 1));
 
-		audioManager
-				.setNextFocusRequestResponse(
-						AudioManager.AUDIOFOCUS_REQUEST_FAILED);
+		audioManager.setNextFocusRequestResponse(
+				AudioManager.AUDIOFOCUS_REQUEST_FAILED);
 
 		// When
 		startService();
@@ -516,8 +516,8 @@ public class PlayerServiceTest {
 	}
 
 	/**
-	 * Given the service is paused, when I start it with a PAUSE action, then it
-	 * does not broadcast an event.
+	 * Given the service is paused, when I start it with a PAUSE action, then
+	 * it does not broadcast an event.
 	 */
 	@Test
 	public void testPauseIntentWhilePaused() {
@@ -542,8 +542,8 @@ public class PlayerServiceTest {
 	}
 
 	/**
-	 * Given the service is paused, when I play, then it is in the Playing state
-	 * and it broadcasts the play event.
+	 * Given the service is paused, when I play, then it is in the Playing
+	 * state and it broadcasts the play event.
 	 */
 	@Test
 	public void testPlayWhilePaused() {
@@ -553,9 +553,8 @@ public class PlayerServiceTest {
 		service.pause();
 		broadcastEvents.clear();
 
-		audioManager
-				.setNextFocusRequestResponse(
-						AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
+		audioManager.setNextFocusRequestResponse(
+				AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
 
 		assertFalse("The service is paused", service.isPlaying());
 
@@ -593,8 +592,8 @@ public class PlayerServiceTest {
 	}
 
 	/**
-	 * Given the service is playing a single track, when I go to the next track,
-	 * then it is not in the Playing state and it has no current
+	 * Given the service is playing a single track, when I go to the next
+	 * track, then it is not in the Playing state and it has no current
 	 * track/position/duration and it broadcasts a stop event.
 	 */
 	@Test
@@ -619,7 +618,7 @@ public class PlayerServiceTest {
 	/**
 	 * Given the service is playing a single track, when I go to the previous
 	 * track, then it is in the Playing state and it has the same current
-	 * track;
+	 * track.
 	 */
 	@Test
 	public void testPreviousOnSingleTrack() {
@@ -635,14 +634,16 @@ public class PlayerServiceTest {
 		service.previous();
 
 		// Then
+		LinkedList<PlayerEvent> events = new LinkedList<PlayerEvent>();
+		events.add(PlayerEvent.PLAY);
 		assertPlayerState("Player restarts first track on previous", true,
-		                  new LinkedList<PlayerEvent>(), tracks.get(0), true);
+		                  events, tracks.get(0), true);
 	}
 
 	/**
-	 * Given the service is playing a single track and the position is above the
-	 * restart limit, when I go to the previous track, then it is in the Playing
-	 * state and it has the same current track.
+	 * Given the service is playing a single track and the position is above
+	 * the restart limit, when I go to the previous track, then it is in the
+	 * Playing state and it has the same current track.
 	 */
 	@Test
 	public void testRestartTrack() {
@@ -659,8 +660,10 @@ public class PlayerServiceTest {
 		service.previous();
 
 		// Then
-		assertPlayerState("Player can restart a track", true,
-		                  new LinkedList<PlayerEvent>(), tracks.get(0), true);
+		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
+		events.add(PlayerEvent.PLAY);
+		assertPlayerState("Player can restart a track", true, events,
+		                  tracks.get(0), true);
 	}
 
 	/**
@@ -687,8 +690,8 @@ public class PlayerServiceTest {
 	}
 
 	/**
-	 * Given the service is paused in a single track, when I seek, then it is in
-	 * the Paused state and it returns true.
+	 * Given the service is paused in a single track, when I seek, then it is
+	 * in the Paused state and it returns true.
 	 */
 	@Test
 	public void testSeekWhilePaused() {
@@ -726,6 +729,8 @@ public class PlayerServiceTest {
 
 		// When
 		service.onError(null, 7, 13);
+		String errorString
+				= context.getString(R.string.player_error_MediaPlayer, 7, 13);
 
 		// Then
 		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
@@ -734,15 +739,12 @@ public class PlayerServiceTest {
 		                  null, false);
 
 		assertTrue("Player sends the appropriate error message",
-		           Pattern.matches(context.getString(
-				                           R.string.player_error_MediaPlayer, 7,
-				                           13),
-		                           latestBroadcastMessage));
+		           Pattern.matches(errorString, latestBroadcastMessage));
 	}
 
 	/**
-	 * Given the service is playing a single track, when the track ends, then it
-	 * is not in the Playing state etc. and it broadcasts a stop event.
+	 * Given the service is playing a single track, when the track ends, then
+	 * it is not in the Playing state etc. and it broadcasts a stop event.
 	 */
 	@Test
 	public void testOnCompletion() {
@@ -817,8 +819,8 @@ public class PlayerServiceTest {
 
 	/**
 	 * Given the service is playing a single track and it has lost audio focus
-	 * temporarily, when it regains audio focus, then it is in the Playing state
-	 * etc. and broadcasts a play event.
+	 * temporarily, when it regains audio focus, then it is in the Playing
+	 * state etc. and broadcasts a play event.
 	 */
 	@Test
 	public void testAudioFocusGainAfterLoss() {
@@ -866,8 +868,8 @@ public class PlayerServiceTest {
 
 	/**
 	 * When I start the service with a PLAY action, two valid tracks, and no
-	 * playlist position, then it is in the Playing state and the first track is
-	 * current.
+	 * playlist position, then it is in the Playing state and the first track
+	 * is current.
 	 */
 	@Test
 	public void testPlayTwoTracks() {
@@ -951,9 +953,9 @@ public class PlayerServiceTest {
 
 	/**
 	 * Given the service's playlist contains two valid tracks and it is playing
-	 * the second and it has passed the restart limit, when I go to the previous
-	 * track, then it is in the Playing state and the second track is current
-	 * and it broadcasts nothing.
+	 * the second and it has passed the restart limit, when I go to the
+	 * previous track, then it is in the Playing state and the second track is
+	 * current and it broadcasts nothing.
 	 */
 	@Test
 	public void testRestartWithTwoTracks() {
@@ -966,20 +968,22 @@ public class PlayerServiceTest {
 		assertTrue("The service is playing", service.isPlaying());
 
 		// When
-		player.setCurrentPosition(
-				(PlayerService.PREV_RESTART_LIMIT + 1) * 1000);
+		player.setCurrentPosition((PlayerService.PREV_RESTART_LIMIT + 1) *
+		                          1000);
 		service.previous();
 
 		// Then
+		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
+		events.add(PlayerEvent.PLAY);
 		assertPlayerState("Player can restart track when there are two", true,
-		                  new LinkedList<PlayerEvent>(), tracks.get(1), true);
+		                  events, tracks.get(1), true);
 	}
 
 	/**
 	 * Given the service's playlist contains two valid tracks and it is paused
-	 * in the first track, when I go to the next track, then it is in the Paused
-	 * state and the second track is current and it broadcasts a new track
-	 * event.
+	 * in the first track, when I go to the next track, then it is in the
+	 * Paused state and the second track is current and it broadcasts a new
+	 * track event.
 	 */
 	@Test
 	public void testNextWhilePaused() {
@@ -1004,8 +1008,8 @@ public class PlayerServiceTest {
 	/**
 	 * Given the service's playlist contains two valid tracks and it is paused
 	 * in the second track and it has not reached the restart limit, when I go
-	 * to the previous track, then it is in the Paused state and the first track
-	 * is current and it broadcasts a new track event.
+	 * to the previous track, then it is in the Paused state and the first
+	 * track is current and it broadcasts a new track event.
 	 */
 	@Test
 	public void testPreviousWhilePaused() {
@@ -1031,9 +1035,9 @@ public class PlayerServiceTest {
 
 	/**
 	 * Given the service's playlist contains two valid tracks and it is paused
-	 * in the second track and it has passed the restart limit, when I go to the
-	 * previous track, then it is in the Paused state and the second track is
-	 * current and it broadcasts nothing.
+	 * in the second track and it has passed the restart limit, when I go to
+	 * the previous track, then it is in the Paused state and the second
+	 * track is current and it broadcasts nothing.
 	 */
 	@Test
 	public void testRestartWhilePaused() {
@@ -1047,19 +1051,21 @@ public class PlayerServiceTest {
 		assertFalse("The service is not playing", service.isPlaying());
 
 		// When
-		player.setCurrentPosition(
-				(PlayerService.PREV_RESTART_LIMIT + 1) * 1000);
+		player.setCurrentPosition((PlayerService.PREV_RESTART_LIMIT + 1) *
+		                          1000);
 		service.previous();
 
 		// Then
+		List<PlayerEvent> events = new LinkedList<PlayerEvent>();
+		events.add(PlayerEvent.NEW_TRACK);
 		assertPlayerState("Player can restart a track while paused", false,
-		                  new LinkedList<PlayerEvent>(), tracks.get(1), true);
+		                  events, tracks.get(1), true);
 	}
 
 	/**
-	 * When I start the service with an invalid track followed by a valid track,
-	 * then it is in the Playing state and the second track is current and it
-	 * broadcasts a single new track and play event.
+	 * When I start the service with an invalid track followed by a valid
+	 * track, then it is in the Playing state and the second track is current
+	 * and it broadcasts a single new track and play event.
 	 */
 	@Test
 	public void testInvalidFirstTrack() {
@@ -1107,13 +1113,13 @@ public class PlayerServiceTest {
 		playlist.setTracks(tracks.subList(0, nTracks));
 
 		serviceIntent.setAction(PlayerService.ACTION_PLAY);
-		audioManager
-				.setNextFocusRequestResponse(
-						AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
+		audioManager.setNextFocusRequestResponse(
+				AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
 	}
 
 	private void assertPlayerState(String message, boolean isPlaying,
-			List<PlayerEvent> events, Track track, boolean areTimesValid) {
+			List<PlayerEvent> events, Track track,
+			boolean areTimesValid) {
 		if (track != null) {
 			assertEquals("Current track is set", track,
 			             service.getCurrentTrack());

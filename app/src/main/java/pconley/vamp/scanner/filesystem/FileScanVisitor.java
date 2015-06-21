@@ -31,8 +31,8 @@ public class FileScanVisitor implements MediaVisitorBase {
 
 	private int progress = 0;
 
-	private String musicFolderName;
-	private Context context;
+	private final String musicFolderName;
+	private final Context context;
 
 	private TrackDAO dao;
 	private LocalBroadcastManager broadcastManager;
@@ -41,8 +41,19 @@ public class FileScanVisitor implements MediaVisitorBase {
 	private Intent fileIntent;
 	private Intent errorIntent;
 
-	public FileScanVisitor(File musicFolder, Context context) {
-		this.musicFolderName = musicFolder.toString();
+	/**
+	 * Create an instance of the visitor.
+	 *
+	 * @param musicRoot
+	 * 		Path to the system's music folder.
+	 * @param context
+	 * 		The context running the visitor.
+	 * @param count
+	 * 		Number of files expected. (The number needs to be resent
+	 * 		periodically in case the fragment was destroyed & restarted.)
+	 */
+	public FileScanVisitor(File musicRoot, Context context, int count) {
+		this.musicFolderName = musicRoot.toString();
 		this.context = context;
 
 		this.broadcastManager = LocalBroadcastManager.getInstance(context);
@@ -52,14 +63,15 @@ public class FileScanVisitor implements MediaVisitorBase {
 		dirIntent = new Intent(BroadcastConstants.FILTER_SCANNER);
 		dirIntent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent
 				.UPDATE);
+		dirIntent.putExtra(BroadcastConstants.EXTRA_TOTAL, count);
 
 		fileIntent = new Intent(BroadcastConstants.FILTER_SCANNER);
-		fileIntent
-				.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.UPDATE);
+		fileIntent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent
+				.UPDATE);
 
 		errorIntent = new Intent(BroadcastConstants.FILTER_SCANNER);
-		errorIntent.putExtra(BroadcastConstants.EXTRA_EVENT,
-		                     ScannerEvent.ERROR);
+		errorIntent
+				.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent.ERROR);
 	}
 
 	/**
