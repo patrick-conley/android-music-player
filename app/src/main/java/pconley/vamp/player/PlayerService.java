@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -15,10 +16,9 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import pconley.vamp.R;
-import pconley.vamp.model.Playlist;
-import pconley.vamp.model.PlaylistIterator;
 import pconley.vamp.model.Track;
 import pconley.vamp.util.BroadcastConstants;
 
@@ -26,8 +26,8 @@ import pconley.vamp.util.BroadcastConstants;
  * Handler for the media player. PlayerService provides controls for interacting
  * with the active track and playlist directly (play/pause, next/previous,
  * scan). When the player changes state automatically (beginning the next track,
- * end of the playlist), a broadcast notifies activities using it. See
- * {@link PlayerService#broadcastEvent(PlayerEvent)}
+ * end of the playlist), a broadcast notifies activities using it. See {@link
+ * PlayerService#broadcastEvent(PlayerEvent)}
  *
  * @author pconley
  */
@@ -54,19 +54,21 @@ public class PlayerService extends Service implements
 	 * EXTRA_START_POSITION to specify the start position in the list (if not
 	 * included, begin with the first track).
 	 */
-	public static final String ACTION_PLAY = "pconley.vamp.PlayerService.play";
+	public static final String ACTION_PLAY = "pconley.vamp.player.play";
 	public static final String EXTRA_START_POSITION
-			= "pconley.vamp.player.PlayerService.position";
+			= "pconley.vamp.player.position";
+	public static final String EXTRA_TRACKS = "pconley.vamp.player.tracks";
 
 	/**
 	 * Action for incoming intents. Pause the player, provided it's playing.
 	 */
 	public static final String ACTION_PAUSE
-			= "pconley.vamp.PlayerService.pause";
+			= "pconley.vamp.player.pause";
 
 	private static final int SEC = 1000;
 
-	private PlaylistIterator trackIterator;
+	private List<Track> playlist;
+	private int position;
 
 	private boolean isPlaying = false;
 	private boolean isPrepared = false;
@@ -79,7 +81,7 @@ public class PlayerService extends Service implements
 
 	// Constant content of the notification displayed while a track plays.
 	// Content that changes with the track needs to be added in playPause()
-	private Notification.Builder notificationBase;
+	private Notification.Builder notification;
 
 	/**
 	 * Bind an activity to control the music player's state.
@@ -99,25 +101,24 @@ public class PlayerService extends Service implements
 	public void onCreate() {
 		super.onCreate();
 
-		notificationBase = new Notification.Builder(getApplicationContext())
+		PendingIntent content = PendingIntent.getActivity(
+				getApplicationContext(), 0,
+				new Intent(getApplicationContext(), PlayerActivity.class),
+				PendingIntent.FLAG_UPDATE_CURRENT);
+
+		Bitmap icon = BitmapFactory.decodeResource(
+				this.getResources(),
+				android.R.drawable.ic_media_play);
+
+		notification = new Notification.Builder(getApplicationContext())
 				.setContentTitle(getString(R.string.app_name))
 				.setContentText(getString(R.string
 						                          .player_notification_playing))
 				.setSmallIcon(android.R.drawable.ic_media_play)
 				.setOngoing(true)
-				.setLargeIcon(
-						BitmapFactory.decodeResource(this.getResources(),
-						                             android.R.drawable
-								                             .ic_media_play))
+				.setLargeIcon(icon)
 				.setOngoing(true)
-				.setContentIntent(
-						PendingIntent.getActivity(getApplicationContext(), 0,
-						                          new Intent(
-								                          getApplicationContext(),
-								                          PlayerActivity
-										                          .class),
-						                          PendingIntent
-								                          .FLAG_UPDATE_CURRENT));
+				.setContentIntent(content);
 
 		broadcastManager = LocalBroadcastManager.getInstance(this);
 		binder = new PlayerBinder();
@@ -153,16 +154,17 @@ public class PlayerService extends Service implements
 		switch (intent.getAction()) {
 			case ACTION_PLAY:
 
-				Playlist playlist = Playlist.getInstance();
+				playlist = intent.getParcelableArrayListExtra(EXTRA_TRACKS);
+				if (playlist == null) {
+					throw new IllegalArgumentException("EXTRA_TRACKS not set");
+				}
 
-				int position = intent.getIntExtra(EXTRA_START_POSITION, 0);
+				position = intent.getIntExtra(EXTRA_START_POSITION, 0);
 				if (position < 0 || position >= playlist.size()) {
 					throw new IllegalArgumentException(
 							"EXTRA_START_POSITION invalid");
 				}
 
-				trackIterator = playlist.playlistIterator(position);
-				trackIterator.next();
 				start(true);
 
 				break;
@@ -228,16 +230,16 @@ public class PlayerService extends Service implements
 	}
 
 	/**
-	 * @return Data for the currently-playing (or paused) track, provided
-	 * one is prepared by the MediaPlayer. Returns null otherwise.
+	 * @return Data for the currently-playing (or paused) track, provided one is
+	 * prepared by the MediaPlayer. Returns null otherwise.
 	 */
 	public Track getCurrentTrack() {
-		return isPrepared ? trackIterator.current() : null;
+		return isPrepared ? playlist.get(position) : null;
 	}
 
 	/**
-	 * @return The current track's current position (in ms), or -1 if
-	 * nothing is playing.
+	 * @return The current track's current position (in ms), or -1 if nothing is
+	 * playing.
 	 */
 	public int getPosition() {
 		return isPrepared ? player.getCurrentPosition() : -1;
@@ -263,11 +265,11 @@ public class PlayerService extends Service implements
 	 * requires restarting the service with a new intent.
 	 *
 	 * @param beginPlayback
-	 * 		Begin playing the new track immediately, or load the track and
-	 * 		remain paused.
+	 * 		Begin playing the new track immediately, or load the track and remain
+	 * 		paused.
 	 */
 	private void start(boolean beginPlayback) {
-		Track current = trackIterator.current();
+		Track current = playlist.get(position);
 
 		try {
 
@@ -295,12 +297,11 @@ public class PlayerService extends Service implements
 			}
 
 		} catch (IOException e) {
-			Log.e(TAG, getString(R.string.player_error_read, current.getUri
-					()));
+			Log.e(TAG, getString(R.string.player_error_read, current.getUri()));
 
 			// Skip to next track on error
-			if (trackIterator.hasNext()) {
-				trackIterator.next();
+			if (position < playlist.size() - 1) {
+				position++;
 				start(beginPlayback);
 			} else {
 				stop(R.string.player_error_read, current.getUri());
@@ -403,7 +404,7 @@ public class PlayerService extends Service implements
 				                   AudioManager.AUDIOFOCUS_GAIN);
 
 		if (focus == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-			startForeground(NOTIFICATION_ID, notificationBase.build());
+			startForeground(NOTIFICATION_ID, notification.build());
 
 			player.start();
 			isPlaying = true;
@@ -425,8 +426,8 @@ public class PlayerService extends Service implements
 	 * Seek within the current track. Works in play and pause states.
 	 *
 	 * @param time
-	 * 		target position (in ms). I'm not sure what will happen if the
-	 * 		target is invalid.
+	 * 		target position (in ms). I'm not sure what will happen if the target is
+	 * 		invalid.
 	 * @return True if the service has a track prepared
 	 */
 	public boolean seekTo(int time) {
@@ -452,18 +453,14 @@ public class PlayerService extends Service implements
 			return false;
 		}
 
-		if (getPosition() / SEC > PREV_RESTART_LIMIT
-		    || !trackIterator.hasPrevious()) {
+		if (getPosition() / SEC > PREV_RESTART_LIMIT || position == 0) {
 			seekTo(0);
 
-			// Reset progress & counting
-			if (isPlaying) {
-				broadcastEvent(PlayerEvent.PLAY);
-			} else {
-				broadcastEvent(PlayerEvent.NEW_TRACK);
-			}
+			// Tell the UI to correct its position
+			broadcastEvent(
+					isPlaying ? PlayerEvent.PLAY : PlayerEvent.NEW_TRACK);
 		} else {
-			trackIterator.previous();
+			position--;
 			start(isPlaying);
 		}
 
@@ -480,8 +477,8 @@ public class PlayerService extends Service implements
 		if (!isPrepared) {
 			Log.w(TAG, "Can't go to next: player not prepared.");
 			return false;
-		} else if (trackIterator.hasNext()) {
-			trackIterator.next();
+		} else if (position < playlist.size() - 1) {
+			position++;
 			start(isPlaying);
 		} else {
 			stop();

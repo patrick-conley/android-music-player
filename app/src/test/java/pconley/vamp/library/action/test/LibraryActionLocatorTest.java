@@ -1,6 +1,7 @@
 package pconley.vamp.library.action.test;
 
 import android.net.Uri;
+import android.os.Parcel;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,6 +63,15 @@ public class LibraryActionLocatorTest {
 		// When
 		LibraryAction action = LibraryActionLocator.findAction(
 				new LibraryItem() {
+					@Override
+					public int describeContents() {
+						return 0;
+					}
+
+					@Override
+					public void writeToParcel(Parcel dest, int flags) {
+					}
+
 					@Override
 					public long getId() {
 						return 0;

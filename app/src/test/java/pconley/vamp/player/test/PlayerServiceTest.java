@@ -23,13 +23,13 @@ import org.robolectric.shadows.ShadowMediaPlayer;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import pconley.vamp.R;
-import pconley.vamp.model.Playlist;
 import pconley.vamp.model.Track;
 import pconley.vamp.player.PlayerEvent;
 import pconley.vamp.player.PlayerFactory;
@@ -64,9 +64,8 @@ public class PlayerServiceTest {
 
 	private File musicFolder;
 
-	private List<Track> tracks;
-	private List<Track> missing;
-	private static Playlist playlist;
+	private ArrayList<Track> tracks;
+	private ArrayList<Track> missing;
 
 	@BeforeClass
 	public static void setUp() {
@@ -101,7 +100,7 @@ public class PlayerServiceTest {
 		File ogg = new File(musicFolder, "sample.ogg");
 		File flac = new File(musicFolder, "sample.flac");
 
-		tracks = new LinkedList<Track>();
+		tracks = new ArrayList<Track>();
 		tracks.add(AssetUtils.addAssetToFolder(context,
 		                                       AssetUtils.ROBO_ASSET_PATH +
 		                                       AssetUtils.OGG, ogg));
@@ -109,12 +108,9 @@ public class PlayerServiceTest {
 		                                       AssetUtils.ROBO_ASSET_PATH +
 		                                       AssetUtils.FLAC, flac));
 
-		missing = new LinkedList<Track>();
+		missing = new ArrayList<>();
 		missing.add(
 				AssetUtils.buildTrack(new File(musicFolder, "missing.mp3")));
-
-		Playlist.setInstance(null);
-		playlist = Playlist.getInstance();
 
 		// Shadow the service's MediaPlayer
 		MediaPlayer mp = new MediaPlayer();
@@ -224,8 +220,8 @@ public class PlayerServiceTest {
 	}
 
 	/**
-	 * When I start the service with an empty intent, then it does not
-	 * broadcast an event.
+	 * When I start the service with an empty intent, then it does not broadcast
+	 * an event.
 	 */
 	@Test
 	public void testEmptyStartIntent() throws InterruptedException {
@@ -274,8 +270,9 @@ public class PlayerServiceTest {
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void testPlayIntentWithZeroTracks() throws InterruptedException {
-		serviceIntent.setAction(PlayerService.ACTION_PLAY);
-		playlist.setTracks(new LinkedList<Track>());
+		serviceIntent.setAction(PlayerService.ACTION_PLAY)
+		             .putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS,
+		                                          new ArrayList<Track>());
 
 		// When
 		startService();
@@ -289,8 +286,9 @@ public class PlayerServiceTest {
 	public void testPlayIntentWithMissingTrack() throws Exception {
 
 		// Given
-		serviceIntent.setAction(PlayerService.ACTION_PLAY);
-		playlist.setTracks(missing);
+		serviceIntent.setAction(PlayerService.ACTION_PLAY)
+		             .putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS,
+		                                          missing);
 
 		// When
 		startService();
@@ -325,15 +323,18 @@ public class PlayerServiceTest {
 
 	/**
 	 * Given the database contains a track and I can obtain audio focus, when I
-	 * start the service with a PLAY action, then it is in the Playing state
-	 * and it has the correct track/position/duration and it broadcasts the new
+	 * start the service with a PLAY action, then it is in the Playing state and
+	 * it has the correct track/position/duration and it broadcasts the new
 	 * track and play events.
 	 */
 	@Test
 	public void testCanObtainAudioFocus() {
 		// Given
-		serviceIntent.setAction(PlayerService.ACTION_PLAY);
-		playlist.setTracks(tracks.subList(0, 1));
+		ArrayList<Track> single = new ArrayList<Track>();
+		single.add(tracks.get(0));
+		serviceIntent.setAction(PlayerService.ACTION_PLAY)
+		             .putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS,
+		                                          single);
 
 		audioManager.setNextFocusRequestResponse(
 				AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
@@ -347,16 +348,19 @@ public class PlayerServiceTest {
 	}
 
 	/**
-	 * Given the database contains a track and I cannot obtain audio focus,
-	 * when I start the service with a PLAY action, then it not in the Playing
-	 * state and it has the correct track/position/duration and it broadcasts
-	 * the new track and pause events.
+	 * Given the database contains a track and I cannot obtain audio focus, when
+	 * I start the service with a PLAY action, then it not in the Playing state
+	 * and it has the correct track/position/duration and it broadcasts the new
+	 * track and pause events.
 	 */
 	@Test
 	public void testCantObtainAudioFocus() {
 		// Given
-		serviceIntent.setAction(PlayerService.ACTION_PLAY);
-		playlist.setTracks(tracks.subList(0, 1));
+		ArrayList<Track> single = new ArrayList<Track>();
+		single.add(tracks.get(0));
+		serviceIntent.setAction(PlayerService.ACTION_PLAY)
+		             .putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS,
+		                                          single);
 
 		audioManager.setNextFocusRequestResponse(
 				AudioManager.AUDIOFOCUS_REQUEST_FAILED);
@@ -482,7 +486,11 @@ public class PlayerServiceTest {
 		Track initial = service.getCurrentTrack();
 
 		// When
-		Playlist.setInstance(new Playlist(tracks.subList(1, 2)));
+		ArrayList<Track> newTracks = new ArrayList<Track>();
+		newTracks.add(tracks.get(1));
+
+		serviceIntent.putParcelableArrayListExtra(
+				PlayerService.EXTRA_TRACKS, newTracks);
 		audioManager.setNextFocusRequestResponse(
 				AudioManager.AUDIOFOCUS_REQUEST_FAILED);
 		startService();
@@ -516,8 +524,8 @@ public class PlayerServiceTest {
 	}
 
 	/**
-	 * Given the service is paused, when I start it with a PAUSE action, then
-	 * it does not broadcast an event.
+	 * Given the service is paused, when I start it with a PAUSE action, then it
+	 * does not broadcast an event.
 	 */
 	@Test
 	public void testPauseIntentWhilePaused() {
@@ -542,8 +550,8 @@ public class PlayerServiceTest {
 	}
 
 	/**
-	 * Given the service is paused, when I play, then it is in the Playing
-	 * state and it broadcasts the play event.
+	 * Given the service is paused, when I play, then it is in the Playing state
+	 * and it broadcasts the play event.
 	 */
 	@Test
 	public void testPlayWhilePaused() {
@@ -592,8 +600,8 @@ public class PlayerServiceTest {
 	}
 
 	/**
-	 * Given the service is playing a single track, when I go to the next
-	 * track, then it is not in the Playing state and it has no current
+	 * Given the service is playing a single track, when I go to the next track,
+	 * then it is not in the Playing state and it has no current
 	 * track/position/duration and it broadcasts a stop event.
 	 */
 	@Test
@@ -641,9 +649,9 @@ public class PlayerServiceTest {
 	}
 
 	/**
-	 * Given the service is playing a single track and the position is above
-	 * the restart limit, when I go to the previous track, then it is in the
-	 * Playing state and it has the same current track.
+	 * Given the service is playing a single track and the position is above the
+	 * restart limit, when I go to the previous track, then it is in the Playing
+	 * state and it has the same current track.
 	 */
 	@Test
 	public void testRestartTrack() {
@@ -690,8 +698,8 @@ public class PlayerServiceTest {
 	}
 
 	/**
-	 * Given the service is paused in a single track, when I seek, then it is
-	 * in the Paused state and it returns true.
+	 * Given the service is paused in a single track, when I seek, then it is in
+	 * the Paused state and it returns true.
 	 */
 	@Test
 	public void testSeekWhilePaused() {
@@ -743,8 +751,8 @@ public class PlayerServiceTest {
 	}
 
 	/**
-	 * Given the service is playing a single track, when the track ends, then
-	 * it is not in the Playing state etc. and it broadcasts a stop event.
+	 * Given the service is playing a single track, when the track ends, then it
+	 * is not in the Playing state etc. and it broadcasts a stop event.
 	 */
 	@Test
 	public void testOnCompletion() {
@@ -819,8 +827,8 @@ public class PlayerServiceTest {
 
 	/**
 	 * Given the service is playing a single track and it has lost audio focus
-	 * temporarily, when it regains audio focus, then it is in the Playing
-	 * state etc. and broadcasts a play event.
+	 * temporarily, when it regains audio focus, then it is in the Playing state
+	 * etc. and broadcasts a play event.
 	 */
 	@Test
 	public void testAudioFocusGainAfterLoss() {
@@ -868,8 +876,8 @@ public class PlayerServiceTest {
 
 	/**
 	 * When I start the service with a PLAY action, two valid tracks, and no
-	 * playlist position, then it is in the Playing state and the first track
-	 * is current.
+	 * playlist position, then it is in the Playing state and the first track is
+	 * current.
 	 */
 	@Test
 	public void testPlayTwoTracks() {
@@ -953,9 +961,9 @@ public class PlayerServiceTest {
 
 	/**
 	 * Given the service's playlist contains two valid tracks and it is playing
-	 * the second and it has passed the restart limit, when I go to the
-	 * previous track, then it is in the Playing state and the second track is
-	 * current and it broadcasts nothing.
+	 * the second and it has passed the restart limit, when I go to the previous
+	 * track, then it is in the Playing state and the second track is current
+	 * and it broadcasts nothing.
 	 */
 	@Test
 	public void testRestartWithTwoTracks() {
@@ -981,9 +989,9 @@ public class PlayerServiceTest {
 
 	/**
 	 * Given the service's playlist contains two valid tracks and it is paused
-	 * in the first track, when I go to the next track, then it is in the
-	 * Paused state and the second track is current and it broadcasts a new
-	 * track event.
+	 * in the first track, when I go to the next track, then it is in the Paused
+	 * state and the second track is current and it broadcasts a new track
+	 * event.
 	 */
 	@Test
 	public void testNextWhilePaused() {
@@ -1008,8 +1016,8 @@ public class PlayerServiceTest {
 	/**
 	 * Given the service's playlist contains two valid tracks and it is paused
 	 * in the second track and it has not reached the restart limit, when I go
-	 * to the previous track, then it is in the Paused state and the first
-	 * track is current and it broadcasts a new track event.
+	 * to the previous track, then it is in the Paused state and the first track
+	 * is current and it broadcasts a new track event.
 	 */
 	@Test
 	public void testPreviousWhilePaused() {
@@ -1035,9 +1043,9 @@ public class PlayerServiceTest {
 
 	/**
 	 * Given the service's playlist contains two valid tracks and it is paused
-	 * in the second track and it has passed the restart limit, when I go to
-	 * the previous track, then it is in the Paused state and the second
-	 * track is current and it broadcasts nothing.
+	 * in the second track and it has passed the restart limit, when I go to the
+	 * previous track, then it is in the Paused state and the second track is
+	 * current and it broadcasts nothing.
 	 */
 	@Test
 	public void testRestartWhilePaused() {
@@ -1063,16 +1071,21 @@ public class PlayerServiceTest {
 	}
 
 	/**
-	 * When I start the service with an invalid track followed by a valid
-	 * track, then it is in the Playing state and the second track is current
-	 * and it broadcasts a single new track and play event.
+	 * When I start the service with an invalid track followed by a valid track,
+	 * then it is in the Playing state and the second track is current and it
+	 * broadcasts a single new track and play event.
 	 */
 	@Test
 	public void testInvalidFirstTrack() {
 		// Given
 		prepareService(1);
 
-		playlist.setTracks(Arrays.asList(missing.get(0), tracks.get(0)));
+		ArrayList<Track> trackList = new ArrayList<Track>();
+		trackList.add(missing.get(0));
+		trackList.add(tracks.get(0));
+
+		serviceIntent.putParcelableArrayListExtra(
+				PlayerService.EXTRA_TRACKS, trackList);
 
 		// When
 		startService();
@@ -1110,9 +1123,14 @@ public class PlayerServiceTest {
 	 * 		Number of tracks to put in the playlist
 	 */
 	private void prepareService(int nTracks) {
-		playlist.setTracks(tracks.subList(0, nTracks));
+		ArrayList<Track> preparedTracks = new ArrayList<Track>(nTracks);
+		for (int i = 0; i < nTracks; i++) {
+			preparedTracks.add(tracks.get(i));
+		}
 
-		serviceIntent.setAction(PlayerService.ACTION_PLAY);
+		serviceIntent.setAction(PlayerService.ACTION_PLAY)
+		             .putParcelableArrayListExtra(
+				             PlayerService.EXTRA_TRACKS, preparedTracks);
 		audioManager.setNextFocusRequestResponse(
 				AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
 	}

@@ -8,7 +8,7 @@ import android.os.Parcelable;
  *
  * @author pconley
  */
-public final class Tag implements LibraryItem, Parcelable {
+public final class Tag implements LibraryItem {
 
 	private long id;
 	private String name;
@@ -108,12 +108,9 @@ public final class Tag implements LibraryItem, Parcelable {
 			= new Parcelable.Creator<Tag>() {
 		@Override
 		public Tag createFromParcel(Parcel source) {
-			String[] tag = new String[2];
-
-			long id = source.readLong();
-			source.readStringArray(tag);
-
-			return new Tag(id, tag[0], tag[1]);
+			return new Tag(source.readLong(),
+			               source.readString(),
+			               source.readString());
 		}
 
 		@Override
@@ -130,7 +127,8 @@ public final class Tag implements LibraryItem, Parcelable {
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeLong(id);
-		dest.writeStringArray(new String[] { name, value });
+		dest.writeString(name);
+		dest.writeString(value);
 	}
 
 }

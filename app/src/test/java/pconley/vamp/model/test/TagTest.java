@@ -1,6 +1,6 @@
 package pconley.vamp.model.test;
 
-import android.os.Bundle;
+import android.os.Parcel;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,11 +42,12 @@ public class TagTest {
 		// Given
 		Tag tag = new Tag(3, "foo", "bar");
 
-		Bundle bundle = new Bundle();
-		bundle.putParcelable("tag", tag);
+		Parcel parcel = Parcel.obtain();
+		tag.writeToParcel(parcel, 0);
+		parcel.setDataPosition(0);
 
 		// When
-		Tag actual = bundle.getParcelable("tag");
+		Tag actual = Tag.CREATOR.createFromParcel(parcel);
 
 		// Then
 		assertEquals("Tag can be parceled & unparceled", tag, actual);
@@ -83,11 +84,11 @@ public class TagTest {
 		 * Equals is reflexive
 		 */
 		assertTrue("Equals is reflexive (x)", x.equals(x));
-		assertEquals("HashCode() is consistent (x)", x.hashCode(),
-		             x.hashCode());
+		assertEquals("HashCode() is consistent (x)",
+		             x.hashCode(), x.hashCode());
 		assertTrue("Equals is reflexive (d)", d.equals(d));
-		assertEquals("HashCode() is consistent (d)", d.hashCode(),
-		             d.hashCode());
+		assertEquals("HashCode() is consistent (d)",
+		             d.hashCode(), d.hashCode());
 
 		/*
 		 * Equals is symmetric
@@ -99,12 +100,10 @@ public class TagTest {
 		/*
 		 * Equals is transitive
 		 */
-		assertEquals("Equals is transitive (x,y,z)", x.equals(z), x.equals(y)
-		                                                          && y.equals(
-				z));
-		assertEquals("Equals is transitive (x,y,d)", x.equals(d), x.equals(y)
-		                                                          && y.equals(
-				d));
+		assertEquals("Equals is transitive (x,y,z)",
+		             x.equals(z), x.equals(y) && y.equals(z));
+		assertEquals("Equals is transitive (x,y,d)",
+		             x.equals(d), x.equals(y) && y.equals(d));
 
 	}
 }

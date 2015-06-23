@@ -13,14 +13,12 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowActivity;
 
 import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.ArrayList;
 
 import pconley.vamp.R;
 import pconley.vamp.library.LibraryActivity;
 import pconley.vamp.library.action.PlayAction;
 import pconley.vamp.model.LibraryItem;
-import pconley.vamp.model.Playlist;
 import pconley.vamp.model.Track;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.player.PlayerService;
@@ -35,12 +33,12 @@ public class PlayActionTest {
 	private LibraryActivity activity;
 	private ShadowActivity shadow;
 
-	private static List<Track> tracks;
+	private static ArrayList<Track> tracks;
 	private ArrayAdapter<LibraryItem> adapter;
 
 	@BeforeClass
 	public static void setUp() {
-		tracks = new LinkedList<Track>();
+		tracks = new ArrayList<Track>(3);
 		tracks.add(AssetUtils.buildTrack(new File("sample.ogg")));
 		tracks.add(AssetUtils.buildTrack(new File("sample.flac")));
 		tracks.add(AssetUtils.buildTrack(new File("sample.mp3")));
@@ -64,16 +62,20 @@ public class PlayActionTest {
 	public void testPlayerStarted() {
 		int position = 0;
 
+		ArrayList<Track> track = new ArrayList<Track>();
+		track.add(tracks.get(0));
+
 		// Given
-		adapter.addAll(tracks.subList(0, 0));
+		adapter.addAll(track);
 
 		// When
 		new PlayAction().execute(activity, adapter, position);
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);
-		expected.putExtra(PlayerService.EXTRA_START_POSITION, position);
-		expected.setAction(PlayerService.ACTION_PLAY);
+		expected.setAction(PlayerService.ACTION_PLAY)
+		        .putExtra(PlayerService.EXTRA_START_POSITION, position)
+		        .putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS, track);
 		assertEquals("Play action begins playing", expected,
 		             shadow.getNextStartedService());
 
@@ -83,27 +85,9 @@ public class PlayActionTest {
 	}
 
 	/**
-	 * Given the library has several tracks, when I run the action, then they're
-	 * all put in the default playlist.
-	 */
-	@Test
-	public void testPlaylistSetUp() {
-		int position = 1;
-
-		// Given
-		adapter.addAll(tracks);
-
-		// When
-		new PlayAction().execute(activity, adapter, position);
-
-		// Then
-		assertEquals("Playlist is filled correctly", new Playlist(tracks),
-		             Playlist.getInstance());
-	}
-
-	/**
 	 * Given the library has tracks, when I run the action with an invalid
-	 * position, then the player service is started.
+	 * position, then the player service is started. (The player should perform
+	 * validation.)
 	 */
 	@Test
 	public void testInvalidPosition() {
@@ -117,30 +101,31 @@ public class PlayActionTest {
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);
-		expected.putExtra(PlayerService.EXTRA_START_POSITION, position);
-		expected.setAction(PlayerService.ACTION_PLAY);
+		expected.setAction(PlayerService.ACTION_PLAY)
+		        .putExtra(PlayerService.EXTRA_START_POSITION, position)
+		        .putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS,
+		                                     tracks);
 		assertEquals("Play action begins playing", expected,
 		             shadow.getNextStartedService());
 	}
 
 	/**
 	 * Given the library has no tracks, when I run the action, then the player
-	 * service is started.
+	 * service is started. (The player should perform validation.)
 	 */
 	@Test
 	public void testEmptyPlaylist() {
 		int position = 0;
-
-		// Given
-		adapter.addAll(tracks);
 
 		// When
 		new PlayAction().execute(activity, adapter, position);
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);
-		expected.putExtra(PlayerService.EXTRA_START_POSITION, position);
-		expected.setAction(PlayerService.ACTION_PLAY);
+		expected.setAction(PlayerService.ACTION_PLAY)
+		        .putExtra(PlayerService.EXTRA_START_POSITION, position)
+		        .putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS,
+		                                     new ArrayList<Track>());
 		assertEquals("Play action begins playing", expected,
 		             shadow.getNextStartedService());
 	}
