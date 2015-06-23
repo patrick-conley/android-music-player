@@ -1,6 +1,7 @@
 package pconley.vamp.model.test;
 
 import android.net.Uri;
+import android.os.Parcel;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -9,6 +10,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.io.File;
+import java.util.List;
 import java.util.Set;
 
 import pconley.vamp.model.Tag;
@@ -51,7 +53,7 @@ public class TrackTest {
 	 */
 	@Test(expected = UnsupportedOperationException.class)
 	public void testImmutableTagValues() throws UnsupportedOperationException {
-		Set<Tag> tags = track.getTags(tag.getName());
+		List<Tag> tags = track.getTags(tag.getName());
 
 		tags.remove(tag);
 	}
@@ -61,7 +63,58 @@ public class TrackTest {
 	 */
 	@Test
 	public void testNonexistentTag() {
-		assertNull("A non-existent tag is null", track.getTags("faketag"));
+		assertNull("A non-existent tag is null", track.getTags("fake tag"));
+	}
+
+	/**
+	 * Parcel a track without any tags
+	 */
+	@Test
+	public void testParcelTagless() {
+		Track track = new Track.Builder(0, uri).build();
+
+		Parcel parcel = Parcel.obtain();
+		track.writeToParcel(parcel, 0);
+		parcel.setDataPosition(0);
+
+		Track actual = Track.CREATOR.createFromParcel(parcel);
+		assertEquals("Track can be parceled and rebuilt", track, actual);
+	}
+
+	/**
+	 * Parcel a track with distinct tag names
+	 */
+	@Test
+	public void testParcelWithUniqueTags() {
+		Track track = new Track.Builder(0, uri)
+				.add(new Tag("name1", "value1"))
+				.add(new Tag("name2", "value1"))
+				.build();
+
+		Parcel parcel = Parcel.obtain();
+		track.writeToParcel(parcel, 0);
+		parcel.setDataPosition(0);
+
+		Track actual = Track.CREATOR.createFromParcel(parcel);
+		assertEquals("Track can be parceled and rebuilt", track, actual);
+	}
+
+	/**
+	 * Parcel a track with repeated tag names
+	 */
+	@Test
+	public void testParcelWithRepeatedTags() {
+		Track track = new Track.Builder(0, uri)
+				.add(new Tag("name1", "value1"))
+				.add(new Tag("name1", "value2"))
+				.build();
+
+		Parcel parcel = Parcel.obtain();
+		track.writeToParcel(parcel, 0);
+		parcel.setDataPosition(0);
+
+		Track actual = Track.CREATOR.createFromParcel(parcel);
+		assertEquals("Track can be parceled and rebuilt", track, actual);
 	}
 
 	/**

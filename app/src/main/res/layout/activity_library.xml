@@ -1,4 +1,6 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    android:id="@+id/library"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -6,20 +8,6 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="pconley.vamp.library.LibraryActivity" >
+    tools:context="pconley.vamp.library.LibraryActivity">
 
-    <ListView
-        android:id="@+id/library_view_tracks"
-        android:layout_width="match_parent"
-        android:layout_height="fill_parent" />
-    
-    <ProgressBar
-        android:id="@+id/library_progress_load"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:indeterminate="true"
-        android:visibility="invisible"
-        android:layout_centerInParent="true" />
-    
 </RelativeLayout>

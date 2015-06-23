@@ -4,9 +4,12 @@
     android:layout_height="match_parent" >
 
     <TextView
-        android:id="@+id/track_list_item"
+        android:id="@+id/library_item"
         android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minLines="2"
         android:textSize="@dimen/text_size"
-        android:layout_height="wrap_content" />
+        />
 
 </RelativeLayout>

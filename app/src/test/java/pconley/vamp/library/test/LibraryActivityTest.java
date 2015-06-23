@@ -2,9 +2,6 @@ package pconley.vamp.library.test;
 
 import android.content.Context;
 import android.content.Intent;
-import android.view.View;
-import android.widget.Adapter;
-import android.widget.ListView;
 
 import org.junit.After;
 import org.junit.Before;
@@ -16,21 +13,13 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.tester.android.view.TestMenuItem;
 
-import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
-
 import pconley.vamp.R;
 import pconley.vamp.library.LibraryActivity;
 import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.model.Track;
 import pconley.vamp.player.PlayerActivity;
-import pconley.vamp.player.PlayerService;
 import pconley.vamp.preferences.SettingsActivity;
 import pconley.vamp.scanner.ScannerProgressDialogFragment;
 import pconley.vamp.scanner.ScannerService;
-import pconley.vamp.util.AssetUtils;
-import pconley.vamp.model.Playlist;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -45,9 +34,6 @@ public class LibraryActivityTest {
 
 	private Context context;
 
-	private static File ogg = new File("sample.ogg");
-	private static File flac = new File("sample.flac");
-
 	@Before
 	public void setUpTest() {
 		context = Robolectric.getShadowApplication().getApplicationContext();
@@ -61,66 +47,8 @@ public class LibraryActivityTest {
 	}
 
 	/**
-	 * Given the library is empty, when I start the activity, then no tracks are
-	 * displayed.
-	 */
-	@Test
-	public void testStartWithEmptyLibrary() {
-		// Given
-		// Nothing to do
-
-		// When
-		startActivity();
-
-		// Then
-		ListView trackListView = (ListView) activity
-				.findViewById(R.id.library_view_tracks);
-		assertEquals("Track list is showing", View.VISIBLE,
-				trackListView.getVisibility());
-		assertEquals("Track list is empty", 0, trackListView.getAdapter()
-				.getCount());
-	}
-
-	/**
-	 * Given the library is not empty, when I start the activity, then the
-	 * correct tracks are displayed.
-	 */
-	@Test
-	public void testStartWithLibrary() {
-		// Given
-		AssetUtils.addTracksToDb(context, new File[] { ogg, flac });
-
-		// When
-		startActivity();
-
-		// Then
-		ListView trackListView = (ListView) activity
-				.findViewById(R.id.library_view_tracks);
-		Adapter adapter = trackListView.getAdapter();
-
-		List<Track> tracks = new LinkedList<Track>();
-		tracks.add(AssetUtils.buildTrack(ogg));
-		tracks.add(AssetUtils.buildTrack(flac));
-
-		assertEquals("Track list is showing", View.VISIBLE,
-				trackListView.getVisibility());
-		assertEquals("Track list contains the right number of tracks",
-				tracks.size(), adapter.getCount());
-
-		List<Track> actual = new LinkedList<Track>();
-		actual.add((Track) adapter.getItem(0));
-		actual.add((Track) adapter.getItem(1));
-
-		assertEquals("Track list contains the contents of the DB", tracks,
-				actual);
-
-		assertEquals("Global playlist contains the DB contents", new Playlist(
-				tracks), Playlist.getInstance());
-	}
-
-	/**
-	 * Given the activity is running, when I click "Player", then the Player
-	 * activity is launched without an action.
+	 * Given the context is running, when I click "Player", then the Player
+	 * context is launched without an action.
 	 */
 	@Test
 	public void testPlayerLaunchedOnClick() {
@@ -137,8 +65,8 @@ public class LibraryActivityTest {
 	}
 
 	/**
-	 * Given the activity is running, when I click "Settings", then the Settings
-	 * activity is launched
+	 * Given the context is running, when I click "Settings", then the Settings
+	 * context is launched
 	 */
 	@Test
 	public void testSettingsLaunchedOnClick() {
@@ -155,7 +83,7 @@ public class LibraryActivityTest {
 	}
 
 	/**
-	 * Given the activity is running, when I click "Rebuild library", then the
+	 * Given the context is running, when I click "Rebuild library", then the
 	 * ScannerService is launched and a dialog is displayed.
 	 */
 	@Test
@@ -180,39 +108,6 @@ public class LibraryActivityTest {
 				"Progress dialog is started with the scanner",
 				activity.getFragmentManager().findFragmentByTag(
 						ScannerProgressDialogFragment.TAG));
-	}
-
-	/**
-	 * Given the activity is running and the library is not empty, when I click
-	 * on a track, then the player (service and activity) is started at the
-	 * clicked track.
-	 */
-	@Test
-	public void testClickTrackLaunchesPlayer() {
-		int item = 1;
-
-		// Given
-		AssetUtils.addTracksToDb(context, new File[] { ogg, flac });
-
-		startActivity();
-
-		// When
-		ListView trackListView = (ListView) activity
-				.findViewById(R.id.library_view_tracks);
-		trackListView.performItemClick(
-				trackListView.getAdapter().getView(item, null, null), item,
-				item);
-
-		// Then
-		Intent expected = new Intent(activity, PlayerService.class);
-		expected.putExtra(PlayerService.EXTRA_START_POSITION, item);
-		expected.setAction(PlayerService.ACTION_PLAY);
-		assertEquals("Clicking a track launches the player service", expected,
-				shadowActivity.getNextStartedService());
-
-		expected = new Intent(activity, PlayerActivity.class);
-		assertEquals("Clicking a track opens the player", expected,
-				shadowActivity.getNextStartedActivity());
 	}
 
 	private void startActivity() {

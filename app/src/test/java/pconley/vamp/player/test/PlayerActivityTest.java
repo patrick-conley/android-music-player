@@ -1,16 +1,11 @@
 package pconley.vamp.player.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import android.content.Context;
+import android.content.Intent;
+import android.view.View;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.TextView;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -21,19 +16,22 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.util.ServiceController;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+
 import pconley.vamp.R;
 import pconley.vamp.model.Track;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.util.AssetUtils;
-import pconley.vamp.model.Playlist;
-import android.content.Context;
-import android.content.Intent;
-import android.view.View;
-import android.widget.Button;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
-import android.widget.TextView;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(emulateSdk = 18, manifest = "src/main/AndroidManifest.xml")
@@ -47,7 +45,7 @@ public class PlayerActivityTest {
 	private PlayerService service;
 	private ShadowActivity shadowActivity;
 
-	private List<Track> tracks;
+	private ArrayList<Track> tracks;
 
 	@Before
 	public void setUpTest() throws IOException {
@@ -60,25 +58,28 @@ public class PlayerActivityTest {
 
 		tracks = new ArrayList<Track>();
 		tracks.add(AssetUtils.addAssetToFolder(context,
-				AssetUtils.ROBO_ASSET_PATH + AssetUtils.OGG, oggFile));
+		                                       AssetUtils.ROBO_ASSET_PATH +
+		                                       AssetUtils.OGG, oggFile));
 		tracks.add(AssetUtils.addAssetToFolder(context,
-				AssetUtils.ROBO_ASSET_PATH + AssetUtils.FLAC, flacFile));
-
-		Playlist.setInstance(new Playlist(tracks));
+		                                       AssetUtils.ROBO_ASSET_PATH +
+		                                       AssetUtils.FLAC, flacFile));
 
 		// Default intent to start the player
 		serviceIntent = new Intent(context, PlayerService.class);
 		serviceIntent.setAction(PlayerService.ACTION_PLAY);
+		serviceIntent.putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS,
+		                                          tracks);
 
 		// Instance of the player service to be returned on bind
 		controller = Robolectric.buildService(PlayerService.class).create();
 		service = controller.get();
 
-		PlayerService.PlayerBinder binder = mock(PlayerService.PlayerBinder.class);
+		PlayerService.PlayerBinder binder = mock(
+				PlayerService.PlayerBinder.class);
 		when(binder.getService()).thenReturn(service);
 
 		Robolectric.getShadowApplication()
-				.setComponentNameAndServiceForBindService(null, binder);
+		           .setComponentNameAndServiceForBindService(null, binder);
 	}
 
 	/**
@@ -92,8 +93,8 @@ public class PlayerActivityTest {
 
 		// Then
 		assertEquals("The player activity binds to the player service",
-				new Intent(activity, PlayerService.class),
-				shadowActivity.getNextStartedService());
+		             new Intent(activity, PlayerService.class),
+		             shadowActivity.getNextStartedService());
 	}
 
 	/**
@@ -113,30 +114,30 @@ public class PlayerActivityTest {
 		TextView uriView = (TextView) activity
 				.findViewById(R.id.player_view_uri);
 		assertEquals("Track URI is visible", View.VISIBLE,
-				uriView.getVisibility());
+		             uriView.getVisibility());
 		assertEquals("Track URI is correct", "", uriView.getText());
 
 		TextView tagView = (TextView) activity
 				.findViewById(R.id.player_view_tags);
 		assertEquals("Track URI is visible", View.VISIBLE,
-				tagView.getVisibility());
+		             tagView.getVisibility());
 		assertEquals("Track URI is correct", "", tagView.getText());
 
 		TextView positionView = (TextView) activity
 				.findViewById(R.id.player_view_position);
 		assertEquals("Track URI is visible", View.VISIBLE,
-				positionView.getVisibility());
+		             positionView.getVisibility());
 		assertEquals("Track URI is correct",
-				context.getString(R.string.player_blank_time),
-				positionView.getText());
+		             context.getString(R.string.player_blank_time),
+		             positionView.getText());
 
 		TextView durationView = (TextView) activity
 				.findViewById(R.id.player_view_duration);
 		assertEquals("Track URI is visible", View.VISIBLE,
-				durationView.getVisibility());
+		             durationView.getVisibility());
 		assertEquals("Track URI is correct",
-				context.getString(R.string.player_blank_time),
-				durationView.getText());
+		             context.getString(R.string.player_blank_time),
+		             durationView.getText());
 
 	}
 
@@ -144,7 +145,7 @@ public class PlayerActivityTest {
 	 * Given the player service is running, when I start the activity, then
 	 * details about the current track are displayed and position/duration are
 	 * set.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	@Test
@@ -162,33 +163,33 @@ public class PlayerActivityTest {
 		TextView uriView = (TextView) activity
 				.findViewById(R.id.player_view_uri);
 		assertEquals("Track URI is visible", View.VISIBLE,
-				uriView.getVisibility());
+		             uriView.getVisibility());
 		assertEquals("Track URI is correct", tracks.get(0).getUri().toString(),
-				uriView.getText());
+		             uriView.getText());
 
 		// Then
 		TextView detailView = (TextView) activity
 				.findViewById(R.id.player_view_tags);
 		assertEquals("Track tags are visible", View.VISIBLE,
-				detailView.getVisibility());
+		             detailView.getVisibility());
 		assertEquals("Track tags are correct", tracks.get(0).tagsToString(),
-				detailView.getText());
+		             detailView.getText());
 
 		TextView positionView = (TextView) activity
 				.findViewById(R.id.player_view_position);
 		assertEquals("Track position is visible", View.VISIBLE,
-				positionView.getVisibility());
+		             positionView.getVisibility());
 		assertNotEquals("Track position is correct",
-				context.getString(R.string.player_blank_time),
-				positionView.getText());
+		                context.getString(R.string.player_blank_time),
+		                positionView.getText());
 
 		TextView durationView = (TextView) activity
 				.findViewById(R.id.player_view_duration);
 		assertEquals("Track duration is visible", View.VISIBLE,
-				durationView.getVisibility());
+		             durationView.getVisibility());
 		assertNotEquals("Track duration is correct",
-				context.getString(R.string.player_blank_time),
-				durationView.getText());
+		                context.getString(R.string.player_blank_time),
+		                durationView.getText());
 	}
 
 	/**
@@ -204,12 +205,11 @@ public class PlayerActivityTest {
 		assertTrue("Player is initially playing", service.isPlaying());
 
 		// When
-		((Button) activity.findViewById(R.id.player_button_playpause))
-				.performClick();
+		activity.findViewById(R.id.player_button_playpause).performClick();
 
 		// Then
 		assertFalse("Clicking play/pause pauses the player",
-				service.isPlaying());
+		            service.isPlaying());
 	}
 
 	/**
@@ -225,11 +225,11 @@ public class PlayerActivityTest {
 		assertFalse("Player is initially paused", service.isPlaying());
 
 		// When
-		((Button) activity.findViewById(R.id.player_button_playpause))
-				.performClick();
+		activity.findViewById(R.id.player_button_playpause).performClick();
 
 		// Then
-		assertTrue("Clicking play/pauses plays the player", service.isPlaying());
+		assertTrue("Clicking play/pauses plays the player",
+		           service.isPlaying());
 	}
 
 	/**
@@ -243,29 +243,28 @@ public class PlayerActivityTest {
 		startActivity();
 
 		// When
-		((Button) activity.findViewById(R.id.player_button_next))
-				.performClick();
+		activity.findViewById(R.id.player_button_next).performClick();
 
 		// Then
 		TextView uriView = (TextView) activity
 				.findViewById(R.id.player_view_uri);
 		assertEquals("Track URI is visible", View.VISIBLE,
-				uriView.getVisibility());
+		             uriView.getVisibility());
 		assertEquals("Track URI is correct", tracks.get(1).getUri().toString(),
-				uriView.getText());
+		             uriView.getText());
 
 		// Then
 		TextView detailView = (TextView) activity
 				.findViewById(R.id.player_view_tags);
 		assertEquals("Track tags are visible", View.VISIBLE,
-				detailView.getVisibility());
+		             detailView.getVisibility());
 		assertEquals("Track tags are correct", tracks.get(1).tagsToString(),
-				detailView.getText());
+		             detailView.getText());
 	}
 
 	/**
 	 * Given the player is paused in the first track of a playlist, when I click
-	 * next, then the player is pused in the next track and times are redrawn.
+	 * next, then the player is paused in the next track and times are redrawn.
 	 */
 	@Test
 	public void testNextButtonDrawsTimesWhenPaused() {
@@ -284,14 +283,13 @@ public class PlayerActivityTest {
 		durationView.setText(unexpected);
 
 		// When
-		((Button) activity.findViewById(R.id.player_button_next))
-				.performClick();
+		activity.findViewById(R.id.player_button_next).performClick();
 
 		// Then
 		assertNotEquals("Track position is correct", unexpected,
-				positionView.getText());
+		                positionView.getText());
 		assertNotEquals("Track duration is correct", unexpected,
-				durationView.getText());
+		                durationView.getText());
 
 	}
 
@@ -307,24 +305,23 @@ public class PlayerActivityTest {
 		startActivity();
 
 		// When
-		((Button) activity.findViewById(R.id.player_button_prev))
-				.performClick();
+		activity.findViewById(R.id.player_button_prev).performClick();
 
 		// Then
 		TextView uriView = (TextView) activity
 				.findViewById(R.id.player_view_uri);
 		assertEquals("Track URI is visible", View.VISIBLE,
-				uriView.getVisibility());
+		             uriView.getVisibility());
 		assertEquals("Track URI is correct", tracks.get(0).getUri().toString(),
-				uriView.getText());
+		             uriView.getText());
 
 		// Then
 		TextView detailView = (TextView) activity
 				.findViewById(R.id.player_view_tags);
 		assertEquals("Track tags are visible", View.VISIBLE,
-				detailView.getVisibility());
+		             detailView.getVisibility());
 		assertEquals("Track tags are correct", tracks.get(0).tagsToString(),
-				detailView.getText());
+		             detailView.getText());
 	}
 
 	/**
@@ -342,7 +339,7 @@ public class PlayerActivityTest {
 
 		// Then
 		assertTrue("Activity is closed by completed track",
-				shadowActivity.isFinishing());
+		           shadowActivity.isFinishing());
 
 	}
 
@@ -362,17 +359,17 @@ public class PlayerActivityTest {
 		TextView uriView = (TextView) activity
 				.findViewById(R.id.player_view_uri);
 		assertEquals("Track URI is visible", View.VISIBLE,
-				uriView.getVisibility());
+		             uriView.getVisibility());
 		assertEquals("Track URI is correct", tracks.get(1).getUri().toString(),
-				uriView.getText());
+		             uriView.getText());
 
 		// Then
 		TextView detailView = (TextView) activity
 				.findViewById(R.id.player_view_tags);
 		assertEquals("Track tags are visible", View.VISIBLE,
-				detailView.getVisibility());
+		             detailView.getVisibility());
 		assertEquals("Track tags are correct", tracks.get(1).tagsToString(),
-				detailView.getText());
+		             detailView.getText());
 	}
 
 	/**
@@ -404,16 +401,16 @@ public class PlayerActivityTest {
 
 		// Then
 		assertNotEquals("Positions are updated after seek", unexpected,
-				positionView.getText());
+		                positionView.getText());
 		assertEquals("Durations are not updated after seek", originalDuration,
-				durationView.getText());
+		             durationView.getText());
 	}
 
 	private void startActivity() {
 		controller.withIntent(serviceIntent).startCommand(0, 0).get();
 
 		activity = Robolectric.buildActivity(PlayerActivity.class).create()
-				.start().resume().visible().get();
+		                      .start().resume().visible().get();
 		shadowActivity = Robolectric.shadowOf(activity);
 	}
 

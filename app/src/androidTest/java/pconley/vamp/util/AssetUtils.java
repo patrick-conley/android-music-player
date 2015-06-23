@@ -1,27 +1,28 @@
 package pconley.vamp.util;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.test.InstrumentationTestCase;
+
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.commons.io.FileUtils;
-
 import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
 import pconley.vamp.preferences.SettingsHelper;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.net.Uri;
-import android.test.InstrumentationTestCase;
 
 public final class AssetUtils {
 
 	/**
-	 * Sample Ogg Vorbis file with several comments: see
-	 * {@link #buildTrack(File)}
+	 * Sample Ogg Vorbis file with several comments: see {@link
+	 * #buildTrack(File)}
 	 */
 	public static final String OGG = "sample.ogg";
 
@@ -43,8 +44,10 @@ public final class AssetUtils {
 	/*
 	 * Vendor string. Brittle, but unavoidable.
 	 */
-	private static final String OGG_VENDOR = "Xiph.Org libVorbis I 20101101 (Schaufenugget)";
-	private static final String FLAC_VENDOR = "reference libFLAC 1.3.0 20130526";
+	private static final String OGG_VENDOR
+			= "Xiph.Org libVorbis I 20101101 (Schaufenugget)";
+	private static final String FLAC_VENDOR
+			= "reference libFLAC 1.3.0 20130526";
 
 	/**
 	 * Tests using Robolectric must prefix their assets with this string, as it
@@ -61,13 +64,13 @@ public final class AssetUtils {
 	/**
 	 * Delete, then recreate, a music folder in the app's cache, and set its
 	 * path in the preferences.
-	 * 
+	 *
 	 * @param context
-	 *            Context to use for the app's preferences and cache directory.
-	 *            Use a RenamingDelegatingContext.
+	 * 		Context to use for the app's preferences and cache directory. Use a
+	 * 		RenamingDelegatingContext.
 	 * @return The newly-created folder
 	 * @throws IOException
-	 *             If an existing folder could not be deleted.
+	 * 		If an existing folder could not be deleted.
 	 */
 	public static File setupMusicFolder(Context context) throws IOException {
 
@@ -77,10 +80,10 @@ public final class AssetUtils {
 
 		SharedPreferences preferences = context.getSharedPreferences(
 				Constants.PREFERENCES_NAME, Context.MODE_PRIVATE);
-		preferences
-				.edit()
-				.putString(SettingsHelper.KEY_MUSIC_FOLDER,
-						musicFolder.getAbsolutePath()).commit();
+		preferences.edit()
+		           .putString(SettingsHelper.KEY_MUSIC_FOLDER,
+		                      musicFolder.getAbsolutePath())
+		           .apply();
 
 		SettingsHelper.setPreferences(preferences);
 
@@ -89,21 +92,19 @@ public final class AssetUtils {
 
 	/**
 	 * Copy an asset file from the .apk into the filesystem.
-	 * 
+	 *
 	 * @param context
-	 *            The test's context. Unless the test is built around
-	 *            {@link InstrumentationTestCase}, then getContext() will not
-	 *            return the test's context. You can get this context
-	 *            introspectively:
-	 *            {@code (Context) getClass().getMethod("getTestContext").invoke(this)}
-	 *            .
+	 * 		The test's context. Unless the test is built around {@link
+	 * 		InstrumentationTestCase}, then getContext() will not return the test's
+	 * 		context. You can get this context introspectively: {@code (Context)
+	 * 		getClass().getMethod("getTestContext").invoke(this)} .
 	 * @param asset
-	 *            The asset to copy
+	 * 		The asset to copy
 	 * @param destination
-	 *            File to copy to.
+	 * 		File to copy to.
 	 * @return A Track corresponding to the destination file.
 	 * @throws IOException
-	 *             In case of any file read/write errors.
+	 * 		In case of any file read/write errors.
 	 */
 	public static Track addAssetToFolder(Context context, String asset,
 			File destination) throws IOException {
@@ -129,11 +130,11 @@ public final class AssetUtils {
 	/**
 	 * Add a track to the database with metadata matching the sample assets. The
 	 * tracks added don't need to exist on disk.
-	 * 
+	 *
 	 * @param context
-	 *            The test's context
+	 * 		The test's context
 	 * @param dest
-	 *            The path of the file to add.
+	 * 		The path of the file to add.
 	 * @return ID of the new track in the database.
 	 */
 	public static long addTrackToDb(Context context, File dest) {
@@ -142,11 +143,11 @@ public final class AssetUtils {
 
 	/**
 	 * Add several tracks to the database.
-	 * 
+	 *
 	 * @param context
-	 *            The test's context
+	 * 		The test's context
 	 * @param files
-	 *            The path of each file to add.
+	 * 		The path of each file to add.
 	 * @return IDs of the new tracks in the database.
 	 */
 	public static long[] addTracksToDb(Context context, File[] files) {
@@ -174,29 +175,29 @@ public final class AssetUtils {
 
 	public static Track buildTrack(File path) {
 		Track.Builder builder = new Track.Builder(0, Uri.fromFile(path))
-				.add(new Tag(0, "album", "MyAlbum"))
-				.add(new Tag(0, "artist", "MyArtist"))
-				.add(new Tag(0, "composer", "MyComposer"))
-				.add(new Tag(0, "genre", "Silence"))
-				.add(new Tag(0, "title", "MyTitle"))
-				.add(new Tag(0, "tracknumber", "3"))
-				.add(new Tag(0, "discnumber", "1"));
+				.add(new Tag("album", "MyAlbum"))
+				.add(new Tag("artist", "MyArtist"))
+				.add(new Tag("composer", "MyComposer"))
+				.add(new Tag("genre", "Silence"))
+				.add(new Tag("title", "MyTitle"))
+				.add(new Tag("tracknumber", "3"))
+				.add(new Tag("discnumber", "1"));
 
 		String extension = path.toString().substring(
 				path.toString().lastIndexOf('.'));
 
 		if (extension.equals(".ogg") || extension.equals(".flac")) {
-			builder.add(new Tag(0, "conductor", "MyConductor"))
-					.add(new Tag(0, "comments", "MyComment"))
-					.add(new Tag(0, "uniquetag", "MyUniqueTag"));
+			builder.add(new Tag("conductor", "MyConductor"))
+			       .add(new Tag("comments", "MyComment"))
+			       .add(new Tag("uniquetag", "MyUniqueTag"));
 
 			if (extension.equals(".ogg")) {
-				builder.add(new Tag(0, "vendor", OGG_VENDOR));
+				builder.add(new Tag("vendor", OGG_VENDOR));
 			} else {
-				builder.add(new Tag(0, "vendor", FLAC_VENDOR));
+				builder.add(new Tag("vendor", FLAC_VENDOR));
 			}
 		} else if (extension.equals(".mp3")) {
-			builder.add(new Tag(0, "tracktotal", "1"));
+			builder.add(new Tag("tracktotal", "1"));
 		}
 		return builder.build();
 	}

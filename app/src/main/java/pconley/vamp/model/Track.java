@@ -1,10 +1,13 @@
 package pconley.vamp.model;
 
 import android.net.Uri;
+import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -16,14 +19,14 @@ import java.util.Set;
  *
  * @author pconley
  */
-public final class Track {
+public final class Track implements LibraryItem {
 
 	private long id;
 	private Uri uri;
-	private Map<String, Set<Tag>> tags;
+	private Map<String, ArrayList<Tag>> tags;
 
 	/* Private constructor. Use the builder. */
-	private Track(long id, Uri uri, Map<String, Set<Tag>> tags) {
+	private Track(long id, Uri uri, Map<String, ArrayList<Tag>> tags) {
 		this.id = id;
 		this.uri = uri;
 		this.tags = tags;
@@ -51,20 +54,20 @@ public final class Track {
 	}
 
 	/**
-	 * Get the tags with the given name. Returns null if the track doesn't
-	 * have any appropriate tags. Values' ordering is not guaranteed to be
+	 * Get the tags with the given name. Returns null if the track doesn't have
+	 * any appropriate tags. Values' ordering is not guaranteed to be
 	 * consistent.
 	 *
 	 * @param name
 	 * 		The name of a tag
 	 * @return The tags corresponding to this tag name.
 	 */
-	public Set<Tag> getTags(String name) {
-		// Check if the key exists: unmodifiableSet doesn't accept null input
+	public List<Tag> getTags(String name) {
+		// Check if the key exists: unmodifiableList doesn't accept null input
 		if (!tags.containsKey(name)) {
 			return null;
 		} else {
-			return Collections.unmodifiableSet(tags.get(name));
+			return Collections.unmodifiableList(tags.get(name));
 		}
 	}
 
@@ -137,6 +140,48 @@ public final class Track {
 		return true;
 	}
 
+	public static final Parcelable.Creator<Track> CREATOR
+			= new Parcelable.Creator<Track>() {
+
+		@Override
+		public Track createFromParcel(Parcel source) {
+			Track track = new Track(source.readLong(),
+			                        Uri.parse(source.readString()),
+			                        new HashMap<String, ArrayList<Tag>>());
+
+			Bundle bundle = source.readBundle(getClass().getClassLoader());
+			for (String name : bundle.keySet()) {
+				ArrayList<Tag> tagList = bundle.getParcelableArrayList(name);
+				track.tags.put(name, tagList);
+			}
+
+			return track;
+		}
+
+		@Override
+		public Track[] newArray(int size) {
+			return new Track[size];
+		}
+	};
+
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		Bundle tagBundle = new Bundle();
+		for (String name : tags.keySet()) {
+			tagBundle.putParcelableArrayList(name, tags.get(name));
+		}
+
+		dest.writeLong(id);
+		dest.writeString(uri.toString());
+		dest.writeBundle(tagBundle);
+
+	}
+
 	/**
 	 * Builder class for a track. Gives a simple means of adding tags from a
 	 * Cursor without making the track mutable.
@@ -145,20 +190,20 @@ public final class Track {
 
 		private long id;
 		private Uri uri;
-		private Map<String, Set<Tag>> tags;
+		private Map<String, ArrayList<Tag>> tags;
 
 		public Builder(long id, Uri uri) {
 			this.id = id;
 			this.uri = uri;
 
-			tags = new HashMap<String, Set<Tag>>();
+			tags = new HashMap<String, ArrayList<Tag>>();
 		}
 
 		public Builder add(Tag tag) {
 			String name = tag.getName();
 
 			if (!tags.containsKey(name)) {
-				tags.put(name, new HashSet<Tag>());
+				tags.put(name, new ArrayList<Tag>());
 			}
 
 			tags.get(name).add(tag);
