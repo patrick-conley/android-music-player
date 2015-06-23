@@ -112,8 +112,7 @@ public class PlayerService extends Service implements
 
 		notification = new Notification.Builder(getApplicationContext())
 				.setContentTitle(getString(R.string.app_name))
-				.setContentText(getString(R.string
-						                          .player_notification_playing))
+				.setContentText(getString(R.string.player_notification_playing))
 				.setSmallIcon(android.R.drawable.ic_media_play)
 				.setOngoing(true)
 				.setLargeIcon(icon)

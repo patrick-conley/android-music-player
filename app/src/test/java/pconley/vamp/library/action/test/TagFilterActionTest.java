@@ -14,7 +14,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -77,8 +77,8 @@ public class TagFilterActionTest {
 				= ((LibraryFragment) fm.findFragmentById(R.id.library))
 				.copyFilters();
 
-		assertEquals("Album filter is added to the fragment", Arrays.asList(
-				new Tag[] { album }), filters);
+		assertEquals("Album filter is added to the fragment",
+		             Collections.singletonList(album), filters);
 	}
 
 	/**

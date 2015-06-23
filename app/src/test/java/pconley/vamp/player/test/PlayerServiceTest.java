@@ -24,7 +24,6 @@ import org.robolectric.shadows.ShadowMediaPlayer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -99,6 +98,7 @@ public class PlayerServiceTest {
 		musicFolder = AssetUtils.setupMusicFolder(context);
 		File ogg = new File(musicFolder, "sample.ogg");
 		File flac = new File(musicFolder, "sample.flac");
+		File missingFile = new File(musicFolder, "missing.mp3");
 
 		tracks = new ArrayList<Track>();
 		tracks.add(AssetUtils.addAssetToFolder(context,
@@ -108,9 +108,8 @@ public class PlayerServiceTest {
 		                                       AssetUtils.ROBO_ASSET_PATH +
 		                                       AssetUtils.FLAC, flac));
 
-		missing = new ArrayList<>();
-		missing.add(
-				AssetUtils.buildTrack(new File(musicFolder, "missing.mp3")));
+		missing = new ArrayList<Track>();
+		missing.add(AssetUtils.buildTrack(missingFile));
 
 		// Shadow the service's MediaPlayer
 		MediaPlayer mp = new MediaPlayer();

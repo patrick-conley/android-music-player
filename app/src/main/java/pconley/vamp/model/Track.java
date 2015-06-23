@@ -173,7 +173,7 @@ public final class Track implements LibraryItem {
 	public void writeToParcel(Parcel dest, int flags) {
 		Bundle tagBundle = new Bundle();
 		for (String name : tags.keySet()) {
-			tagBundle.putParcelableArrayList( name, tags.get(name));
+			tagBundle.putParcelableArrayList(name, tags.get(name));
 		}
 
 		dest.writeLong(id);
