@@ -75,7 +75,7 @@ public class TagFilterActionTest {
 		// Then
 		List<Tag> filters
 				= ((LibraryFragment) fm.findFragmentById(R.id.library))
-				.copyFilters();
+				.getCollection().getTags();
 
 		assertEquals("Album filter is added to the fragment",
 		             Collections.singletonList(album), filters);
@@ -185,11 +185,6 @@ public class TagFilterActionTest {
 			}
 		}
 
-	}
-
-	private void startActivity() {
-		activity = Robolectric.buildActivity(LibraryActivity.class).create()
-		                      .start().resume().get();
 	}
 
 }

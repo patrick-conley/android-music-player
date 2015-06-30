@@ -1,20 +1,20 @@
 package pconley.vamp.library.test;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ListView;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.FragmentTestUtil;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -22,19 +22,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-import pconley.vamp.R;
-import pconley.vamp.library.LibraryActivity;
 import pconley.vamp.library.LibraryFragment;
 import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.model.LibraryItem;
+import pconley.vamp.model.MusicCollection;
 import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
 import pconley.vamp.util.AssetUtils;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.robolectric.util.FragmentTestUtil.startFragment;
-import static org.robolectric.util.FragmentTestUtil.startVisibleFragment;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(emulateSdk = 18, manifest = "src/main/AndroidManifest.xml")
@@ -61,14 +57,15 @@ public class LibraryFragmentTest {
 	 * fragment has no filters.
 	 */
 	@Test
-	public void testCreateEmptyFragment() {
+	public void createEmptyFragment() {
 		// When
 		LibraryFragment fragment = LibraryFragment.newInstance();
-		startFragment(fragment, LibraryActivity.class);
+		startFragment(fragment);
 
 		// Then
 		assertEquals("Fragment was created without filters",
-		             Collections.emptyList(), fragment.copyFilters());
+		             Collections.emptyList(),
+		             fragment.getCollection().getTags());
 	}
 
 	/**
@@ -76,38 +73,37 @@ public class LibraryFragmentTest {
 	 * fragment has those filters.
 	 */
 	@Test
-	public void testCreateFilteredFragment() {
+	public void createFilteredFragment() {
 		ArrayList<Tag> filters = new ArrayList<Tag>();
 		filters.add(new Tag(0, "foo", "bar"));
 
 		// When
-		LibraryFragment fragment = LibraryFragment.newInstance(filters);
-		startFragment(fragment, LibraryActivity.class);
+		LibraryFragment fragment = LibraryFragment.newInstance(
+				new MusicCollection(null, null), filters.get(0));
+		startFragment(fragment);
 
 		// Then
 		assertEquals("Fragment was created with filters",
-		             filters, fragment.copyFilters());
+		             filters, fragment.getCollection().getTags());
 	}
 
 	/**
-	 * Given I have created the fragment with filters, when I get & modify the
-	 * filters, then the originals are unchanged.
+	 * When I use the filtered factory method with an unset filter, then I get
+	 * an exception.
 	 */
-	@Test
-	public void testFiltersAreImmutable() {
-		ArrayList<Tag> filters = new ArrayList<Tag>();
-		filters.add(new Tag(0, "foo", "bar"));
+	@Test(expected = IllegalArgumentException.class)
+	public void createWithNullTag() throws IllegalArgumentException {
+		startFragment(LibraryFragment.newInstance(
+				new MusicCollection(null, null), null));
+	}
 
-		LibraryFragment fragment = LibraryFragment.newInstance(filters);
-		startFragment(fragment, LibraryActivity.class);
-
-		// When
-		ArrayList<Tag> modified = fragment.copyFilters();
-		modified.add(new Tag(1, "foob", "barb"));
-
-		// Then
-		assertNotEquals("A fragment's filters are copied on Get",
-		                fragment.copyFilters(), modified);
+	/**
+	 * When I use the filtered factory method with an unset parent collection,
+	 * then I get an exception.
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void createWithNullParent() throws IllegalArgumentException {
+		startFragment(LibraryFragment.newInstance(null, new Tag("foo", "bar")));
 	}
 
 	/**
@@ -115,10 +111,10 @@ public class LibraryFragmentTest {
 	 * displayed.
 	 */
 	@Test
-	public void testDisplayEmptyLibrary() {
+	public void displayEmptyLibrary() {
 		// When
 		LibraryFragment fragment = LibraryFragment.newInstance();
-		startFragment(fragment, LibraryActivity.class);
+		startFragment(fragment);
 
 		// Then
 		assertEquals("Fragment in an empty library displays nothing",
@@ -131,18 +127,18 @@ public class LibraryFragmentTest {
 	 * then the correct tags are displayed.
 	 */
 	@Test
-	public void testDisplayPopulatedLibrary() {
+	public void displayPopulatedLibrary() {
 		File ogg = new File("sample.ogg");
 		File flac = new File("sample.flac");
 
 		// Given
 		AssetUtils.addTracksToDb(context, new File[] { ogg, flac });
-		List<Tag> expected = dao.getTag("album");
+		List<Tag> expected = dao.getTags("album");
 
 
 		// When
 		LibraryFragment fragment = LibraryFragment.newInstance();
-		startFragment(fragment, LibraryActivity.class);
+		startFragment(fragment);
 
 		// Then
 		assertEquals("Unfiltered library displays albums",
@@ -155,7 +151,7 @@ public class LibraryFragmentTest {
 	 * then the correct tracks are displayed.
 	 */
 	@Test
-	public void testDisplayFilteredLibrary() {
+	public void displayFilteredLibrary() {
 		File ogg = new File("sample.ogg");
 		File flac = new File("sample.flac");
 
@@ -167,14 +163,22 @@ public class LibraryFragmentTest {
 				= new ArrayList<Tag>(expected.get(0).getTags("album"));
 
 		// When
-		LibraryFragment fragment = LibraryFragment.newInstance(filters);
-		startVisibleFragment(fragment, LibraryActivity.class, R.id.library);
+		LibraryFragment fragment = LibraryFragment.newInstance(
+				new MusicCollection(null, "album"), filters.get(0));
+		startFragment(fragment);
 
 		// Then
-
 		assertEquals("Filtered library displays tracks",
 		             new HashSet<LibraryItem>(expected),
-		             new HashSet<LibraryItem>(fragment.getContents()));
+		             new HashSet<LibraryItem>(
+				             fragment.getContents()));
+	}
+
+	private void startFragment(Fragment fragment) {
+		FragmentTestUtil.startFragment(fragment, MockActivity.class);
+
+		Robolectric.runBackgroundTasks();
+		Robolectric.runUiThreadTasks();
 	}
 
 	public static class MockActivity extends Activity

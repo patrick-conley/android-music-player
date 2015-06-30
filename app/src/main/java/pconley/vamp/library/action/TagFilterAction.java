@@ -4,12 +4,11 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.widget.ArrayAdapter;
 
-import java.util.ArrayList;
-
 import pconley.vamp.R;
 import pconley.vamp.library.LibraryActivity;
 import pconley.vamp.library.LibraryFragment;
 import pconley.vamp.model.LibraryItem;
+import pconley.vamp.model.MusicCollection;
 import pconley.vamp.model.Tag;
 
 /**
@@ -24,17 +23,18 @@ public class TagFilterAction implements LibraryAction {
 
 		FragmentManager fm = activity.getFragmentManager();
 
-		// Get existing filters and add the new one
-		ArrayList<Tag> filters = ((LibraryFragment) fm
-				.findFragmentById(R.id.library))
-				.copyFilters();
-		String fragmentName = filters.isEmpty()
+		MusicCollection collection = ((LibraryFragment) fm.findFragmentById(
+				R.id.library)).getCollection();
+
+		// Add a tag if this will be the first fragment on top of the root.
+		String fragmentName = collection.getTags().isEmpty()
 		                      ? LibraryActivity.LIBRARY_ROOT_TAG : null;
-		filters.add((Tag) adapter.getItem(position));
 
 		// Create a new fragment
 		fm.beginTransaction()
-		  .replace(R.id.library, LibraryFragment.newInstance(filters))
+		  .replace(R.id.library,
+		           LibraryFragment.newInstance(collection,
+		                                       (Tag) adapter.getItem(position)))
 		  .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 		  .addToBackStack(fragmentName)
 		  .commit();

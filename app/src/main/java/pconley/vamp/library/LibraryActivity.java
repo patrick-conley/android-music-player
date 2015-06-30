@@ -110,6 +110,7 @@ public class LibraryActivity extends Activity
 	 * @param id
 	 */
 	@Override
+	@SuppressWarnings(value="unchecked")
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
 		ArrayAdapter<LibraryItem> adapter

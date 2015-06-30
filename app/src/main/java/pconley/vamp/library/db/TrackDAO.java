@@ -234,8 +234,8 @@ public class TrackDAO {
 	 *
 	 * @param name
 	 */
-	public List<Tag> getTag(String name) {
-		List<Tag> tags = new LinkedList<>();
+	public List<Tag> getTags(String name) {
+		List<Tag> tags = new LinkedList<Tag>();
 
 		Cursor results = library.rawQuery(GET_TAG_QUERY, new String[] { name });
 
