@@ -21,8 +21,8 @@ public class ScannerFactory {
 	 * @param file
 	 */
 	public static TagStrategy getStrategy(MediaFile file) {
-		String extension = file.toString().substring(
-				file.toString().lastIndexOf('.'));
+		int index = file.toString().lastIndexOf('.');
+		String extension = index >= 0 ? file.toString().substring(index) : "";
 
 		switch (extension) {
 			case ".ogg":

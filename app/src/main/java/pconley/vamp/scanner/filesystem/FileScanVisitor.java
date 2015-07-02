@@ -49,8 +49,8 @@ public class FileScanVisitor implements MediaVisitorBase {
 	 * @param context
 	 * 		The context running the visitor.
 	 * @param count
-	 * 		Number of files expected. (The number needs to be resent
-	 * 		periodically in case the fragment was destroyed & restarted.)
+	 * 		Number of files expected. (The number needs to be resent periodically
+	 * 		in case the fragment was destroyed & restarted.)
 	 */
 	public FileScanVisitor(File musicRoot, Context context, int count) {
 		this.musicFolderName = musicRoot.toString();
