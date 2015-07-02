@@ -1,5 +1,7 @@
 package pconley.vamp.scanner.container.test;
 
+import android.test.AndroidTestCase;
+
 import java.io.File;
 
 import pconley.vamp.model.filesystem.MediaFile;
@@ -8,7 +10,6 @@ import pconley.vamp.scanner.container.Mp4TagStrategy;
 import pconley.vamp.scanner.container.ScannerFactory;
 import pconley.vamp.scanner.container.TagStrategy;
 import pconley.vamp.scanner.container.VorbisCommentTagStrategy;
-import android.test.AndroidTestCase;
 
 public class ScannerFactoryTest extends AndroidTestCase {
 
@@ -24,7 +25,7 @@ public class ScannerFactoryTest extends AndroidTestCase {
 
 		// Then
 		assertTrue("Ogg Vorbis uses the Vorbis strategy",
-				strategy instanceof VorbisCommentTagStrategy);
+		           strategy instanceof VorbisCommentTagStrategy);
 	}
 
 	/**
@@ -39,7 +40,7 @@ public class ScannerFactoryTest extends AndroidTestCase {
 
 		// Then
 		assertTrue("Flac uses the Vorbis strategy",
-				strategy instanceof VorbisCommentTagStrategy);
+		           strategy instanceof VorbisCommentTagStrategy);
 	}
 
 	/**
@@ -54,7 +55,7 @@ public class ScannerFactoryTest extends AndroidTestCase {
 
 		// Then
 		assertTrue("Matroska uses the Vorbis strategy",
-				strategy instanceof VorbisCommentTagStrategy);
+		           strategy instanceof VorbisCommentTagStrategy);
 	}
 
 	/**
@@ -69,7 +70,7 @@ public class ScannerFactoryTest extends AndroidTestCase {
 
 		// Then
 		assertTrue("MP4 uses the MP4 strategy",
-				strategy instanceof Mp4TagStrategy);
+		           strategy instanceof Mp4TagStrategy);
 	}
 
 	/**
@@ -84,7 +85,7 @@ public class ScannerFactoryTest extends AndroidTestCase {
 
 		// Then
 		assertTrue("M4A uses the MP4 strategy",
-				strategy instanceof Mp4TagStrategy);
+		           strategy instanceof Mp4TagStrategy);
 	}
 
 	/**
@@ -99,7 +100,7 @@ public class ScannerFactoryTest extends AndroidTestCase {
 
 		// Then
 		assertTrue("MP3 uses the generic strategy",
-				strategy instanceof GenericTagStrategy);
+		           strategy instanceof GenericTagStrategy);
 	}
 
 	/**
@@ -114,12 +115,27 @@ public class ScannerFactoryTest extends AndroidTestCase {
 
 		// Then
 		assertTrue("JPEG uses the generic strategy",
-				strategy instanceof GenericTagStrategy);
+		           strategy instanceof GenericTagStrategy);
+	}
+
+	/**
+	 * Missing extension → generic strategy
+	 */
+	public void testMissingExtension() {
+		// Given
+		File file = new File("sample_ogg");
+
+		// When
+		TagStrategy strategy = ScannerFactory.getStrategy(new MediaFile(file));
+
+		// Then
+		assertTrue("File without extension uses the generic strategy",
+		           strategy instanceof GenericTagStrategy);
 	}
 
 	/**
 	 * Test release() works:
-	 * 
+	 * <p/>
 	 * Given I have used a generic strategy, when I release resources and use a
 	 * generic strategy, then a new instance is returned.
 	 */
