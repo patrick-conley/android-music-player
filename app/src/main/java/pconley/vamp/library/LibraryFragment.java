@@ -167,15 +167,28 @@ public class LibraryFragment extends Fragment {
 			dao.openReadableDatabase();
 
 			if (parent == null) {
-				coll = new MusicCollection(null, "album");
-				return dao.getTags(coll.getName());
+				coll = new MusicCollection(null, "artist");
+				return dao.getTags(coll);
 			} else {
 				ArrayList<Tag> tags = new ArrayList<Tag>(parent.getTags());
 				tags.add(tag);
 
-				coll = new MusicCollection(tags, null);
+				if (parent.getName() == null) {
+					coll = new MusicCollection(tags, null);
+					return dao.getTracks(coll);
+				}
 
-				return dao.getTracks(coll.getTags().get(0));
+				switch (parent.getName()) {
+					case "artist":
+						coll = new MusicCollection(tags, "album");
+						return dao.getTags(coll);
+					case "album":
+						coll = new MusicCollection(tags, null);
+						return dao.getTracks(coll);
+					default:
+						throw new IllegalArgumentException(
+								"Unexpected tag name");
+				}
 			}
 		}
 

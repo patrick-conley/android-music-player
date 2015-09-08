@@ -133,7 +133,7 @@ public class LibraryFragmentTest {
 
 		// Given
 		AssetUtils.addTracksToDb(context, new File[] { ogg, flac });
-		List<Tag> expected = dao.getTags("album");
+		List<Tag> expected = dao.getTags(new MusicCollection(null, "artist"));
 
 
 		// When
@@ -141,7 +141,7 @@ public class LibraryFragmentTest {
 		startFragment(fragment);
 
 		// Then
-		assertEquals("Unfiltered library displays albums",
+		assertEquals("Unfiltered library displays artists",
 		             new HashSet<LibraryItem>(expected),
 		             new HashSet<LibraryItem>(fragment.getContents()));
 	}
@@ -157,14 +157,16 @@ public class LibraryFragmentTest {
 
 		// Given
 		AssetUtils.addTracksToDb(context, new File[] { ogg, flac });
-		List<Track> expected = dao.getTracks();
+		List<Track> expected = dao.getTracks(new MusicCollection(null, null));
 
-		ArrayList<Tag> filters
-				= new ArrayList<Tag>(expected.get(0).getTags("album"));
+		ArrayList<Tag> filters = new ArrayList<Tag>();
+		filters.add(expected.get(0).getTags("artist").get(0));
+		filters.add(expected.get(0).getTags("album").get(0));
 
 		// When
 		LibraryFragment fragment = LibraryFragment.newInstance(
-				new MusicCollection(null, "album"), filters.get(0));
+				new MusicCollection(filters.subList(0, 1), "album"),
+				filters.get(1));
 		startFragment(fragment);
 
 		// Then
