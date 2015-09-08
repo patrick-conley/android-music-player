@@ -170,7 +170,7 @@ public class LibraryFragment extends Fragment {
 				coll = new MusicCollection(null, "artist");
 				return dao.getTags(coll);
 			} else {
-				ArrayList<Tag> tags = new ArrayList<Tag>(parent.getTags());
+				List<Tag> tags = new ArrayList<Tag>(parent.getTags());
 				tags.add(tag);
 
 				if (parent.getName() == null) {
@@ -181,7 +181,12 @@ public class LibraryFragment extends Fragment {
 				switch (parent.getName()) {
 					case "artist":
 						coll = new MusicCollection(tags, "album");
-						return dao.getTags(coll);
+						tags = dao.getTags(coll);
+
+						// Fall through if only one tag matches
+						if (tags.size() > 1) {
+							return tags;
+						}
 					case "album":
 						coll = new MusicCollection(tags, null);
 						return dao.getTracks(coll);
