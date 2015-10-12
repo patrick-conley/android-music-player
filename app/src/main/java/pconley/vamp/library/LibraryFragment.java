@@ -5,7 +5,6 @@ import android.app.Fragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,44 +13,52 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
+import org.apache.commons.lang3.text.WordUtils;
+
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import pconley.vamp.R;
+import pconley.vamp.library.action.LibraryActionLocator;
 import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.model.LibraryItem;
+import pconley.vamp.model.MusicCollection;
 import pconley.vamp.model.Tag;
+import pconley.vamp.model.Track;
 
-public class LibraryFragment extends Fragment {
+public class LibraryFragment extends Fragment
+		implements AdapterView.OnItemClickListener {
 
 	private Activity activity;
 	private ProgressBar progress;
 	private ListView list;
 
-	private ArrayList<Tag> filters;
-	private List<LibraryItem> contents;
+	MusicCollection collection;
+	List<? extends LibraryItem> contents;
 
 	/**
 	 * Create a new unfiltered fragment. The library's root tags will be
 	 * displayed.
 	 */
 	public static LibraryFragment newInstance() {
-		return new LibraryFragment();
+		return newInstance(null, null);
 	}
 
 	/**
 	 * Create a new fragment, filtering the library against a set of tags.
 	 *
-	 * @param filters
-	 * 		Tags to filter the library against. Filter tags are unordered but
-	 * 		required to be in an array due to implementation.
+	 * @param parent
+	 * 		The collection used in this fragment's parent. Should be null if this
+	 * 		is the root fragment.
+	 * @param tag
+	 * 		The item clicked in the parent fragment. Null if this is the root
+	 * 		fragment.
 	 */
-	public static LibraryFragment newInstance(
-			@Nullable ArrayList<Tag> filters) {
+	public static LibraryFragment newInstance(MusicCollection parent, Tag tag) {
+
 		Bundle arguments = new Bundle();
-		arguments.putParcelableArrayList("filters", filters);
+		arguments.putParcelable("parent", parent);
+		arguments.putParcelable("tag", tag);
 
 		LibraryFragment fragment = new LibraryFragment();
 		fragment.setArguments(arguments);
@@ -64,15 +71,16 @@ public class LibraryFragment extends Fragment {
 		super.onCreate(savedInstanceState);
 
 		activity = getActivity();
-
-		Bundle arguments = getArguments();
-		if (arguments == null) {
-			filters = new ArrayList<Tag>();
-		} else {
-			filters = arguments.getParcelableArrayList("filters");
-		}
 	}
 
+	/**
+	 * Initialize views, parse the fragment's arguments (parent collection and
+	 * just-clicked tag), and load data
+	 *
+	 * @param inflater
+	 * @param container
+	 * @param savedInstanceState
+	 */
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater,
 			ViewGroup container,
@@ -81,42 +89,104 @@ public class LibraryFragment extends Fragment {
 				.inflate(R.layout.fragment_library, container, false);
 
 		list = (ListView) view.findViewById(R.id.library_contents);
-		list.setOnItemClickListener((AdapterView.OnItemClickListener) activity);
+		list.setOnItemClickListener(this);
 
 		progress = (ProgressBar) view.findViewById(R.id.library_progress_load);
 
-		new LoadLibraryTask().execute();
+		MusicCollection parent = null;
+		Tag tag = null;
+
+		Bundle arguments = getArguments();
+		if (arguments != null) {
+			parent = arguments.getParcelable("parent");
+			tag = arguments.getParcelable("tag");
+
+			if (parent == null && tag != null) {
+				// FIXME: I see no solid reason to prohibit this case -
+				// FIXME: deal with it in the AsyncTask when it's generalized.
+				throw new IllegalArgumentException(
+						"Parent collection is unset");
+			} else if (parent != null && tag == null) {
+				throw new IllegalArgumentException("Selected tag is unset");
+			}
+
+		}
+
+		new LoadCollectionTask(parent, tag).execute();
+
 		return view;
 	}
 
 	/**
-	 * Get a list of active filters, in the order applied. The list is copied to
-	 * prevent modification of the internal list.
+	 * Callback for items selected in a {@Link LibraryFragment}. Selecting a Tag
+	 * will replace the fragment with a new, filtered fragment; selecting a
+	 * Track will play the fragment's contents.
 	 *
-	 * @return Filters active in this fragment.
+	 * @param parent
+	 * @param view
+	 * @param position
+	 * @param id
 	 */
-	public ArrayList<Tag> copyFilters() {
-		return new ArrayList<Tag>(filters);
+	@Override
+	@SuppressWarnings(value = "unchecked")
+	public void onItemClick(AdapterView<?> parent, View view, int position,
+			long id) {
+		ArrayAdapter<LibraryItem> adapter
+				= (ArrayAdapter<LibraryItem>) parent.getAdapter();
+
+		LibraryActionLocator.findAction(adapter.getItem(position))
+		                    .execute((LibraryActivity) activity, adapter,
+		                             position);
+	}
+
+	/**
+	 * Get the collection this fragment represents.
+	 *
+	 * @return Collection used to build this part of the library.
+	 * @throws IllegalStateException
+	 * 		If this method is called before the LoadCollectionTask returns from its
+	 * 		background thread. The library activity must obstruct the UI to prevent
+	 * 		this.
+	 */
+	public MusicCollection getCollection() throws IllegalStateException {
+		if (collection == null) {
+			throw new IllegalStateException("Collection has not been built");
+		}
+		return collection;
 	}
 
 	/**
 	 * Get the library contents. I rely on it for testing as the filtered
 	 * library doesn't appear to be displayed properly by Robolectric.
 	 *
-	 * @return The items (Tracks or Tags) being displayed in the library.
+	 * @return The items being displayed in the library.
+	 * @throws IllegalStateException
+	 * 		If this is called before the collection has been obtained from the DB.
 	 */
-	public List<LibraryItem> getContents() {
-		return Collections.unmodifiableList(
-				contents == null ? new LinkedList<LibraryItem>() : contents);
+	public List<? extends LibraryItem> getContents() {
+		if (collection == null) {
+			throw new IllegalStateException("Contents have not been built");
+		}
+		return contents;
 	}
 
-	/*
+	/**
 	 * Load the contents of the library into a TextView with execute(). Work is
 	 * done in a background thread.
 	 */
-	private class LoadLibraryTask extends AsyncTask<Void, Void, Object> {
+	private class LoadCollectionTask
+			extends AsyncTask<Void, Void, List<? extends LibraryItem>> {
+
+		private MusicCollection coll;
+		private final MusicCollection parent;
+		private final Tag tag;
 
 		private TrackDAO dao;
+
+		public LoadCollectionTask(MusicCollection parent, Tag tag) {
+			this.parent = parent;
+			this.tag = tag;
+		}
 
 		@Override
 		protected void onPreExecute() {
@@ -127,24 +197,68 @@ public class LibraryFragment extends Fragment {
 		}
 
 		@Override
-		protected Object doInBackground(Void... params) {
+		protected List<? extends LibraryItem> doInBackground(Void... params) {
 			dao.openReadableDatabase();
 
-			if (filters.isEmpty()) {
-				return dao.getTag("album");
+			if (parent == null) {
+				coll = new MusicCollection(null, "artist");
+				return dao.getTags(coll);
 			} else {
-				return dao.getTracks(filters.get(0));
+				List<Tag> tags = new ArrayList<Tag>(parent.getTags());
+				tags.add(tag);
+
+				if (parent.getName() == null) {
+					coll = new MusicCollection(tags, null);
+					return dao.getTracks(coll);
+				}
+
+				switch (parent.getName()) {
+					case "artist":
+						coll = new MusicCollection(tags, "album");
+						return dao.getTags(coll);
+					case "album":
+						coll = new MusicCollection(tags, null);
+						return dao.getTracks(coll);
+					default:
+						throw new IllegalArgumentException(
+								"Unexpected tag name");
+				}
 			}
 		}
 
-		protected void onPostExecute(Object items) {
-			contents = (List<LibraryItem>) items;
+		@SuppressWarnings(value = "unchecked")
+		protected void onPostExecute(List<? extends LibraryItem> items) {
+			collection = coll;
+			contents = items;
 
-			list.setAdapter(new ArrayAdapter<LibraryItem>(
-					activity, R.layout.library_item, R.id.library_item,
-					contents));
+			ArrayAdapter<? extends LibraryItem> adapter;
+			if (collection.getName() == null) {
+				activity.setTitle(getString(R.string.track));
+				adapter = new ArrayAdapter<Track>(
+						activity, R.layout.library_item, R.id.library_item,
+						(List<Track>) items);
+			} else {
+				activity.setTitle(WordUtils.capitalize(collection.getName()));
+				adapter = new ArrayAdapter<Tag>(
+						activity, R.layout.library_item, R.id.library_item,
+						(List<Tag>) items);
+
+			}
+
+			list.setAdapter(adapter);
 
 			dao.close();
+
+/*
+			// Skip through solitary items
+			// FIXME: Uncomment after solving issues w. history when going back
+			if (items.size() == 1 && collection.getName() != null) {
+				new TagFilterAction().execute(
+						(LibraryActivity) LibraryFragment.this.activity,
+						(ArrayAdapter<LibraryItem>) adapter, items.size() - 1);
+			}
+*/
+
 			progress.setVisibility(ProgressBar.INVISIBLE);
 		}
 	}

@@ -31,8 +31,10 @@ android {
     }
 
     dependencies {
-        compile "com.android.support:support-v4:22.2.0"
+        compile "com.android.support:recyclerview-v7:23.0.1"
+        compile "com.android.support:support-v4:23.0.1"
         compile "org.bitbucket.ijabz:jaudiotagger:Version2_2_2"
+        compile "org.apache.commons:commons-lang3:3.4"
         androidTestCompile "commons-io:commons-io:2.4"
         testCompile "commons-io:commons-io:2.4"
         testCompile "junit:junit:4.11"
@@ -48,6 +50,8 @@ android {
         exclude 'META-INF/NOTICE'
     }
 }
+
 dependencies {
-    compile 'com.android.support:support-v4:22.2.0'
+    compile 'com.android.support:support-v4:23.0.1'
+    compile 'com.android.support:recyclerview-v7:23.0.1'
 }

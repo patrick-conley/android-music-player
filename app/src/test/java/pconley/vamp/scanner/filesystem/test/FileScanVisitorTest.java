@@ -100,8 +100,8 @@ public class FileScanVisitorTest {
 	}
 
 	/**
-	 * Given the music folder contains another folder, when I visit that
-	 * folder, then I receive an update with the folder's name.
+	 * Given the music folder contains another folder, when I visit that folder,
+	 * then I receive an update with the folder's name.
 	 */
 	@Test
 	public void testVisitChildFolder() {
@@ -120,8 +120,8 @@ public class FileScanVisitorTest {
 	}
 
 	/**
-	 * Given the music folder contains a non-music file, when I visit it,
-	 * then I receive a progress broadcast but nothing is added to the database.
+	 * Given the music folder contains a non-music file, when I visit it, then I
+	 * receive a progress broadcast but nothing is added to the database.
 	 */
 	@Test
 	public void testNonMediaFile() throws IOException {
@@ -144,8 +144,8 @@ public class FileScanVisitorTest {
 	}
 
 	/**
-	 * Given the music folder contains a non-music file, when I visit it
-	 * several times, then I receive a progress broadcast each time.
+	 * Given the music folder contains a non-music file, when I visit it several
+	 * times, then I receive a progress broadcast each time.
 	 */
 	@Test
 	public void testMultipleVisits() throws IOException {
@@ -170,8 +170,8 @@ public class FileScanVisitorTest {
 	}
 
 	/**
-	 * Given the music folder contains a music file, when I visit it twice,
-	 * then I receive a broadcast with an error message.
+	 * Given the music folder contains a music file, when I visit it twice, then
+	 * I receive a broadcast with an error message.
 	 */
 	@Test
 	public void testDuplicateVisit() throws IOException {
@@ -194,8 +194,8 @@ public class FileScanVisitorTest {
 	}
 
 	/**
-	 * When I visit a file, then I receive a progress broadcast and its tags
-	 * are scanned.
+	 * When I visit a file, then I receive a progress broadcast and its tags are
+	 * scanned.
 	 */
 	@Test
 	public void testVisitVorbis() throws IOException {

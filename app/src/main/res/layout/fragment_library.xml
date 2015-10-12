@@ -6,7 +6,9 @@
     <ListView
         android:id="@+id/library_contents"
         android:layout_width="match_parent"
-        android:layout_height="fill_parent"/>
+        android:layout_height="fill_parent"
+        android:layout_alignParentTop="true"
+        />
 
     <ProgressBar
         android:id="@+id/library_progress_load"
