@@ -13,6 +13,9 @@ import java.util.Stack;
 import pconley.vamp.R;
 import pconley.vamp.model.Tag;
 
+/**
+ * Display a list of tags that are ancestors to the collection being displayed.
+ */
 public class TagHistoryView extends RecyclerView {
 
 	private Adapter adapter;
@@ -42,6 +45,9 @@ public class TagHistoryView extends RecyclerView {
 		scrollToPosition(adapter.getItemCount() - 1);
 	}
 
+	/**
+	 * Adapter controlling tags in the history
+	 */
 	public class Adapter
 			extends RecyclerView.Adapter<TagHistoryView.ViewHolder> {
 
@@ -86,6 +92,9 @@ public class TagHistoryView extends RecyclerView {
 
 	}
 
+	/**
+	 * Describe the view holding each tag in the history
+	 */
 	public static class ViewHolder extends RecyclerView.ViewHolder {
 
 		private TextView textView;

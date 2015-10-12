@@ -73,6 +73,14 @@ public class LibraryFragment extends Fragment
 		activity = getActivity();
 	}
 
+	/**
+	 * Initialize views, parse the fragment's arguments (parent collection and
+	 * just-clicked tag), and load data
+	 *
+	 * @param inflater
+	 * @param container
+	 * @param savedInstanceState
+	 */
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater,
 			ViewGroup container,
@@ -127,7 +135,8 @@ public class LibraryFragment extends Fragment
 				= (ArrayAdapter<LibraryItem>) parent.getAdapter();
 
 		LibraryActionLocator.findAction(adapter.getItem(position))
-		                    .execute((LibraryActivity) activity, adapter, position);
+		                    .execute((LibraryActivity) activity, adapter,
+		                             position);
 	}
 
 	/**
@@ -161,7 +170,7 @@ public class LibraryFragment extends Fragment
 		return contents;
 	}
 
-	/*
+	/**
 	 * Load the contents of the library into a TextView with execute(). Work is
 	 * done in a background thread.
 	 */
