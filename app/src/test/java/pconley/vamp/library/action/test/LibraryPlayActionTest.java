@@ -17,7 +17,7 @@ import java.util.ArrayList;
 
 import pconley.vamp.R;
 import pconley.vamp.library.LibraryActivity;
-import pconley.vamp.library.action.PlayAction;
+import pconley.vamp.library.action.LibraryPlayAction;
 import pconley.vamp.model.LibraryItem;
 import pconley.vamp.model.Track;
 import pconley.vamp.player.PlayerActivity;
@@ -28,7 +28,7 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(emulateSdk = 18, manifest = "src/main/AndroidManifest.xml")
-public class PlayActionTest {
+public class LibraryPlayActionTest {
 
 	private LibraryActivity activity;
 	private ShadowActivity shadow;
@@ -69,7 +69,7 @@ public class PlayActionTest {
 		adapter.addAll(track);
 
 		// When
-		new PlayAction().execute(activity, adapter, position);
+		new LibraryPlayAction().execute(activity, adapter, position);
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);
@@ -97,7 +97,7 @@ public class PlayActionTest {
 		adapter.addAll(tracks);
 
 		// When
-		new PlayAction().execute(activity, adapter, position);
+		new LibraryPlayAction().execute(activity, adapter, position);
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);
@@ -118,7 +118,7 @@ public class PlayActionTest {
 		int position = 0;
 
 		// When
-		new PlayAction().execute(activity, adapter, position);
+		new LibraryPlayAction().execute(activity, adapter, position);
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);

@@ -17,9 +17,9 @@ public class LibraryActionLocator {
 	 */
 	public static LibraryAction findAction(LibraryItem item) {
 		if (item instanceof Tag) {
-			return new TagFilterAction();
+			return new LibraryFilterAction();
 		} else if (item instanceof Track) {
-			return new PlayAction();
+			return new LibraryPlayAction();
 		} else {
 			return null;
 		}

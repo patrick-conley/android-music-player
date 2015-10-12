@@ -22,7 +22,7 @@ import java.util.Set;
 import pconley.vamp.R;
 import pconley.vamp.library.LibraryActivity;
 import pconley.vamp.library.LibraryFragment;
-import pconley.vamp.library.action.TagFilterAction;
+import pconley.vamp.library.action.LibraryFilterAction;
 import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.model.LibraryItem;
 import pconley.vamp.model.Tag;
@@ -32,7 +32,7 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(emulateSdk = 18, manifest = "src/main/AndroidManifest.xml")
-public class TagFilterActionTest {
+public class LibraryFilterActionTest {
 
 	private LibraryActivity activity;
 	private FragmentManager fm;
@@ -70,7 +70,7 @@ public class TagFilterActionTest {
 		adapter.add(album);
 
 		// When
-		new TagFilterAction().execute(activity, adapter, 0);
+		new LibraryFilterAction().execute(activity, adapter, 0);
 
 		// Then
 		List<Tag> filters
@@ -117,7 +117,7 @@ public class TagFilterActionTest {
 		                      .start().restart().get();
 
 		// When
-		new TagFilterAction().execute(activity, adapter, 0);
+		new LibraryFilterAction().execute(activity, adapter, 0);
 
 		// Then
 		Adapter fragmentAdapter = ((ListView) activity.findViewById(
@@ -164,7 +164,7 @@ public class TagFilterActionTest {
 		insertTrack(expected);
 
 		// When
-		new TagFilterAction().execute(activity, adapter, 1);
+		new LibraryFilterAction().execute(activity, adapter, 1);
 
 		// Then
 		Adapter fragmentAdapter = ((ListView) activity.findViewById(

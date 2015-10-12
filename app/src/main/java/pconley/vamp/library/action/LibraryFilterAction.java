@@ -15,7 +15,7 @@ import pconley.vamp.model.Tag;
 /**
  * Replace the contents of the library by filtering against the clicked-on tag.
  */
-public class TagFilterAction implements LibraryAction {
+public class LibraryFilterAction implements LibraryAction {
 
 	// FIXME: split into prepare/execute methods
 	@Override

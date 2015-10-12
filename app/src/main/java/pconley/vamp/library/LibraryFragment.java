@@ -253,7 +253,7 @@ public class LibraryFragment extends Fragment
 			// Skip through solitary items
 			// FIXME: Uncomment after solving issues w. history when going back
 			if (items.size() == 1 && collection.getName() != null) {
-				new TagFilterAction().execute(
+				new LibraryFilterAction().execute(
 						(LibraryActivity) LibraryFragment.this.activity,
 						(ArrayAdapter<LibraryItem>) adapter, items.size() - 1);
 			}

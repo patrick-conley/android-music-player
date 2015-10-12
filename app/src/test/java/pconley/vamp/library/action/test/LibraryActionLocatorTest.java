@@ -10,8 +10,8 @@ import org.robolectric.annotation.Config;
 
 import pconley.vamp.library.action.LibraryAction;
 import pconley.vamp.library.action.LibraryActionLocator;
-import pconley.vamp.library.action.PlayAction;
-import pconley.vamp.library.action.TagFilterAction;
+import pconley.vamp.library.action.LibraryPlayAction;
+import pconley.vamp.library.action.LibraryFilterAction;
 import pconley.vamp.model.LibraryItem;
 import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
@@ -26,7 +26,7 @@ public class LibraryActionLocatorTest {
 
 	/**
 	 * When I look for a handler for a Track, then I get an instance of
-	 * PlayAction.
+	 * LibraryPlayAction.
 	 */
 	@Test
 	public void testTrack() {
@@ -36,12 +36,12 @@ public class LibraryActionLocatorTest {
 
 		// Then
 		assertNotNull("Tracks have a handler", action);
-		assertTrue("Track handler is correct", action instanceof PlayAction);
+		assertTrue("Track handler is correct", action instanceof LibraryPlayAction);
 	}
 
 	/**
 	 * When I look for a handler for a Tag, then I get in instance of
-	 * TagFilterAction.
+	 * LibraryFilterAction.
 	 */
 	@Test
 	public void testTag() {
@@ -51,7 +51,7 @@ public class LibraryActionLocatorTest {
 
 		// Then
 		assertNotNull("Tags have a handler", action);
-		assertTrue("Tag handler is correct", action instanceof TagFilterAction);
+		assertTrue("Tag handler is correct", action instanceof LibraryFilterAction);
 	}
 
 	/**
