@@ -3,7 +3,6 @@ package pconley.vamp.library.test;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -21,7 +20,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 
 import pconley.vamp.library.LibraryFragment;
@@ -177,35 +175,35 @@ public class LibraryFragmentTest {
 		             new HashSet<LibraryItem>(fragment.getContents()));
 	}
 
-	/**
-	 * Given the library is not empty, when I filter against a collection with
-	 * only one child, then the child is stepped into.
-	 */
-	@Test
-	public void stepThroughSolitaryTags() {
-		List<Tag> tags = new LinkedList<Tag>();
-		tags.add(new Tag("artist", "artist"));
-		tags.add(new Tag("album", "album"));
-		tags.add(new Tag("title", "title"));
-
-		// Given
-		TrackDAO dao = new TrackDAO(context).openWritableDatabase();
-		dao.insertTrack(Uri.parse("track1"), tags);
-		dao.insertTrack(Uri.parse("track2"), tags);
-
-		Tag artist = dao.getTags(new MusicCollection(null, "artist")).get(0);
-		List<Track> expected = dao.getTracks(new MusicCollection(null, null));
-
-		// When
-		LibraryFragment fragment = LibraryFragment.newInstance(
-				new MusicCollection(null, "artist"), artist);
-		startFragment(fragment);
-
-		// Then
-		assertEquals("Library skips over single-element collections",
-		             new HashSet<LibraryItem>(expected),
-		             new HashSet<LibraryItem>(fragment.getContents()));
-	}
+//	/**
+//	 * Given the library is not empty, when I filter against a collection with
+//	 * only one child, then the child is stepped into.
+//	 */
+//	@Test
+//	public void stepThroughSolitaryTags() {
+//		List<Tag> tags = new LinkedList<Tag>();
+//		tags.add(new Tag("artist", "artist"));
+//		tags.add(new Tag("album", "album"));
+//		tags.add(new Tag("title", "title"));
+//
+//		// Given
+//		TrackDAO dao = new TrackDAO(context).openWritableDatabase();
+//		dao.insertTrack(Uri.parse("track1"), tags);
+//		dao.insertTrack(Uri.parse("track2"), tags);
+//
+//		Tag artist = dao.getTags(new MusicCollection(null, "artist")).get(0);
+//		List<Track> expected = dao.getTracks(new MusicCollection(null, null));
+//
+//		// When
+//		LibraryFragment fragment = LibraryFragment.newInstance(
+//				new MusicCollection(null, "artist"), artist);
+//		startFragment(fragment);
+//
+//		// Then
+//		assertEquals("Library skips over single-element collections",
+//		             new HashSet<LibraryItem>(expected),
+//		             new HashSet<LibraryItem>(fragment.getContents()));
+//	}
 
 	private void startFragment(Fragment fragment) {
 		FragmentTestUtil.startFragment(fragment, MockActivity.class);

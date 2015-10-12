@@ -8,16 +8,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import pconley.vamp.R;
-import pconley.vamp.library.action.LibraryActionLocator;
-import pconley.vamp.model.LibraryItem;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.preferences.SettingsActivity;
 import pconley.vamp.scanner.ScannerProgressDialogFragment;
@@ -27,8 +23,7 @@ import pconley.vamp.util.BroadcastConstants;
 /**
  * Main activity, showing the contents of the library.
  */
-public class LibraryActivity extends Activity
-		implements AdapterView.OnItemClickListener {
+public class LibraryActivity extends Activity {
 
 	public static final String LIBRARY_ROOT_TAG = "pconley.vamp.library.root";
 
@@ -38,12 +33,21 @@ public class LibraryActivity extends Activity
 	private BroadcastReceiver playerEventReceiver;
 	private LocalBroadcastManager broadcastManager;
 
+	private TagHistoryView tagHistory;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_library);
 
 		loadLibrary();
+
+		tagHistory = (TagHistoryView) findViewById(
+				R.id.library_tag_history);
+		tagHistory.setHasFixedSize(true);
+		tagHistory.setLayoutManager(
+				new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL,
+				                        false));
 
 		broadcastManager = LocalBroadcastManager.getInstance(this);
 		playerEventReceiver = new PlayerEventReceiver();
@@ -99,30 +103,16 @@ public class LibraryActivity extends Activity
 		}
 	}
 
-	/**
-	 * Callback for items selected in a {@Link LibraryFragment}. Selecting a Tag
-	 * will replace the fragment with a new, filtered fragment; selecting a
-	 * Track will play the fragment's contents.
-	 *
-	 * @param parent
-	 * @param view
-	 * @param position
-	 * @param id
-	 */
 	@Override
-	@SuppressWarnings(value="unchecked")
-	public void onItemClick(AdapterView<?> parent, View view, int position,
-			long id) {
-		ArrayAdapter<LibraryItem> adapter
-				= (ArrayAdapter<LibraryItem>) parent.getAdapter();
+	public void onBackPressed() {
+		super.onBackPressed();
 
-		LibraryActionLocator.findAction(adapter.getItem(position))
-		             .execute(this, adapter, position);
+		tagHistory.pop();
 	}
 
 	/**
-	 * Reload the library after the device is scanned. Existing filters may have
-	 * been invalidated by the scan.
+	 * Reload the library when the page is opened or after the device is
+	 * scanned. Existing filters may have been invalidated by the scan.
 	 */
 	public void loadLibrary() {
 		FragmentManager fm = getFragmentManager();
@@ -130,7 +120,7 @@ public class LibraryActivity extends Activity
 		fm.popBackStack(LIBRARY_ROOT_TAG,
 		                FragmentManager.POP_BACK_STACK_INCLUSIVE);
 		fm.beginTransaction()
-		  .replace(R.id.library, LibraryFragment.newInstance())
+		  .replace(R.id.library_container, LibraryFragment.newInstance())
 		  .commit();
 	}
 

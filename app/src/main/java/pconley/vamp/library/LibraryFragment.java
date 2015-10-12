@@ -13,17 +13,21 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
+import org.apache.commons.lang3.text.WordUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import pconley.vamp.R;
+import pconley.vamp.library.action.LibraryActionLocator;
 import pconley.vamp.library.db.TrackDAO;
 import pconley.vamp.model.LibraryItem;
 import pconley.vamp.model.MusicCollection;
 import pconley.vamp.model.Tag;
 import pconley.vamp.model.Track;
 
-public class LibraryFragment extends Fragment {
+public class LibraryFragment extends Fragment
+		implements AdapterView.OnItemClickListener {
 
 	private Activity activity;
 	private ProgressBar progress;
@@ -77,7 +81,7 @@ public class LibraryFragment extends Fragment {
 				.inflate(R.layout.fragment_library, container, false);
 
 		list = (ListView) view.findViewById(R.id.library_contents);
-		list.setOnItemClickListener((AdapterView.OnItemClickListener) activity);
+		list.setOnItemClickListener(this);
 
 		progress = (ProgressBar) view.findViewById(R.id.library_progress_load);
 
@@ -103,6 +107,27 @@ public class LibraryFragment extends Fragment {
 		new LoadCollectionTask(parent, tag).execute();
 
 		return view;
+	}
+
+	/**
+	 * Callback for items selected in a {@Link LibraryFragment}. Selecting a Tag
+	 * will replace the fragment with a new, filtered fragment; selecting a
+	 * Track will play the fragment's contents.
+	 *
+	 * @param parent
+	 * @param view
+	 * @param position
+	 * @param id
+	 */
+	@Override
+	@SuppressWarnings(value = "unchecked")
+	public void onItemClick(AdapterView<?> parent, View view, int position,
+			long id) {
+		ArrayAdapter<LibraryItem> adapter
+				= (ArrayAdapter<LibraryItem>) parent.getAdapter();
+
+		LibraryActionLocator.findAction(adapter.getItem(position))
+		                    .execute((LibraryActivity) activity, adapter, position);
 	}
 
 	/**
@@ -181,12 +206,7 @@ public class LibraryFragment extends Fragment {
 				switch (parent.getName()) {
 					case "artist":
 						coll = new MusicCollection(tags, "album");
-						tags = dao.getTags(coll);
-
-						// Fall through if only one tag matches
-						if (tags.size() > 1) {
-							return tags;
-						}
+						return dao.getTags(coll);
 					case "album":
 						coll = new MusicCollection(tags, null);
 						return dao.getTracks(coll);
@@ -204,10 +224,12 @@ public class LibraryFragment extends Fragment {
 
 			ArrayAdapter<? extends LibraryItem> adapter;
 			if (collection.getName() == null) {
+				activity.setTitle(getString(R.string.track));
 				adapter = new ArrayAdapter<Track>(
 						activity, R.layout.library_item, R.id.library_item,
 						(List<Track>) items);
 			} else {
+				activity.setTitle(WordUtils.capitalize(collection.getName()));
 				adapter = new ArrayAdapter<Tag>(
 						activity, R.layout.library_item, R.id.library_item,
 						(List<Tag>) items);
@@ -217,6 +239,17 @@ public class LibraryFragment extends Fragment {
 			list.setAdapter(adapter);
 
 			dao.close();
+
+/*
+			// Skip through solitary items
+			// FIXME: Uncomment after solving issues w. history when going back
+			if (items.size() == 1 && collection.getName() != null) {
+				new TagFilterAction().execute(
+						(LibraryActivity) LibraryFragment.this.activity,
+						(ArrayAdapter<LibraryItem>) adapter, items.size() - 1);
+			}
+*/
+
 			progress.setVisibility(ProgressBar.INVISIBLE);
 		}
 	}

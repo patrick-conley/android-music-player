@@ -3,6 +3,9 @@
 
     <string name="app_name">Android Music Player</string>
 
+    <!-- Misc -->
+    <string name="track">Track</string>
+
     <!-- Player -->
     <string name="activity_player_name">Player</string>
     <string name="player_blank_time">&#8211;:&#8211;&#8211;</string>
