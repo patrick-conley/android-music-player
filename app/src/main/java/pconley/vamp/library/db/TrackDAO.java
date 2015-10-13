@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.util.Log;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -111,7 +110,7 @@ public class TrackDAO {
 	 * @return The tracks matching the set of tags in the collection.
 	 */
 	public List<Track> getTracks(MusicCollection collection) {
-		int nTags = collection.getTags().size();
+		int nTags = collection.getHistory().size();
 
 		// SELECT trackId, trackUri, tagId, name, value FROM
 		//   buildMatchingTracksQuery
@@ -131,7 +130,7 @@ public class TrackDAO {
 		String[] selectionArgs = new String[nTags];
 		for (int i = 0; i < nTags; i++) {
 			selectionArgs[i] =
-					String.valueOf(collection.getTags().get(i).getId());
+					String.valueOf(collection.getHistory().get(i).getId());
 		}
 
 		// Get the tracks
@@ -186,11 +185,11 @@ public class TrackDAO {
 	 */
 	public List<Tag> getTags(MusicCollection collection)
 			throws IllegalArgumentException {
-		if (collection.getName() == null) {
+		if (collection.getSelection() == null) {
 			throw new IllegalArgumentException("Tag name unset");
 		}
-		int nTags = collection.getTags() == null ? 0
-		                                         : collection.getTags().size();
+		int nTags = collection.getHistory() == null ? 0
+		                                         : collection.getHistory().size();
 
 		// SELECT *, COUNT(*) FROM buildMatchingTracksQuery
 		//   INNER JOIN Tags ON tagId = _id
@@ -209,9 +208,9 @@ public class TrackDAO {
 		String[] selectionArgs = new String[nTags + 1];
 		for (int i = 0; i < nTags; i++) {
 			selectionArgs[i] =
-					String.valueOf(collection.getTags().get(i).getId());
+					String.valueOf(collection.getHistory().get(i).getId());
 		}
-		selectionArgs[nTags] = collection.getName();
+		selectionArgs[nTags] = collection.getSelection();
 
 		// Get the tags
 		Cursor results = library.rawQuery(query, selectionArgs);
@@ -223,7 +222,7 @@ public class TrackDAO {
 
 		for (results.moveToFirst(); !results.isAfterLast();
 		     results.moveToNext()) {
-			tags.add(new Tag(results.getLong(idColumn), collection.getName(),
+			tags.add(new Tag(results.getLong(idColumn), collection.getSelection(),
 			                 results.getString(valueColumn)));
 		}
 

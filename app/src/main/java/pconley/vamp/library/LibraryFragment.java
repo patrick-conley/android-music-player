@@ -47,18 +47,19 @@ public class LibraryFragment extends Fragment
 	/**
 	 * Create a new fragment, filtering the library against a set of tags.
 	 *
-	 * @param parent
+	 * @param parentCollection
 	 * 		The collection used in this fragment's parent. Should be null if this
 	 * 		is the root fragment.
-	 * @param tag
+	 * @param selected
 	 * 		The item clicked in the parent fragment. Null if this is the root
 	 * 		fragment.
 	 */
-	public static LibraryFragment newInstance(MusicCollection parent, Tag tag) {
+	public static LibraryFragment newInstance(MusicCollection parentCollection,
+			Tag selected) {
 
 		Bundle arguments = new Bundle();
-		arguments.putParcelable("parent", parent);
-		arguments.putParcelable("tag", tag);
+		arguments.putParcelable("parentCollection", parentCollection);
+		arguments.putParcelable("selectedTag", selected);
 
 		LibraryFragment fragment = new LibraryFragment();
 		fragment.setArguments(arguments);
@@ -93,26 +94,26 @@ public class LibraryFragment extends Fragment
 
 		progress = (ProgressBar) view.findViewById(R.id.library_progress_load);
 
-		MusicCollection parent = null;
-		Tag tag = null;
+		MusicCollection parentCollection = null;
+		Tag selectedTag = null;
 
 		Bundle arguments = getArguments();
 		if (arguments != null) {
-			parent = arguments.getParcelable("parent");
-			tag = arguments.getParcelable("tag");
+			parentCollection = arguments.getParcelable("parentCollection");
+			selectedTag = arguments.getParcelable("selectedTag");
 
-			if (parent == null && tag != null) {
+			if (parentCollection == null && selectedTag != null) {
 				// FIXME: I see no solid reason to prohibit this case -
 				// FIXME: deal with it in the AsyncTask when it's generalized.
 				throw new IllegalArgumentException(
 						"Parent collection is unset");
-			} else if (parent != null && tag == null) {
+			} else if (parentCollection != null && selectedTag == null) {
 				throw new IllegalArgumentException("Selected tag is unset");
 			}
 
 		}
 
-		new LoadCollectionTask(parent, tag).execute();
+		new LoadCollectionTask(parentCollection, selectedTag).execute();
 
 		return view;
 	}
@@ -178,14 +179,15 @@ public class LibraryFragment extends Fragment
 			extends AsyncTask<Void, Void, List<? extends LibraryItem>> {
 
 		private MusicCollection coll;
-		private final MusicCollection parent;
-		private final Tag tag;
+		private final MusicCollection parentCollection;
+		private final Tag selectedTag;
 
 		private TrackDAO dao;
 
-		public LoadCollectionTask(MusicCollection parent, Tag tag) {
-			this.parent = parent;
-			this.tag = tag;
+		public LoadCollectionTask(MusicCollection parentCollection,
+				Tag selectedTag) {
+			this.parentCollection = parentCollection;
+			this.selectedTag = selectedTag;
 		}
 
 		@Override
@@ -200,29 +202,33 @@ public class LibraryFragment extends Fragment
 		protected List<? extends LibraryItem> doInBackground(Void... params) {
 			dao.openReadableDatabase();
 
-			if (parent == null) {
+			if (parentCollection == null) {
 				coll = new MusicCollection(null, "artist");
 				return dao.getTags(coll);
 			} else {
-				List<Tag> tags = new ArrayList<Tag>(parent.getTags());
-				tags.add(tag);
+				List<Tag> history = new ArrayList<Tag>(
+						parentCollection.getHistory());
+				history.add(selectedTag);
 
-				if (parent.getName() == null) {
-					coll = new MusicCollection(tags, null);
-					return dao.getTracks(coll);
+				if (parentCollection.getSelection() == null) {
+					throw new IllegalStateException("Wut? Duplicate state");
+//					coll = new MusicCollection(history, null);
+//					return dao.getTracks(coll);
 				}
 
-				switch (parent.getName()) {
+				switch (parentCollection.getSelection()) {
 					case "artist":
-						coll = new MusicCollection(tags, "album");
-						return dao.getTags(coll);
+								coll = new MusicCollection(history, "album");
+								return dao.getTags(coll);
 					case "album":
-						coll = new MusicCollection(tags, null);
+						coll = new MusicCollection(history, null);
 						return dao.getTracks(coll);
 					default:
 						throw new IllegalArgumentException(
-								"Unexpected tag name");
+								"Unexpected tag name " +
+								parentCollection.getSelection());
 				}
+
 			}
 		}
 
@@ -232,13 +238,14 @@ public class LibraryFragment extends Fragment
 			contents = items;
 
 			ArrayAdapter<? extends LibraryItem> adapter;
-			if (collection.getName() == null) {
+			if (collection.getSelection() == null) {
 				activity.setTitle(getString(R.string.track));
 				adapter = new ArrayAdapter<Track>(
 						activity, R.layout.library_item, R.id.library_item,
 						(List<Track>) items);
 			} else {
-				activity.setTitle(WordUtils.capitalize(collection.getName()));
+				activity.setTitle(WordUtils.capitalize(
+						collection.getSelection()));
 				adapter = new ArrayAdapter<Tag>(
 						activity, R.layout.library_item, R.id.library_item,
 						(List<Tag>) items);
@@ -252,7 +259,7 @@ public class LibraryFragment extends Fragment
 /*
 			// Skip through solitary items
 			// FIXME: Uncomment after solving issues w. history when going back
-			if (items.size() == 1 && collection.getName() != null) {
+			if (items.size() == 1 && collection.getSelection() != null) {
 				new LibraryFilterAction().execute(
 						(LibraryActivity) LibraryFragment.this.activity,
 						(ArrayAdapter<LibraryItem>) adapter, items.size() - 1);

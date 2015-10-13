@@ -16,41 +16,42 @@ import java.util.List;
  */
 public class MusicCollection implements Parcelable {
 
-	private List<Tag> tags;
-	private String name;
+	private List<Tag> history;
+	private String selection;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param tags
+	 * @param history
 	 * 		The set of tags used to filter the library and build the collection.
-	 * @param name
+	 * @param selection
 	 * 		Name of the tags in the contents. Should be null iff the collection
 	 * 		contains tracks.
 	 */
-	public MusicCollection(@Nullable List<Tag> tags, String name) {
-		if (tags == null) {
-			this.tags = Collections.emptyList();
+	public MusicCollection(@Nullable List<Tag> history, String selection) {
+		if (history == null) {
+			this.history = Collections.emptyList();
 		} else {
-			this.tags = Collections.unmodifiableList(tags);
+			this.history = Collections.unmodifiableList(history);
 		}
-		this.name = name;
+		this.selection = selection;
 	}
 
-	public List<Tag> getTags() {
-		return tags;
+	public List<Tag> getHistory() {
+		return history;
 	}
 
-	public String getName() {
-		return name;
+	public String getSelection() {
+		return selection;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((tags == null) ? 0 : tags.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((history == null) ? 0 : history.hashCode());
+		result = prime * result +
+		         ((selection == null) ? 0 : selection.hashCode());
 		return result;
 	}
 
@@ -61,23 +62,24 @@ public class MusicCollection implements Parcelable {
 		}
 		if (obj == null) {
 			return false;
-		} if (getClass() != obj.getClass()) {
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
 		}
 
 		MusicCollection other = (MusicCollection) obj;
-		if (tags == null) {
-			if (other.tags != null) {
+		if (history == null) {
+			if (other.history != null) {
 				return false;
 			}
-		} else if (!tags.equals(other.tags)) {
+		} else if (!history.equals(other.history)) {
 			return false;
 		}
-		if (name == null) {
-			if (other.name != null) {
+		if (selection == null) {
+			if (other.selection != null) {
 				return false;
 			}
-		} else if (!name.equals(other.name)) {
+		} else if (!selection.equals(other.selection)) {
 			return false;
 		}
 		return true;
@@ -109,8 +111,8 @@ public class MusicCollection implements Parcelable {
 
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
-		dest.writeString(name);
-		dest.writeTypedList(tags);
+		dest.writeString(selection);
+		dest.writeTypedList(history);
 	}
 
 }

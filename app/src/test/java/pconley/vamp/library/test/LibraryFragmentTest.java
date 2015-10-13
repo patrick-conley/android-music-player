@@ -65,7 +65,7 @@ public class LibraryFragmentTest {
 		// Then
 		assertEquals("Fragment was created without filters",
 		             Collections.emptyList(),
-		             fragment.getCollection().getTags());
+		             fragment.getCollection().getHistory());
 	}
 
 	/**
@@ -84,7 +84,7 @@ public class LibraryFragmentTest {
 
 		// Then
 		assertEquals("Fragment was created with filters",
-		             filters, fragment.getCollection().getTags());
+		             filters, fragment.getCollection().getHistory());
 	}
 
 	/**
@@ -191,7 +191,7 @@ public class LibraryFragmentTest {
 //		dao.insertTrack(Uri.parse("track1"), tags);
 //		dao.insertTrack(Uri.parse("track2"), tags);
 //
-//		Tag artist = dao.getTags(new MusicCollection(null, "artist")).get(0);
+//		Tag artist = dao.getHistory(new MusicCollection(null, "artist")).get(0);
 //		List<Track> expected = dao.getTracks(new MusicCollection(null, null));
 //
 //		// When

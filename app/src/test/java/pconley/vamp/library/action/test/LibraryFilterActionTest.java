@@ -75,7 +75,7 @@ public class LibraryFilterActionTest {
 		// Then
 		List<Tag> filters
 				= ((LibraryFragment) fm.findFragmentById(R.id.library))
-				.getCollection().getTags();
+				.getCollection().getHistory();
 
 		assertEquals("Album filter is added to the fragment",
 		             Collections.singletonList(album), filters);

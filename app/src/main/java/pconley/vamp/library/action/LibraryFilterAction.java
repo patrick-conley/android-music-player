@@ -29,7 +29,7 @@ public class LibraryFilterAction implements LibraryAction {
 		MusicCollection collection = ((LibraryFragment) fm.findFragmentById(
 				R.id.library_container)).getCollection();
 
-		String fragmentName = collection.getTags().isEmpty()
+		String fragmentName = collection.getHistory().isEmpty()
 		                      ? LibraryActivity.LIBRARY_ROOT_TAG : null;
 
 		// Create a new fragment

@@ -41,7 +41,7 @@ public class MusicCollectionTest {
 	public void collectionAcceptsNullName() {
 		MusicCollection collection = new MusicCollection(tags, null);
 
-		assertNull("A null name is allowed", collection.getName());
+		assertNull("A null name is allowed", collection.getSelection());
 	}
 
 	/**
@@ -53,7 +53,7 @@ public class MusicCollectionTest {
 
 		assertEquals("A missing list of tags is replaced with an empty list",
 		             Collections.emptyList(),
-		             collection.getTags());
+		             collection.getHistory());
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class MusicCollectionTest {
 	public void tagsAreImmutable() {
 		MusicCollection collection = new MusicCollection(tags, "name");
 
-		collection.getTags().add(new Tag("foo", "bar"));
+		collection.getHistory().add(new Tag("foo", "bar"));
 	}
 
 	/**
