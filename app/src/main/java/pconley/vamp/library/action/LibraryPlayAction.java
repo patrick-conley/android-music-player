@@ -15,7 +15,7 @@ import pconley.vamp.player.PlayerService;
  * Launch the player: put the displayed tracks in the queue, and start with the
  * clicked item.
  */
-public class PlayAction implements LibraryAction {
+public class LibraryPlayAction implements LibraryAction {
 
 	@Override
 	public void execute(LibraryActivity activity,

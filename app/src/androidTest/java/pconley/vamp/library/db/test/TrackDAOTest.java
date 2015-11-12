@@ -318,7 +318,7 @@ public class TrackDAOTest extends AndroidTestCase {
 
 		Set<Tag> expected = new HashSet<Tag>();
 		for (String value : sampleValues) {
-			expected.add(new Tag(match.getName(), value));
+			expected.add(new Tag(match.getSelection(), value));
 		}
 
 		// When/Then

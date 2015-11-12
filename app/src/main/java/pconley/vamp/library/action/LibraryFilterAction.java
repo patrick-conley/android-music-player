@@ -15,7 +15,7 @@ import pconley.vamp.model.Tag;
 /**
  * Replace the contents of the library by filtering against the clicked-on tag.
  */
-public class TagFilterAction implements LibraryAction {
+public class LibraryFilterAction implements LibraryAction {
 
 	// FIXME: split into prepare/execute methods
 	@Override
@@ -29,7 +29,7 @@ public class TagFilterAction implements LibraryAction {
 		MusicCollection collection = ((LibraryFragment) fm.findFragmentById(
 				R.id.library_container)).getCollection();
 
-		String fragmentName = collection.getTags().isEmpty()
+		String fragmentName = collection.getHistory().isEmpty()
 		                      ? LibraryActivity.LIBRARY_ROOT_TAG : null;
 
 		// Create a new fragment
