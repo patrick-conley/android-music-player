@@ -1,9 +1,9 @@
 package pconley.vamp.scanner;
 
 import pconley.vamp.R;
-import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.model.filesystem.MediaFolder;
-import pconley.vamp.model.filesystem.MediaVisitorBase;
+import pconley.vamp.persistence.dao.TrackDAO;
+import pconley.vamp.scanner.filesystem.model.MediaFolder;
+import pconley.vamp.scanner.filesystem.model.MediaVisitorBase;
 import pconley.vamp.preferences.SettingsHelper;
 import pconley.vamp.scanner.filesystem.FileCountVisitor;
 import pconley.vamp.scanner.filesystem.FileScanVisitor;

@@ -12,7 +12,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import pconley.vamp.library.TagHistoryView;
-import pconley.vamp.model.Tag;
+import pconley.vamp.persistence.model.Tag;
 
 import static org.junit.Assert.assertEquals;
 

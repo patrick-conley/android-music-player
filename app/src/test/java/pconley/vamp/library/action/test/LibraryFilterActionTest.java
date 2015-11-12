@@ -23,10 +23,10 @@ import pconley.vamp.R;
 import pconley.vamp.library.LibraryActivity;
 import pconley.vamp.library.LibraryFragment;
 import pconley.vamp.library.action.LibraryFilterAction;
-import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.model.LibraryItem;
-import pconley.vamp.model.Tag;
-import pconley.vamp.model.Track;
+import pconley.vamp.persistence.dao.TrackDAO;
+import pconley.vamp.persistence.model.LibraryItem;
+import pconley.vamp.persistence.model.Tag;
+import pconley.vamp.persistence.model.Track;
 
 import static org.junit.Assert.assertEquals;
 

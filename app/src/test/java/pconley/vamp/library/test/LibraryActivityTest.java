@@ -15,7 +15,7 @@ import org.robolectric.tester.android.view.TestMenuItem;
 
 import pconley.vamp.R;
 import pconley.vamp.library.LibraryActivity;
-import pconley.vamp.library.db.TrackDAO;
+import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.preferences.SettingsActivity;
 import pconley.vamp.scanner.ScannerProgressDialogFragment;

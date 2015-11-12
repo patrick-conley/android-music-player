@@ -20,11 +20,11 @@ import java.util.List;
 
 import pconley.vamp.R;
 import pconley.vamp.library.action.LibraryActionLocator;
-import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.model.LibraryItem;
-import pconley.vamp.model.MusicCollection;
-import pconley.vamp.model.Tag;
-import pconley.vamp.model.Track;
+import pconley.vamp.persistence.dao.TrackDAO;
+import pconley.vamp.persistence.model.LibraryItem;
+import pconley.vamp.persistence.model.MusicCollection;
+import pconley.vamp.persistence.model.Tag;
+import pconley.vamp.persistence.model.Track;
 
 public class LibraryFragment extends Fragment
 		implements AdapterView.OnItemClickListener {
@@ -213,7 +213,7 @@ public class LibraryFragment extends Fragment
 				if (parentCollection.getSelection() == null) {
 					throw new IllegalStateException("Wut? Duplicate state");
 //					coll = new MusicCollection(history, null);
-//					return dao.getTracks(coll);
+//					return dao.getTracksWithCollection(coll);
 				}
 
 				switch (parentCollection.getSelection()) {
@@ -222,7 +222,7 @@ public class LibraryFragment extends Fragment
 								return dao.getTags(coll);
 					case "album":
 						coll = new MusicCollection(history, null);
-						return dao.getTracks(coll);
+						return dao.getTracksWithCollection(coll);
 					default:
 						throw new IllegalArgumentException(
 								"Unexpected tag name " +

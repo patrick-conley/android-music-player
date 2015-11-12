@@ -6,8 +6,8 @@ import android.widget.ArrayAdapter;
 import java.util.ArrayList;
 
 import pconley.vamp.library.LibraryActivity;
-import pconley.vamp.model.LibraryItem;
-import pconley.vamp.model.Track;
+import pconley.vamp.persistence.model.LibraryItem;
+import pconley.vamp.persistence.model.Track;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.player.PlayerService;
 

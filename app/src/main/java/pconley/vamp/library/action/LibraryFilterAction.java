@@ -8,9 +8,9 @@ import pconley.vamp.R;
 import pconley.vamp.library.LibraryActivity;
 import pconley.vamp.library.LibraryFragment;
 import pconley.vamp.library.TagHistoryView;
-import pconley.vamp.model.LibraryItem;
-import pconley.vamp.model.MusicCollection;
-import pconley.vamp.model.Tag;
+import pconley.vamp.persistence.model.LibraryItem;
+import pconley.vamp.persistence.model.MusicCollection;
+import pconley.vamp.persistence.model.Tag;
 
 /**
  * Replace the contents of the library by filtering against the clicked-on tag.

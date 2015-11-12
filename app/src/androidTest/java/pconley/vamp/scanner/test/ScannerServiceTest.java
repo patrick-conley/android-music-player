@@ -12,8 +12,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 
 import pconley.vamp.R;
-import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.model.Track;
+import pconley.vamp.persistence.dao.TrackDAO;
+import pconley.vamp.persistence.model.Track;
 import pconley.vamp.preferences.SettingsHelper;
 import pconley.vamp.scanner.ScannerEvent;
 import pconley.vamp.scanner.ScannerService;
@@ -189,7 +189,7 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 		assertEquals("Scan completed",
 				getContext().getString(R.string.scan_done), finalStatus);
 		assertEquals("Scanner writes to the library",
-				Arrays.asList(new Track[] { expected }), dao.getTracks());
+				Arrays.asList(new Track[] { expected }), dao.getAllTracks());
 
 		FileUtils.deleteDirectory(musicFolder);
 	}
@@ -212,7 +212,7 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 		// Then
 		assertEquals("Scan completed",
 				getContext().getString(R.string.scan_done), finalStatus);
-		assertEmpty("Library is cleared", dao.getTracks());
+		assertEmpty("Library is cleared", dao.getAllTracks());
 
 		FileUtils.deleteDirectory(musicFolder);
 	}

@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.List;
 
 import pconley.vamp.R;
-import pconley.vamp.model.Track;
+import pconley.vamp.persistence.model.Track;
 import pconley.vamp.util.BroadcastConstants;
 
 /**

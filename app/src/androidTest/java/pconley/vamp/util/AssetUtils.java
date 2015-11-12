@@ -13,9 +13,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.model.Tag;
-import pconley.vamp.model.Track;
+import pconley.vamp.persistence.dao.TrackDAO;
+import pconley.vamp.persistence.model.Tag;
+import pconley.vamp.persistence.model.Track;
 import pconley.vamp.preferences.SettingsHelper;
 
 public final class AssetUtils {

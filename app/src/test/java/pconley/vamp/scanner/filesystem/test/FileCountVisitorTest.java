@@ -2,8 +2,8 @@ package pconley.vamp.scanner.filesystem.test;
 
 import java.io.File;
 
-import pconley.vamp.model.filesystem.MediaFile;
-import pconley.vamp.model.filesystem.MediaFolder;
+import pconley.vamp.scanner.filesystem.model.MediaFile;
+import pconley.vamp.scanner.filesystem.model.MediaFolder;
 import pconley.vamp.scanner.filesystem.FileCountVisitor;
 
 import static org.junit.Assert.assertEquals;

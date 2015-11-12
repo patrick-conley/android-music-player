@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import pconley.vamp.R;
-import pconley.vamp.model.Track;
+import pconley.vamp.persistence.model.Track;
 import pconley.vamp.player.PlayerEvent;
 import pconley.vamp.player.PlayerFactory;
 import pconley.vamp.player.PlayerService;

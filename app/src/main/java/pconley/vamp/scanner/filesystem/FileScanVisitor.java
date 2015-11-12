@@ -11,14 +11,14 @@ import java.io.File;
 import java.util.List;
 
 import pconley.vamp.R;
-import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.model.Tag;
-import pconley.vamp.model.filesystem.MediaFile;
-import pconley.vamp.model.filesystem.MediaFolder;
-import pconley.vamp.model.filesystem.MediaVisitorBase;
+import pconley.vamp.persistence.dao.TrackDAO;
+import pconley.vamp.persistence.model.Tag;
+import pconley.vamp.scanner.filesystem.model.MediaFile;
+import pconley.vamp.scanner.filesystem.model.MediaFolder;
+import pconley.vamp.scanner.filesystem.model.MediaVisitorBase;
 import pconley.vamp.scanner.ScannerEvent;
-import pconley.vamp.scanner.container.ScannerFactory;
-import pconley.vamp.scanner.container.TagStrategy;
+import pconley.vamp.scanner.strategy.StrategyFactory;
+import pconley.vamp.scanner.strategy.TagStrategy;
 import pconley.vamp.util.BroadcastConstants;
 
 /**
@@ -81,7 +81,7 @@ public class FileScanVisitor implements MediaVisitorBase {
 	public void close() {
 		dao.close();
 
-		ScannerFactory.release();
+		StrategyFactory.release();
 	}
 
 	/**
@@ -116,7 +116,7 @@ public class FileScanVisitor implements MediaVisitorBase {
 		fileIntent.putExtra(BroadcastConstants.EXTRA_PROGRESS, progress);
 		broadcastManager.sendBroadcast(fileIntent);
 
-		TagStrategy strategy = ScannerFactory.getStrategy(file);
+		TagStrategy strategy = StrategyFactory.getStrategy(file);
 
 		// Read tags
 		List<Tag> tags;

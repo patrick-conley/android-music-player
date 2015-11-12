@@ -11,7 +11,7 @@ import android.widget.TextView;
 import java.util.Stack;
 
 import pconley.vamp.R;
-import pconley.vamp.model.Tag;
+import pconley.vamp.persistence.model.Tag;
 
 /**
  * Display a list of tags that are ancestors to the collection being displayed.

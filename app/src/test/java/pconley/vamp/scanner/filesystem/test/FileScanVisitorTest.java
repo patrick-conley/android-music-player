@@ -22,10 +22,10 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.model.Track;
-import pconley.vamp.model.filesystem.MediaFile;
-import pconley.vamp.model.filesystem.MediaFolder;
+import pconley.vamp.persistence.dao.TrackDAO;
+import pconley.vamp.persistence.model.Track;
+import pconley.vamp.scanner.filesystem.model.MediaFile;
+import pconley.vamp.scanner.filesystem.model.MediaFolder;
 import pconley.vamp.scanner.ScannerEvent;
 import pconley.vamp.scanner.filesystem.FileScanVisitor;
 import pconley.vamp.util.AssetUtils;
@@ -140,7 +140,7 @@ public class FileScanVisitorTest {
 		             finalBroadcastProgress);
 		assertEquals(
 				"No files are scanned from a directory without media files", 0,
-				dao.getTracks().size());
+				dao.getAllTracks().size());
 	}
 
 	/**
@@ -216,7 +216,7 @@ public class FileScanVisitorTest {
 		assertEquals("Correct number of files scanned", 1,
 		             finalBroadcastProgress);
 		assertEquals("Vorbis comments are scanned correctly",
-		             Collections.singletonList(expected), dao.getTracks());
+		             Collections.singletonList(expected), dao.getAllTracks());
 	}
 
 	private static class ScannerReceiver extends BroadcastReceiver {

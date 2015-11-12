@@ -3,7 +3,7 @@ package pconley.vamp.library.action;
 import android.widget.ArrayAdapter;
 
 import pconley.vamp.library.LibraryActivity;
-import pconley.vamp.model.LibraryItem;
+import pconley.vamp.persistence.model.LibraryItem;
 
 /**
  * After clicking an item in the library, replace the library or its contents.
