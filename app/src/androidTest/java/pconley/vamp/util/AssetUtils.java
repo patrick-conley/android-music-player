@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.persistence.model.Tag;
 import pconley.vamp.persistence.model.Track;
@@ -153,22 +154,13 @@ public final class AssetUtils {
 	public static long[] addTracksToDb(Context context, File[] files) {
 		long[] ids = new long[files.length];
 
-		TrackDAO dao = new TrackDAO(context);
-		dao.openWritableDatabase();
+		TrackDAO dao = new TrackDAO(new LibraryOpenHelper(context));
 
 		for (int i = 0; i < files.length; i++) {
 			Track track = buildTrack(files[i]);
 
-			ids[i] = dao.insertTrack(track.getUri());
-
-			for (String name : track.getTagNames()) {
-				for (Tag tag : track.getTags(name)) {
-					dao.insertTag(ids[i], tag);
-				}
-			}
+			dao.insertTrack(track);
 		}
-
-		dao.close();
 
 		return ids;
 	}

@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import pconley.vamp.R;
+import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.preferences.SettingsActivity;
 import pconley.vamp.scanner.ScannerProgressDialogFragment;
@@ -65,6 +66,8 @@ public class LibraryActivity extends Activity {
 	@Override
 	protected void onStop() {
 		broadcastManager.unregisterReceiver(playerEventReceiver);
+
+		new LibraryOpenHelper(this).close();
 
 		super.onStop();
 	}

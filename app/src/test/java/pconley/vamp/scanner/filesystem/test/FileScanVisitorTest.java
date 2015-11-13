@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.persistence.model.Track;
 import pconley.vamp.scanner.filesystem.model.MediaFile;
@@ -62,7 +63,7 @@ public class FileScanVisitorTest {
 		context = Robolectric.getShadowApplication().getApplicationContext();
 
 		musicFolder = AssetUtils.setupMusicFolder(context);
-		dao = new TrackDAO(context).openWritableDatabase();
+		dao = new TrackDAO(new LibraryOpenHelper(context));
 		visitor = new FileScanVisitor(musicFolder, context, count);
 
 		IntentFilter filter
@@ -82,7 +83,6 @@ public class FileScanVisitorTest {
 				(receiver);
 
 		dao.wipeDatabase();
-		dao.close();
 	}
 
 	/**

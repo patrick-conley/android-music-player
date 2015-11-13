@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import pconley.vamp.R;
+import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.model.Track;
 import pconley.vamp.preferences.SettingsActivity;
 import pconley.vamp.util.BroadcastConstants;
@@ -128,6 +129,8 @@ public class PlayerActivity extends Activity {
 		}
 
 		unbindService(playerConnection);
+
+		new LibraryOpenHelper(this).close();
 
 		super.onStop();
 	}

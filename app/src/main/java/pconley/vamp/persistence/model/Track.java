@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,6 +50,7 @@ public final class Track implements LibraryItem {
 	/**
 	 * @return The names of tags used by this track.
 	 */
+	@NonNull
 	public Set<String> getTagNames() {
 		return Collections.unmodifiableSet(tags.keySet());
 	}

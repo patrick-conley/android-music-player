@@ -20,6 +20,8 @@ import java.util.List;
 
 import pconley.vamp.R;
 import pconley.vamp.library.action.LibraryActionLocator;
+import pconley.vamp.persistence.LibraryOpenHelper;
+import pconley.vamp.persistence.dao.TagDAO;
 import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.persistence.model.LibraryItem;
 import pconley.vamp.persistence.model.MusicCollection;
@@ -182,7 +184,8 @@ public class LibraryFragment extends Fragment
 		private final MusicCollection parentCollection;
 		private final Tag selectedTag;
 
-		private TrackDAO dao;
+		private TrackDAO trackDAO;
+		private TagDAO tagDAO;
 
 		public LoadCollectionTask(MusicCollection parentCollection,
 				Tag selectedTag) {
@@ -195,16 +198,17 @@ public class LibraryFragment extends Fragment
 			super.onPreExecute();
 
 			progress.setVisibility(ProgressBar.VISIBLE);
-			dao = new TrackDAO(activity);
+
+			LibraryOpenHelper helper = new LibraryOpenHelper(activity);
+			trackDAO = new TrackDAO(helper);
+			tagDAO = new TagDAO(helper);
 		}
 
 		@Override
 		protected List<? extends LibraryItem> doInBackground(Void... params) {
-			dao.openReadableDatabase();
-
 			if (parentCollection == null) {
 				coll = new MusicCollection(null, "artist");
-				return dao.getTags(coll);
+				return tagDAO.getTagsInCollection(coll);
 			} else {
 				List<Tag> history = new ArrayList<Tag>(
 						parentCollection.getHistory());
@@ -219,10 +223,10 @@ public class LibraryFragment extends Fragment
 				switch (parentCollection.getSelection()) {
 					case "artist":
 								coll = new MusicCollection(history, "album");
-								return dao.getTags(coll);
+								return tagDAO.getTagsInCollection(coll);
 					case "album":
 						coll = new MusicCollection(history, null);
-						return dao.getTracksWithCollection(coll);
+						return trackDAO.getTracksWithCollection(coll);
 					default:
 						throw new IllegalArgumentException(
 								"Unexpected tag name " +
@@ -253,8 +257,6 @@ public class LibraryFragment extends Fragment
 			}
 
 			list.setAdapter(adapter);
-
-			dao.close();
 
 /*
 			// Skip through solitary items

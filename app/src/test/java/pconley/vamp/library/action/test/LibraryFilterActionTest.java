@@ -23,6 +23,7 @@ import pconley.vamp.R;
 import pconley.vamp.library.LibraryActivity;
 import pconley.vamp.library.LibraryFragment;
 import pconley.vamp.library.action.LibraryFilterAction;
+import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.persistence.model.LibraryItem;
 import pconley.vamp.persistence.model.Tag;
@@ -47,7 +48,7 @@ public class LibraryFilterActionTest {
 		                      .start().restart().get();
 		fm = activity.getFragmentManager();
 
-		dao = new TrackDAO(activity).openWritableDatabase();
+		dao = new TrackDAO(new LibraryOpenHelper(activity));
 
 		adapter = new ArrayAdapter<LibraryItem>(activity,
 		                                        R.layout.fragment_library);
@@ -56,7 +57,6 @@ public class LibraryFilterActionTest {
 	@After
 	public void tearDownTest() {
 		dao.wipeDatabase();
-		dao.close();
 	}
 
 	/**
@@ -97,21 +97,21 @@ public class LibraryFilterActionTest {
 				.add(new Tag("title", "foo"))
 				.build();
 		expected.add(track);
-		insertTrack(track);
+		dao.insertTrack(track);
 
 		track = new Track.Builder(0, Uri.parse("two"))
 				.add(album)
 				.add(new Tag("title", "bar"))
 				.build();
 		expected.add(track);
-		insertTrack(track);
+		dao.insertTrack(track);
 
 		track = new Track.Builder(0, Uri.parse("three"))
 				.add(album)
 				.add(new Tag("title", "baz"))
 				.build();
 		expected.add(track);
-		insertTrack(track);
+		dao.insertTrack(track);
 
 		activity = Robolectric.buildActivity(LibraryActivity.class).create()
 		                      .start().restart().get();
@@ -149,19 +149,19 @@ public class LibraryFilterActionTest {
 				.add(album1)
 				.add(new Tag("title", "foo"))
 				.build();
-		insertTrack(track);
+		dao.insertTrack(track);
 
 		track = new Track.Builder(0, Uri.parse("two"))
 				.add(album1)
 				.add(new Tag("title", "bar"))
 				.build();
-		insertTrack(track);
+		dao.insertTrack(track);
 
 		Track expected = new Track.Builder(0, Uri.parse("three"))
 				.add(album2)
 				.add(new Tag("title", "baz"))
 				.build();
-		insertTrack(expected);
+		dao.insertTrack(expected);
 
 		// When
 		new LibraryFilterAction().execute(activity, adapter, 1);
@@ -173,17 +173,6 @@ public class LibraryFilterActionTest {
 		assertEquals("Adapter contains tracks", 1, fragmentAdapter.getCount());
 		assertEquals("Tracks in the album are displayed", expected,
 		             fragmentAdapter.getItem(0));
-
-	}
-
-	private void insertTrack(Track track) {
-		long trackId = dao.insertTrack(track.getUri());
-
-		for (String name : track.getTagNames()) {
-			for (Tag tag : track.getTags(name)) {
-				dao.insertTag(trackId, tag);
-			}
-		}
 
 	}
 

@@ -11,8 +11,10 @@ import java.io.File;
 import java.util.List;
 
 import pconley.vamp.R;
+import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.persistence.model.Tag;
+import pconley.vamp.persistence.model.Track;
 import pconley.vamp.scanner.filesystem.model.MediaFile;
 import pconley.vamp.scanner.filesystem.model.MediaFolder;
 import pconley.vamp.scanner.filesystem.model.MediaVisitorBase;
@@ -57,8 +59,7 @@ public class FileScanVisitor implements MediaVisitorBase {
 		this.context = context;
 
 		this.broadcastManager = LocalBroadcastManager.getInstance(context);
-		this.dao = new TrackDAO(context);
-		dao.openWritableDatabase();
+		this.dao = new TrackDAO(new LibraryOpenHelper(context));
 
 		dirIntent = new Intent(BroadcastConstants.FILTER_SCANNER);
 		dirIntent.putExtra(BroadcastConstants.EXTRA_EVENT, ScannerEvent
@@ -79,7 +80,7 @@ public class FileScanVisitor implements MediaVisitorBase {
 	 * when finished.
 	 */
 	public void close() {
-		dao.close();
+		new LibraryOpenHelper(context).close();
 
 		StrategyFactory.release();
 	}
@@ -133,8 +134,13 @@ public class FileScanVisitor implements MediaVisitorBase {
 
 		Uri uri = Uri.fromFile(file.getFile());
 
+		Track.Builder builder = new Track.Builder(-1, uri);
+		for (Tag tag : tags) {
+			builder.add(tag);
+		}
+
 		try {
-			dao.insertTrack(uri, tags);
+			dao.insertTrack(builder.build());
 		} catch (NullPointerException e) {
 			Log.e(TAG, e.getMessage());
 
