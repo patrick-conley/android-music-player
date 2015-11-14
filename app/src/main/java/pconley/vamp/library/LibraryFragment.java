@@ -20,11 +20,13 @@ import java.util.List;
 
 import pconley.vamp.R;
 import pconley.vamp.library.action.LibraryActionLocator;
-import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.model.LibraryItem;
-import pconley.vamp.model.MusicCollection;
-import pconley.vamp.model.Tag;
-import pconley.vamp.model.Track;
+import pconley.vamp.persistence.LibraryOpenHelper;
+import pconley.vamp.persistence.dao.TagDAO;
+import pconley.vamp.persistence.dao.TrackDAO;
+import pconley.vamp.persistence.model.LibraryItem;
+import pconley.vamp.persistence.model.MusicCollection;
+import pconley.vamp.persistence.model.Tag;
+import pconley.vamp.persistence.model.Track;
 
 public class LibraryFragment extends Fragment
 		implements AdapterView.OnItemClickListener {
@@ -182,7 +184,8 @@ public class LibraryFragment extends Fragment
 		private final MusicCollection parentCollection;
 		private final Tag selectedTag;
 
-		private TrackDAO dao;
+		private TrackDAO trackDAO;
+		private TagDAO tagDAO;
 
 		public LoadCollectionTask(MusicCollection parentCollection,
 				Tag selectedTag) {
@@ -195,16 +198,17 @@ public class LibraryFragment extends Fragment
 			super.onPreExecute();
 
 			progress.setVisibility(ProgressBar.VISIBLE);
-			dao = new TrackDAO(activity);
+
+			LibraryOpenHelper helper = new LibraryOpenHelper(activity);
+			trackDAO = new TrackDAO(helper);
+			tagDAO = new TagDAO(helper);
 		}
 
 		@Override
 		protected List<? extends LibraryItem> doInBackground(Void... params) {
-			dao.openReadableDatabase();
-
 			if (parentCollection == null) {
 				coll = new MusicCollection(null, "artist");
-				return dao.getTags(coll);
+				return tagDAO.getTagsInCollection(coll);
 			} else {
 				List<Tag> history = new ArrayList<Tag>(
 						parentCollection.getHistory());
@@ -213,16 +217,16 @@ public class LibraryFragment extends Fragment
 				if (parentCollection.getSelection() == null) {
 					throw new IllegalStateException("Wut? Duplicate state");
 //					coll = new MusicCollection(history, null);
-//					return dao.getTracks(coll);
+//					return dao.getTracksWithCollection(coll);
 				}
 
 				switch (parentCollection.getSelection()) {
 					case "artist":
 								coll = new MusicCollection(history, "album");
-								return dao.getTags(coll);
+								return tagDAO.getTagsInCollection(coll);
 					case "album":
 						coll = new MusicCollection(history, null);
-						return dao.getTracks(coll);
+						return trackDAO.getTracksWithCollection(coll);
 					default:
 						throw new IllegalArgumentException(
 								"Unexpected tag name " +
@@ -253,8 +257,6 @@ public class LibraryFragment extends Fragment
 			}
 
 			list.setAdapter(adapter);
-
-			dao.close();
 
 /*
 			// Skip through solitary items

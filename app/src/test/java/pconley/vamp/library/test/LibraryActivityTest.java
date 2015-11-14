@@ -15,7 +15,8 @@ import org.robolectric.tester.android.view.TestMenuItem;
 
 import pconley.vamp.R;
 import pconley.vamp.library.LibraryActivity;
-import pconley.vamp.library.db.TrackDAO;
+import pconley.vamp.persistence.LibraryOpenHelper;
+import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.preferences.SettingsActivity;
 import pconley.vamp.scanner.ScannerProgressDialogFragment;
@@ -41,9 +42,7 @@ public class LibraryActivityTest {
 
 	@After
 	public void tearDownTest() {
-		TrackDAO dao = new TrackDAO(context).openWritableDatabase();
-		dao.wipeDatabase();
-		dao.close();
+		new TrackDAO(new LibraryOpenHelper(context)).wipeDatabase();
 	}
 
 	/**

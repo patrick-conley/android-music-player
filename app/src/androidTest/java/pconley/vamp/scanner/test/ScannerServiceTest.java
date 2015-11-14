@@ -1,25 +1,5 @@
 package pconley.vamp.scanner.test;
 
-import static android.test.MoreAsserts.assertEmpty;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.io.FileUtils;
-
-import pconley.vamp.R;
-import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.model.Track;
-import pconley.vamp.preferences.SettingsHelper;
-import pconley.vamp.scanner.ScannerEvent;
-import pconley.vamp.scanner.ScannerService;
-import pconley.vamp.util.AssetUtils;
-import pconley.vamp.util.BroadcastConstants;
-import pconley.vamp.util.Constants;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -28,6 +8,28 @@ import android.content.SharedPreferences;
 import android.support.v4.content.LocalBroadcastManager;
 import android.test.RenamingDelegatingContext;
 import android.test.ServiceTestCase;
+
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import pconley.vamp.R;
+import pconley.vamp.persistence.LibraryOpenHelper;
+import pconley.vamp.persistence.dao.TrackDAO;
+import pconley.vamp.persistence.model.Track;
+import pconley.vamp.preferences.SettingsHelper;
+import pconley.vamp.scanner.ScannerEvent;
+import pconley.vamp.scanner.ScannerService;
+import pconley.vamp.util.AssetUtils;
+import pconley.vamp.util.BroadcastConstants;
+import pconley.vamp.util.Constants;
+
+import static android.test.MoreAsserts.assertEmpty;
 
 public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 
@@ -68,7 +70,7 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 				Context.MODE_PRIVATE);
 		SettingsHelper.setPreferences(preferences);
 
-		dao = new TrackDAO(context).openWritableDatabase();
+		dao = new TrackDAO(new LibraryOpenHelper(context));
 
 		scannerIntent = new Intent(getContext(), ScannerService.class);
 
@@ -86,7 +88,6 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 		preferences.edit().putBoolean(SettingsHelper.KEY_DEBUG, false).commit();
 
 		dao.wipeDatabase();
-		dao.close();
 
 		super.tearDown();
 	}
@@ -189,7 +190,7 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 		assertEquals("Scan completed",
 				getContext().getString(R.string.scan_done), finalStatus);
 		assertEquals("Scanner writes to the library",
-				Arrays.asList(new Track[] { expected }), dao.getTracks());
+				Arrays.asList(new Track[] { expected }), dao.getAllTracks());
 
 		FileUtils.deleteDirectory(musicFolder);
 	}
@@ -212,7 +213,7 @@ public class ScannerServiceTest extends ServiceTestCase<ScannerService> {
 		// Then
 		assertEquals("Scan completed",
 				getContext().getString(R.string.scan_done), finalStatus);
-		assertEmpty("Library is cleared", dao.getTracks());
+		assertEmpty("Library is cleared", dao.getAllTracks());
 
 		FileUtils.deleteDirectory(musicFolder);
 	}

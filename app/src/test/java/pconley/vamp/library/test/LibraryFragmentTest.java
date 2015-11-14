@@ -23,11 +23,13 @@ import java.util.HashSet;
 import java.util.List;
 
 import pconley.vamp.library.LibraryFragment;
-import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.model.LibraryItem;
-import pconley.vamp.model.MusicCollection;
-import pconley.vamp.model.Tag;
-import pconley.vamp.model.Track;
+import pconley.vamp.persistence.LibraryOpenHelper;
+import pconley.vamp.persistence.dao.TagDAO;
+import pconley.vamp.persistence.dao.TrackDAO;
+import pconley.vamp.persistence.model.LibraryItem;
+import pconley.vamp.persistence.model.MusicCollection;
+import pconley.vamp.persistence.model.Tag;
+import pconley.vamp.persistence.model.Track;
 import pconley.vamp.util.AssetUtils;
 
 import static org.junit.Assert.assertEquals;
@@ -37,19 +39,21 @@ import static org.junit.Assert.assertEquals;
 public class LibraryFragmentTest {
 
 	private Context context;
-	private TrackDAO dao;
+	private TrackDAO trackDAO;
+	private TagDAO tagDAO;
 
 	@Before
 	public void setUpTest() {
 		context = Robolectric.getShadowApplication().getApplicationContext();
 
-		dao = new TrackDAO(context).openWritableDatabase();
+		LibraryOpenHelper helper = new LibraryOpenHelper(context);
+		trackDAO = new TrackDAO(helper);
+		tagDAO = new TagDAO(helper);
 	}
 
 	@After
 	public void tearDownTest() {
-		dao.wipeDatabase();
-		dao.close();
+		trackDAO.wipeDatabase();
 	}
 
 	/**
@@ -133,7 +137,8 @@ public class LibraryFragmentTest {
 
 		// Given
 		AssetUtils.addTracksToDb(context, new File[] { ogg, flac });
-		List<Tag> expected = dao.getTags(new MusicCollection(null, "artist"));
+		List<Tag> expected = tagDAO.getTagsInCollection(new MusicCollection(
+				null, "artist"));
 
 
 		// When
@@ -157,7 +162,8 @@ public class LibraryFragmentTest {
 
 		// Given
 		AssetUtils.addTracksToDb(context, new File[] { ogg, flac });
-		List<Track> expected = dao.getTracks(new MusicCollection(null, null));
+		List<Track> expected = trackDAO.getTracksWithCollection(new MusicCollection(
+				null, null));
 
 		ArrayList<Tag> filters = new ArrayList<Tag>();
 		filters.add(expected.get(0).getTags("artist").get(0));
@@ -192,7 +198,7 @@ public class LibraryFragmentTest {
 //		dao.insertTrack(Uri.parse("track2"), tags);
 //
 //		Tag artist = dao.getHistory(new MusicCollection(null, "artist")).get(0);
-//		List<Track> expected = dao.getTracks(new MusicCollection(null, null));
+//		List<Track> expected = dao.getTracksWithCollection(new MusicCollection(null, null));
 //
 //		// When
 //		LibraryFragment fragment = LibraryFragment.newInstance(

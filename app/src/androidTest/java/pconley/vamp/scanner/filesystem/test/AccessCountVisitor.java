@@ -1,8 +1,8 @@
 package pconley.vamp.scanner.filesystem.test;
 
-import pconley.vamp.model.filesystem.MediaFile;
-import pconley.vamp.model.filesystem.MediaFolder;
-import pconley.vamp.model.filesystem.MediaVisitorBase;
+import pconley.vamp.scanner.filesystem.model.MediaFile;
+import pconley.vamp.scanner.filesystem.model.MediaFolder;
+import pconley.vamp.scanner.filesystem.model.MediaVisitorBase;
 
 public class AccessCountVisitor implements MediaVisitorBase {
 

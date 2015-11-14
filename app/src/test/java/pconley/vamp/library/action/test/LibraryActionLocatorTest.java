@@ -12,9 +12,9 @@ import pconley.vamp.library.action.LibraryAction;
 import pconley.vamp.library.action.LibraryActionLocator;
 import pconley.vamp.library.action.LibraryPlayAction;
 import pconley.vamp.library.action.LibraryFilterAction;
-import pconley.vamp.model.LibraryItem;
-import pconley.vamp.model.Tag;
-import pconley.vamp.model.Track;
+import pconley.vamp.persistence.model.LibraryItem;
+import pconley.vamp.persistence.model.Tag;
+import pconley.vamp.persistence.model.Track;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;

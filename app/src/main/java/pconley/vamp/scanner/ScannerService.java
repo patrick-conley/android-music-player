@@ -1,9 +1,10 @@
 package pconley.vamp.scanner;
 
 import pconley.vamp.R;
-import pconley.vamp.library.db.TrackDAO;
-import pconley.vamp.model.filesystem.MediaFolder;
-import pconley.vamp.model.filesystem.MediaVisitorBase;
+import pconley.vamp.persistence.LibraryOpenHelper;
+import pconley.vamp.persistence.dao.TrackDAO;
+import pconley.vamp.scanner.filesystem.model.MediaFolder;
+import pconley.vamp.scanner.filesystem.model.MediaVisitorBase;
 import pconley.vamp.preferences.SettingsHelper;
 import pconley.vamp.scanner.filesystem.FileCountVisitor;
 import pconley.vamp.scanner.filesystem.FileScanVisitor;
@@ -31,8 +32,6 @@ import android.util.Log;
  */
 public class ScannerService extends IntentService {
 	private static final String TAG = "Scanner Service";
-
-	private Intent countIntent;
 
 	/**
 	 * Constructor. Do not call this explicitly.
@@ -62,9 +61,7 @@ public class ScannerService extends IntentService {
 		}
 
 		// Clear the database
-		TrackDAO dao = new TrackDAO(getBaseContext()).openWritableDatabase();
-		dao.wipeDatabase();
-		dao.close();
+		new TrackDAO(new LibraryOpenHelper(getBaseContext())).wipeDatabase();
 
 		// Count
 		MediaVisitorBase visitor = new FileCountVisitor();
