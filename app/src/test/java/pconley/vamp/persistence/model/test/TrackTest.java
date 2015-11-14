@@ -39,6 +39,14 @@ public class TrackTest {
 	}
 
 	/**
+	 * The set of tags is immutable
+	 */
+	@Test(expected = UnsupportedOperationException.class)
+	public void testImmutableTags() throws UnsupportedOperationException {
+		track.getTags().remove(0);
+	}
+
+	/**
 	 * The set of tag names is immutable
 	 */
 	@Test(expected = UnsupportedOperationException.class)

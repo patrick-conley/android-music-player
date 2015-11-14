@@ -136,13 +136,8 @@ public class TrackDAO {
 			long trackId = library.insertOrThrow(TrackEntry.NAME, null, values);
 
 			// Insert the track's tags
-			for (String name : track.getTagNames()) {
-				List<Tag> tags = track.getTags(name);
-				if (tags != null) {
-					for (Tag tag : tags) {
-						tagDAO.insertTag(trackId, tag);
-					}
-				}
+			for (Tag tag : track.getTags()) {
+				tagDAO.insertTag(trackId, tag);
 			}
 			library.setTransactionSuccessful();
 		} finally {

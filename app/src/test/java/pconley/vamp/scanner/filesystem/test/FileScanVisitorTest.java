@@ -19,8 +19,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TrackDAO;
@@ -215,6 +217,7 @@ public class FileScanVisitorTest {
 		             broadcastEvents);
 		assertEquals("Correct number of files scanned", 1,
 		             finalBroadcastProgress);
+		Set<Track> expectedSet = new HashSet<Track>();
 		assertEquals("Vorbis comments are scanned correctly",
 		             Collections.singletonList(expected), dao.getAllTracks());
 	}

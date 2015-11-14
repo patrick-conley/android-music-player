@@ -1,7 +1,6 @@
 package pconley.vamp.persistence.model;
 
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -9,6 +8,7 @@ import android.support.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -24,10 +24,11 @@ public final class Track implements LibraryItem {
 
 	private long id;
 	private Uri uri;
-	private Map<String, ArrayList<Tag>> tags;
+	private Set<Tag> tags;
+	private Map<String, ArrayList<Tag>> tagsByName;
 
 	/* Private constructor. Use the builder. */
-	private Track(long id, Uri uri, Map<String, ArrayList<Tag>> tags) {
+	private Track(long id, Uri uri, Set<Tag> tags) {
 		this.id = id;
 		this.uri = uri;
 		this.tags = tags;
@@ -52,7 +53,32 @@ public final class Track implements LibraryItem {
 	 */
 	@NonNull
 	public Set<String> getTagNames() {
-		return Collections.unmodifiableSet(tags.keySet());
+		if (tagsByName == null) {
+			buildTagsByName();
+		}
+
+		return Collections.unmodifiableSet(tagsByName.keySet());
+	}
+
+	private void buildTagsByName() {
+		tagsByName = new HashMap<String, ArrayList<Tag>>();
+
+		for (Tag tag : tags) {
+			String name = tag.getName();
+			if (!tagsByName.containsKey(name)) {
+				tagsByName.put(name, new ArrayList<Tag>());
+			}
+
+			tagsByName.get(name).add(tag);
+		}
+	}
+
+	/**
+	 * @return The tags used by this track
+	 */
+	@NonNull
+	public Set<Tag> getTags() {
+		return Collections.unmodifiableSet(tags);
 	}
 
 	/**
@@ -65,11 +91,15 @@ public final class Track implements LibraryItem {
 	 * @return The tags corresponding to this tag name.
 	 */
 	public List<Tag> getTags(String name) {
+		if (tagsByName == null) {
+			buildTagsByName();
+		}
+
 		// Check if the key exists: unmodifiableList doesn't accept null input
-		if (!tags.containsKey(name)) {
+		if (!tagsByName.containsKey(name)) {
 			return null;
 		} else {
-			return Collections.unmodifiableList(tags.get(name));
+			return Collections.unmodifiableList(tagsByName.get(name));
 		}
 	}
 
@@ -79,13 +109,13 @@ public final class Track implements LibraryItem {
 	public String tagsToString() {
 		StringBuilder sb = new StringBuilder();
 
-		List<String> tagNames = new LinkedList<String>(tags.keySet());
+		List<String> tagNames = new LinkedList<String>(getTagNames());
 		Collections.sort(tagNames);
 
 		for (String name : tagNames) {
 			sb.append("\t").append(name).append(":\n");
 
-			for (Tag tag : tags.get(name)) {
+			for (Tag tag : tagsByName.get(name)) {
 				sb.append("\t\t").append(tag.getValue()).append("\n");
 			}
 		}
@@ -147,17 +177,13 @@ public final class Track implements LibraryItem {
 
 		@Override
 		public Track createFromParcel(Parcel source) {
-			Track track = new Track(source.readLong(),
-			                        Uri.parse(source.readString()),
-			                        new HashMap<String, ArrayList<Tag>>());
+			long id = source.readLong();
+			Uri uri = Uri.parse(source.readString());
 
-			Bundle bundle = source.readBundle(getClass().getClassLoader());
-			for (String name : bundle.keySet()) {
-				ArrayList<Tag> tagList = bundle.getParcelableArrayList(name);
-				track.tags.put(name, tagList);
-			}
+			ArrayList<Tag> tags = new ArrayList<Tag>();
+			source.readTypedList(tags, Tag.CREATOR);
 
-			return track;
+			return new Track(id, uri, new HashSet<Tag>(tags));
 		}
 
 		@Override
@@ -173,15 +199,9 @@ public final class Track implements LibraryItem {
 
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
-		Bundle tagBundle = new Bundle();
-		for (String name : tags.keySet()) {
-			tagBundle.putParcelableArrayList(name, tags.get(name));
-		}
-
 		dest.writeLong(id);
 		dest.writeString(uri.toString());
-		dest.writeBundle(tagBundle);
-
+		dest.writeTypedList(new ArrayList<Tag>(tags));
 	}
 
 	/**
@@ -192,24 +212,17 @@ public final class Track implements LibraryItem {
 
 		private long id;
 		private Uri uri;
-		private Map<String, ArrayList<Tag>> tags;
+		private Set<Tag> tags;
 
 		public Builder(long id, Uri uri) {
 			this.id = id;
 			this.uri = uri;
 
-			tags = new HashMap<String, ArrayList<Tag>>();
+			tags = new HashSet<Tag>();
 		}
 
 		public Builder add(Tag tag) {
-			String name = tag.getName();
-
-			if (!tags.containsKey(name)) {
-				tags.put(name, new ArrayList<Tag>());
-			}
-
-			tags.get(name).add(tag);
-
+			tags.add(tag);
 			return this;
 		}
 
