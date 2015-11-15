@@ -31,8 +31,10 @@ public class TagHistoryView extends RecyclerView {
 	public TagHistoryView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 
-		adapter = new Adapter();
-		setAdapter(adapter);
+		if (!isInEditMode()) {
+			adapter = new Adapter();
+			setAdapter(adapter);
+		}
 	}
 
 	public void push(Tag tag) {

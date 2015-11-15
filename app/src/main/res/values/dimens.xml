@@ -10,5 +10,7 @@
     <dimen name="text_size_large">24sp</dimen>
     <dimen name="text_size_huge">32sp</dimen>
     <dimen name="text_size_large_with_padding">40sp</dimen>
+    <dimen name="button_xlarge">96dip</dimen>
+    <dimen name="button_large">64dip</dimen>
 
 </resources>

@@ -10,11 +10,13 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.IBinder;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +46,10 @@ public class PlayerActivity extends Activity {
 	private CountDownTimer progressTimer;
 
 	private TextView positionView;
+	private TextView durationView;
+	private TextView uriView;
+	private TextView tagsView;
+	private ImageButton playPauseButton;
 
 	// Countdown timer can advance the progress bar only if a user isn't
 	// dragging it
@@ -80,6 +86,13 @@ public class PlayerActivity extends Activity {
 		// Initialize the progress bar
 		progressBar = (SeekBar) findViewById(R.id.player_seek);
 		progressBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener());
+
+		positionView = (TextView) findViewById(R.id.player_view_position);
+		durationView = (TextView) findViewById(R.id.player_view_duration);
+		uriView = (TextView) findViewById(R.id.player_view_uri);
+		tagsView = (TextView) findViewById(R.id.player_view_tags);
+		playPauseButton = (ImageButton) findViewById(
+				R.id.player_button_playpause);
 	}
 
 	@Override
@@ -125,7 +138,7 @@ public class PlayerActivity extends Activity {
 		// Player may be null if the activity is paused before the service has
 		// been bound. This seems to happen when restarting after a crash.
 		if (player != null) {
-			stopCountdown();
+			drawPauseState();
 		}
 
 		unbindService(playerConnection);
@@ -165,7 +178,6 @@ public class PlayerActivity extends Activity {
 	 * @param view
 	 */
 	public void onPrevClick(View view) {
-
 		if (player != null) {
 			player.previous();
 		}
@@ -180,7 +192,6 @@ public class PlayerActivity extends Activity {
 	 * @param view
 	 */
 	public void onNextClick(View view) {
-
 		if (player != null) {
 			player.next();
 		}
@@ -189,13 +200,11 @@ public class PlayerActivity extends Activity {
 	/*
 	 * Display the tags for the current track.
 	 */
-	private void displayTrackDetails() {
+	private void drawTrackDetails() {
 		Track track = player.getCurrentTrack();
 
-		((TextView) findViewById(R.id.player_view_uri))
-				.setText(track.getUri().toString());
-		((TextView) findViewById(R.id.player_view_tags))
-				.setText(track.tagsToString());
+		uriView.setText(track.getUri().toString());
+		tagsView.setText(track.tagsToString());
 
 		drawTime();
 	}
@@ -203,7 +212,7 @@ public class PlayerActivity extends Activity {
 	/*
 	 * Update values for progress & duration timers, and position in the
 	 * progress bar.
-	 * 
+	 *
 	 * If no track is playing, times are set to 0:00 and the progress bar is
 	 * locked to the beginning.
 	 */
@@ -211,10 +220,6 @@ public class PlayerActivity extends Activity {
 
 		final int position = player.getPosition();
 		final int duration = player.getDuration();
-
-		positionView = (TextView) findViewById(R.id.player_view_position);
-		TextView durationView = (TextView) findViewById(
-				R.id.player_view_duration);
 
 		if (position != -1) {
 			progressBar.setProgress(position / SEC);
@@ -236,7 +241,11 @@ public class PlayerActivity extends Activity {
 	 * Start the progress bar countdown. Call this method after a seek
 	 * operation to restart counting at the correct place.
 	 */
-	private void startCountdown() {
+	private void drawPlayState() {
+		playPauseButton.setBackground(
+				ContextCompat.getDrawable(PlayerActivity.this,
+				                          android.R.drawable.ic_media_pause));
+
 		if (progressTimer != null) {
 			progressTimer.cancel();
 		}
@@ -256,13 +265,12 @@ public class PlayerActivity extends Activity {
 				if (canTimerCountDown) {
 					int position = duration - (int) remaining;
 					progressBar.setProgress(position / SEC);
-					positionView.setText(dateFormat.format(new Date
-							                                       (position)));
-					Log.v("Active track", String.format("Progress is %d of %d",
-					                                    (duration -
-					                                     (int) remaining) /
-					                                    SEC,
-					                                    duration / SEC));
+					positionView.setText(
+							dateFormat.format(new Date(position)));
+					Log.v("Active track",
+					      String.format("Progress is %d of %d",
+					                    (duration - (int) remaining) / SEC,
+					                    duration / SEC));
 				}
 			}
 
@@ -277,23 +285,25 @@ public class PlayerActivity extends Activity {
 	/*
 	 * Stop the progress bar countdown.
 	 */
-	private void stopCountdown() {
+	private void drawPauseState() {
+		drawPauseState(null);
+	}
+
+	private void drawPauseState(String message) {
+		playPauseButton.setBackground(
+				ContextCompat.getDrawable(this,
+				                          android.R.drawable.ic_media_play));
+
 		if (progressTimer != null) {
 			progressTimer.cancel();
 			progressTimer = null;
 		}
 
-		Log.i("Active track", "Stopping timer");
-
-		drawTime();
-	}
-
-	private void clearCountdown() {
-		if (progressTimer != null) {
-			stopCountdown();
+		if (message != null) {
+			Toast.makeText(this, message, Toast.LENGTH_LONG).show();
 		}
 
-		Log.i("Active track", "Clearing timer & times");
+		Log.i("Active track", "Stopping timer");
 		drawTime();
 	}
 
@@ -308,13 +318,12 @@ public class PlayerActivity extends Activity {
 			player = ((PlayerService.PlayerBinder) service).getService();
 
 			if (player.getCurrentTrack() != null) {
-				displayTrackDetails();
+				drawTrackDetails();
 			}
 
 			if (player.isPlaying()) {
-				startCountdown();
+				drawPlayState();
 			}
-
 
 			IntentFilter filter
 					= new IntentFilter(BroadcastConstants.FILTER_PLAYER_EVENT);
@@ -327,7 +336,7 @@ public class PlayerActivity extends Activity {
 		 */
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
-			stopCountdown();
+			drawPauseState();
 			player = null;
 		}
 	}
@@ -344,9 +353,9 @@ public class PlayerActivity extends Activity {
 			if (fromUser) {
 				player.seekTo(progress * SEC);
 				if (player.isPlaying()) {
-					startCountdown();
+					drawPlayState();
 				} else {
-					drawTime();
+					drawPauseState();
 				}
 			}
 		}
@@ -383,47 +392,27 @@ public class PlayerActivity extends Activity {
 
 			switch (event) {
 				case NEW_TRACK:
-					displayTrackDetails();
-
+					drawTrackDetails();
 					break;
+
 				case PAUSE:
-					stopCountdown();
-
-					if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
-						Toast.makeText(
-								PlayerActivity.this,
-								intent.getStringExtra(
-										BroadcastConstants.EXTRA_MESSAGE),
-								Toast.LENGTH_LONG).show();
-					}
-
+					drawPauseState(intent.getStringExtra(
+							BroadcastConstants.EXTRA_MESSAGE));
 					break;
 
 				case PLAY:
-					startCountdown();
-
+					drawPlayState();
 					break;
 
 				case STOP:
-					clearCountdown();
+					drawPauseState(intent.getStringExtra(
+							BroadcastConstants.EXTRA_MESSAGE));
 
-					if (intent.hasExtra(BroadcastConstants.EXTRA_MESSAGE)) {
-						Toast.makeText(
-								PlayerActivity.this,
-								intent.getStringExtra(
-										BroadcastConstants.EXTRA_MESSAGE),
-								Toast.LENGTH_LONG).show();
-					}
-
-					((TextView) findViewById(R.id.player_view_uri)).setText
-							("");
-					((TextView) findViewById(R.id.player_view_tags))
-							.setText("");
+					uriView.setText("");
+					tagsView.setText("");
 
 					finish();
-
 					break;
-
 			}
 
 		}
