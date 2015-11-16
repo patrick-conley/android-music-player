@@ -43,7 +43,7 @@
             android:layout_toStartOf="@+id/player_button_playpause"
             android:background="@android:drawable/ic_media_previous"
             android:contentDescription="@string/player_button_previous"
-            android:onClick="onPrevClick"
+            android:onClick="onClickPrev"
             />
 
         <ImageButton
@@ -57,7 +57,7 @@
             android:background="@android:drawable/ic_media_play"
             android:clickable="true"
             android:contentDescription="@string/player_button_play_pause"
-            android:onClick="onPlayPauseClick"/>
+            android:onClick="onClickPlayPause"/>
 
         <ImageButton
             android:id="@+id/player_button_next"
@@ -68,7 +68,7 @@
             android:layout_toRightOf="@+id/player_button_playpause"
             android:background="@android:drawable/ic_media_next"
             android:contentDescription="@string/player_button_next"
-            android:onClick="onNextClick"/>
+            android:onClick="onClickNext"/>
 
     </RelativeLayout>
 

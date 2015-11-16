@@ -4,6 +4,9 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,73 +19,71 @@ import java.util.List;
  */
 public class MusicCollection implements Parcelable {
 
-	private List<Tag> history;
-	private String selection;
+	private String name;
+	private List<Tag> filter;
+	private List<? extends LibraryItem> contents;
 
 	/**
 	 * Constructor.
-	 *
-	 * @param history
-	 * 		The set of tags used to filter the library and build the collection.
-	 * @param selection
+	 *  @param name
 	 * 		Name of the tags in the contents. Should be null iff the collection
-	 * 		contains tracks.
+	 * 		contains tracks
+	 * @param filter
+	 * 		The set of tags used to filter the library and build the collection.
+	 * @param contents
 	 */
-	public MusicCollection(@Nullable List<Tag> history, String selection) {
-		if (history == null) {
-			this.history = Collections.emptyList();
-		} else {
-			this.history = Collections.unmodifiableList(history);
+	public MusicCollection(String name, @Nullable List<Tag> filter,
+			List<? extends LibraryItem> contents) {
+
+		if (name == null && !contents.isEmpty() && contents.get(
+				0) instanceof Tag) {
+			throw new IllegalArgumentException(
+					"Tags used in nameless collection");
 		}
-		this.selection = selection;
+
+		this.name = name;
+		this.filter = filter == null ? new LinkedList<Tag>() : filter;
+		this.contents = contents;
 	}
 
-	public List<Tag> getHistory() {
-		return history;
+	public String getName() {
+		return name;
 	}
 
-	public String getSelection() {
-		return selection;
+	public List<Tag> getFilter() {
+		return Collections.unmodifiableList(filter);
+	}
+
+	public List<? extends LibraryItem> getContents() {
+		return Collections.unmodifiableList(contents);
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((history == null) ? 0 : history.hashCode());
-		result = prime * result +
-		         ((selection == null) ? 0 : selection.hashCode());
-		return result;
+		return new HashCodeBuilder(17, 37)
+				.append(name)
+				.append(filter)
+				.append(contents)
+				.toHashCode();
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object o) {
+		if (this == o) {
 			return true;
 		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
+
+		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
 
-		MusicCollection other = (MusicCollection) obj;
-		if (history == null) {
-			if (other.history != null) {
-				return false;
-			}
-		} else if (!history.equals(other.history)) {
-			return false;
-		}
-		if (selection == null) {
-			if (other.selection != null) {
-				return false;
-			}
-		} else if (!selection.equals(other.selection)) {
-			return false;
-		}
-		return true;
+		MusicCollection other = (MusicCollection) o;
+
+		return new EqualsBuilder()
+				.append(name, other.name)
+				.append(filter, other.filter)
+				.append(contents, other.contents)
+				.isEquals();
 	}
 
 	public static final Parcelable.Creator<MusicCollection> CREATOR
@@ -91,11 +92,22 @@ public class MusicCollection implements Parcelable {
 		@Override
 		public MusicCollection createFromParcel(Parcel source) {
 			String name = source.readString();
+			if (name.equals("")) {
+				name = null;
+			}
 
 			List<Tag> tags = new LinkedList<Tag>();
 			source.readTypedList(tags, Tag.CREATOR);
 
-			return new MusicCollection(tags, name);
+			if (name == null) {
+				List<Track> contents = new LinkedList<Track>();
+				source.readTypedList(contents, Track.CREATOR);
+				return new MusicCollection(null, tags, contents);
+			} else {
+				List<Tag> contents = new LinkedList<Tag>();
+				source.readTypedList(contents, Tag.CREATOR);
+				return new MusicCollection(name, tags, contents);
+			}
 		}
 
 		@Override
@@ -111,8 +123,9 @@ public class MusicCollection implements Parcelable {
 
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
-		dest.writeString(selection);
-		dest.writeTypedList(history);
+		dest.writeString(name);
+		dest.writeTypedList(filter);
+		dest.writeTypedList(contents);
 	}
 
 }
