@@ -55,8 +55,8 @@ public class LibraryFragment extends Fragment
 	 * 		The collection used in this fragment's parent. Should be null if this
 	 * 		is the root fragment.
 	 * @param selected
-	 * 		The item clicked in the parent fragment. Null if this is the root
-	 * 		fragment.
+	 * 		The item clicked in the parent fragment. Usually null if this is the
+	 * 		root fragment.
 	 */
 	public static LibraryFragment newInstance(MusicCollection parentCollection,
 			Tag selected) {
@@ -163,6 +163,11 @@ public class LibraryFragment extends Fragment
 			name = "artist";
 		} else {
 			filter.addAll(parent.getFilter());
+
+			if (parent.getName() == null) {
+				throw new IllegalArgumentException(
+						"Tracks (filter name == null) can't have children");
+			}
 
 			switch (parent.getName()) {
 				case "artist":

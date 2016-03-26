@@ -1,7 +1,6 @@
 package pconley.vamp.library.action.test;
 
 import android.content.Intent;
-import android.widget.ArrayAdapter;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -15,10 +14,8 @@ import org.robolectric.shadows.ShadowActivity;
 import java.io.File;
 import java.util.ArrayList;
 
-import pconley.vamp.R;
 import pconley.vamp.library.LibraryActivity;
 import pconley.vamp.library.action.LibraryPlayAction;
-import pconley.vamp.persistence.model.LibraryItem;
 import pconley.vamp.persistence.model.Track;
 import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.player.PlayerService;
@@ -34,7 +31,6 @@ public class LibraryPlayActionTest {
 	private ShadowActivity shadow;
 
 	private static ArrayList<Track> tracks;
-	private ArrayAdapter<LibraryItem> adapter;
 
 	@BeforeClass
 	public static void setUp() {
@@ -49,9 +45,6 @@ public class LibraryPlayActionTest {
 		activity = Robolectric.buildActivity(LibraryActivity.class).create()
 		                      .start().restart().get();
 		shadow = Robolectric.shadowOf(activity);
-
-		adapter = new ArrayAdapter<LibraryItem>(activity,
-		                                        R.layout.fragment_library);
 	}
 
 	/**
@@ -62,14 +55,12 @@ public class LibraryPlayActionTest {
 	public void testPlayerStarted() {
 		int position = 0;
 
+		// Given
 		ArrayList<Track> track = new ArrayList<Track>();
 		track.add(tracks.get(0));
 
-		// Given
-		adapter.addAll(track);
-
 		// When
-		new LibraryPlayAction().execute(activity, adapter, position);
+		new LibraryPlayAction().execute(activity, track, position);
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);
@@ -93,11 +84,8 @@ public class LibraryPlayActionTest {
 	public void testInvalidPosition() {
 		int position = 3;
 
-		// Given
-		adapter.addAll(tracks);
-
 		// When
-		new LibraryPlayAction().execute(activity, adapter, position);
+		new LibraryPlayAction().execute(activity, tracks, position);
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);
@@ -118,7 +106,8 @@ public class LibraryPlayActionTest {
 		int position = 0;
 
 		// When
-		new LibraryPlayAction().execute(activity, adapter, position);
+		new LibraryPlayAction().execute(activity, new ArrayList<Track>(),
+		                                position);
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);

@@ -25,7 +25,8 @@ public class MusicCollection implements Parcelable {
 
 	/**
 	 * Constructor.
-	 *  @param name
+	 *
+	 * @param name
 	 * 		Name of the tags in the contents. Should be null iff the collection
 	 * 		contains tracks
 	 * @param filter
@@ -35,15 +36,21 @@ public class MusicCollection implements Parcelable {
 	public MusicCollection(String name, @Nullable List<Tag> filter,
 			List<? extends LibraryItem> contents) {
 
-		if (name == null && !contents.isEmpty() && contents.get(
-				0) instanceof Tag) {
+		if (name == null && contents != null && !contents.isEmpty() &&
+		    contents.get(0) instanceof Tag) {
 			throw new IllegalArgumentException(
-					"Tags used in nameless collection");
+					"Track collection contains tags");
 		}
 
 		this.name = name;
 		this.filter = filter == null ? new LinkedList<Tag>() : filter;
-		this.contents = contents;
+		if (contents != null) {
+			this.contents = contents;
+		} else if (name == null) {
+			this.contents = new LinkedList<Track>();
+		} else {
+			this.contents = new LinkedList<Tag>();
+		}
 	}
 
 	public String getName() {
@@ -56,6 +63,11 @@ public class MusicCollection implements Parcelable {
 
 	public List<? extends LibraryItem> getContents() {
 		return Collections.unmodifiableList(contents);
+	}
+
+	@Override
+	public String toString() {
+		return "(" + name + ", " + filter + "): " + contents;
 	}
 
 	@Override
@@ -92,7 +104,7 @@ public class MusicCollection implements Parcelable {
 		@Override
 		public MusicCollection createFromParcel(Parcel source) {
 			String name = source.readString();
-			if (name.equals("")) {
+			if (name == null || name.equals("")) {
 				name = null;
 			}
 

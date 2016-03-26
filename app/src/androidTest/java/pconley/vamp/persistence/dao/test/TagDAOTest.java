@@ -143,8 +143,7 @@ public class TagDAOTest extends AndroidTestCase {
 	 * name, then I get the correct ones.
 	 */
 	public void testGetTags() {
-		MusicCollection match = new MusicCollection(null,
-		                                            DAOUtils.sampleNames[0]);
+		String name = DAOUtils.sampleNames[0];
 
 		// Given
 		long trackId = DAOUtils.insertTrack(uri, null, null).getId();
@@ -152,12 +151,12 @@ public class TagDAOTest extends AndroidTestCase {
 
 		Set<Tag> expected = new HashSet<Tag>();
 		for (String value : DAOUtils.sampleValues) {
-			expected.add(new Tag(match.getSelection(), value));
+			expected.add(new Tag(name, value));
 		}
 
 		// When/Then
 		assertEquals("Tags are retrieved by name", expected,
-		             new HashSet<Tag>(dao.getTagsInCollection(match)));
+		             new HashSet<Tag>(dao.getFilteredTags(null, name)));
 	}
 
 	/**
@@ -165,7 +164,7 @@ public class TagDAOTest extends AndroidTestCase {
 	 * name that doesn't exist, then I get nothing.
 	 */
 	public void testGetAbsentTags() {
-		MusicCollection match = new MusicCollection(null, "no such name");
+		String name = "no such name";
 
 		// Given
 		long trackId = DAOUtils.insertTrack(uri, null, null).getId();
@@ -173,7 +172,7 @@ public class TagDAOTest extends AndroidTestCase {
 
 		// When/Then
 		assertEquals("No tags are retrieved if the name is wrong",
-		             Collections.emptyList(), dao.getTagsInCollection(match));
+		             Collections.emptyList(), dao.getFilteredTags(null, name));
 	}
 
 	/**
@@ -185,7 +184,7 @@ public class TagDAOTest extends AndroidTestCase {
 		DAOUtils.insertSampleTrack();
 
 		try {
-			dao.getTagsInCollection(new MusicCollection(null, null));
+			dao.getFilteredTags(null, null);
 			fail("Can't get tags for a nameless/filterless collection");
 		} catch (IllegalArgumentException ignored) {
 
