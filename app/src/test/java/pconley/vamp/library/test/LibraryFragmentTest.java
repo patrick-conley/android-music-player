@@ -1,8 +1,8 @@
 package pconley.vamp.library.test;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.util.FragmentTestUtil;
 
 import java.io.File;
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import pconley.vamp.library.LibraryActivity;
 import pconley.vamp.library.LibraryFragment;
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TagDAO;
@@ -31,6 +33,7 @@ import pconley.vamp.persistence.model.LibraryItem;
 import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
 import pconley.vamp.persistence.model.Track;
+import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.util.AssetUtils;
 
 import static org.junit.Assert.assertEquals;
@@ -157,11 +160,10 @@ public class LibraryFragmentTest {
 	 */
 	@Test
 	public void displayFilteredLibrary() {
-		File ogg = new File("sample.ogg");
-		File flac = new File("sample.flac");
 
 		// Given
-		AssetUtils.addTracksToDb(context, new File[] { ogg, flac });
+		AssetUtils.addTracksToDb(context, new File[] { new File("sample.ogg"),
+				new File("sample.flac") });
 		List<Track> expected = trackDAO.getAllTracks();
 
 		ArrayList<Tag> filters = new ArrayList<Tag>();
@@ -179,6 +181,32 @@ public class LibraryFragmentTest {
 		             new HashSet<LibraryItem>(expected),
 		             new HashSet<LibraryItem>(
 				             fragment.getCollection().getContents()));
+	}
+
+	/**
+	 * Given the library is not empty, when I click the Play All button, then
+	 * the PlayerActivity is launched
+	 */
+	@Test
+	public void testClickPlayContents() {
+
+		// Given
+		AssetUtils.addTracksToDb(context, new File[] { new File("sample.ogg"),
+				new File("sample.flac") });
+
+		LibraryFragment fragment = LibraryFragment.newInstance();
+		startFragment(fragment);
+
+		// When
+		fragment.playContents();
+
+		// Then
+		ShadowActivity shadow = Robolectric.shadowOf(fragment.getActivity());
+		Intent next = shadow.peekNextStartedActivity();
+
+		assertEquals("Play All starts the PlayerActivity",
+		             PlayerActivity.class.getCanonicalName(),
+		             next.getComponent().getClassName());
 	}
 
 	// TODO: feature not implemented
@@ -213,13 +241,13 @@ public class LibraryFragmentTest {
 	//	}
 
 	private void startFragment(Fragment fragment) {
-		FragmentTestUtil.startFragment(fragment, MockActivity.class);
+		FragmentTestUtil.startFragment(fragment, MockLibraryActivity.class);
 
 		Robolectric.runBackgroundTasks();
 		Robolectric.runUiThreadTasks();
 	}
 
-	public static class MockActivity extends Activity
+	public static class MockLibraryActivity extends LibraryActivity
 			implements AdapterView.OnItemClickListener {
 
 		public int count = 0;
