@@ -13,7 +13,6 @@ import java.util.List;
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.LibrarySchema.TagEntry;
 import pconley.vamp.persistence.LibrarySchema.TrackTagRelation;
-import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
 import pconley.vamp.persistence.util.TrackUtil;
 
@@ -55,20 +54,19 @@ public class TagDAO {
 	 * of tags to integers
 	 * <p/>
 	 *
-	 * @param collection
+	 * @param filter
+	 * @param name
 	 * @return The tags whose name matches the collection and which belong in
 	 * tracks that match the set of tags in the collection.
 	 * @throws IllegalArgumentException
 	 * 		if the collection's name isn't set
 	 */
-	public List<Tag> getTagsInCollection(MusicCollection collection)
+	public List<Tag> getFilteredTags(List<Tag> filter, String name)
 			throws IllegalArgumentException {
-		if (collection.getSelection() == null) {
+		if (name == null) {
 			throw new IllegalArgumentException("Tag name unset");
 		}
-		int nTags = collection.getHistory() == null ? 0
-		                                            : collection.getHistory()
-		                                                        .size();
+		int nTags = filter == null ? 0 : filter.size();
 
 		// SELECT *, COUNT(*) FROM buildMatchingTracksQuery
 		//   INNER JOIN Tags ON tagId = _id
@@ -87,9 +85,9 @@ public class TagDAO {
 		String[] selectionArgs = new String[nTags + 1];
 		for (int i = 0; i < nTags; i++) {
 			selectionArgs[i] =
-					String.valueOf(collection.getHistory().get(i).getId());
+					String.valueOf(filter.get(i).getId());
 		}
-		selectionArgs[nTags] = collection.getSelection();
+		selectionArgs[nTags] = name;
 
 		// Get the tags
 		Cursor results = libraryOpenHelper.getReadableDatabase()
@@ -102,8 +100,7 @@ public class TagDAO {
 
 		for (results.moveToFirst(); !results.isAfterLast();
 		     results.moveToNext()) {
-			tags.add(new Tag(results.getLong(idColumn),
-			                 collection.getSelection(),
+			tags.add(new Tag(results.getLong(idColumn), name,
 			                 results.getString(valueColumn)));
 		}
 

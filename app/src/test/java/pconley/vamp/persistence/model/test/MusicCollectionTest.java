@@ -39,9 +39,9 @@ public class MusicCollectionTest {
 	 */
 	@Test
 	public void collectionAcceptsNullName() {
-		MusicCollection collection = new MusicCollection(tags, null);
+		MusicCollection collection = new MusicCollection(null, tags, null);
 
-		assertNull("A null name is allowed", collection.getSelection());
+		assertNull("A null name is allowed", collection.getName());
 	}
 
 	/**
@@ -49,11 +49,11 @@ public class MusicCollectionTest {
 	 */
 	@Test
 	public void collectionWrapsNullTags() {
-		MusicCollection collection = new MusicCollection(null, "name");
+		MusicCollection collection = new MusicCollection("name", null, null);
 
 		assertEquals("A missing list of tags is replaced with an empty list",
 		             Collections.emptyList(),
-		             collection.getHistory());
+		             collection.getFilter());
 	}
 
 	/**
@@ -61,9 +61,9 @@ public class MusicCollectionTest {
 	 */
 	@Test(expected = UnsupportedOperationException.class)
 	public void tagsAreImmutable() {
-		MusicCollection collection = new MusicCollection(tags, "name");
+		MusicCollection collection = new MusicCollection("name", tags, null);
 
-		collection.getHistory().add(new Tag("foo", "bar"));
+		collection.getFilter().add(new Tag("foo", "bar"));
 	}
 
 	/**
@@ -71,7 +71,7 @@ public class MusicCollectionTest {
 	 */
 	@Test
 	public void parcelWithoutNameOrTags() {
-		MusicCollection collection = new MusicCollection(null, null);
+		MusicCollection collection = new MusicCollection(null, null, null);
 
 		Parcel parcel = Parcel.obtain();
 		collection.writeToParcel(parcel, 0);
@@ -88,7 +88,7 @@ public class MusicCollectionTest {
 	 */
 	@Test
 	public void parcelWithNameWithoutTags() {
-		MusicCollection collection = new MusicCollection(null, "name");
+		MusicCollection collection = new MusicCollection("name", null, null);
 
 		Parcel parcel = Parcel.obtain();
 		collection.writeToParcel(parcel, 0);
@@ -105,7 +105,7 @@ public class MusicCollectionTest {
 	 */
 	@Test
 	public void parcelWithoutNameWithTags() {
-		MusicCollection collection = new MusicCollection(tags, null);
+		MusicCollection collection = new MusicCollection(null, tags, null);
 
 		Parcel parcel = Parcel.obtain();
 		collection.writeToParcel(parcel, 0);
@@ -122,7 +122,7 @@ public class MusicCollectionTest {
 	 */
 	@Test
 	public void parcelWithNameAndTags() {
-		MusicCollection collection = new MusicCollection(tags, "name");
+		MusicCollection collection = new MusicCollection("name", tags, null);
 
 		Parcel parcel = Parcel.obtain();
 		collection.writeToParcel(parcel, 0);
@@ -147,14 +147,14 @@ public class MusicCollectionTest {
 		tags.add(new Tag("foo 2", "bar 2"));
 		dTags.add(new Tag("ham", "spam"));
 
-		MusicCollection x = new MusicCollection(tags, "name");
-		MusicCollection y = new MusicCollection(tags, "name");
-		MusicCollection z = new MusicCollection(tags, "name");
+		MusicCollection x = new MusicCollection("name", tags, null);
+		MusicCollection y = new MusicCollection("name", tags, null);
+		MusicCollection z = new MusicCollection("name", tags, null);
 
 		// Different tags
-		MusicCollection d1 = new MusicCollection(dTags, "name");
+		MusicCollection d1 = new MusicCollection("name", dTags, null);
 		// Different name
-		MusicCollection d2 = new MusicCollection(tags, "new name");
+		MusicCollection d2 = new MusicCollection("new name", tags, null);
 		String other = "foo: bar";
 
 		/*

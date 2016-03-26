@@ -1,6 +1,6 @@
 package pconley.vamp.library.action;
 
-import android.widget.ArrayAdapter;
+import java.util.List;
 
 import pconley.vamp.library.LibraryActivity;
 import pconley.vamp.persistence.model.LibraryItem;
@@ -13,12 +13,12 @@ public interface LibraryAction {
 	/**
 	 * @param activity
 	 * 		Current instance of the library
-	 * @param adapter
+	 * @param contents
 	 * 		Contents of the library
 	 * @param position
 	 * 		Position in the adapter of the item clicked.
 	 */
 	void execute(LibraryActivity activity,
-			ArrayAdapter<LibraryItem> adapter,
+			List<? extends LibraryItem> contents,
 			int position);
 }

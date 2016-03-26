@@ -11,6 +11,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import pconley.vamp.R;
@@ -111,6 +112,12 @@ public class LibraryActivity extends Activity {
 		super.onBackPressed();
 
 		tagHistory.pop();
+	}
+
+	public void onClickPlayContents(View view) {
+		((LibraryFragment) getFragmentManager()
+				.findFragmentById(R.id.library_container))
+				.playContents();
 	}
 
 	/**

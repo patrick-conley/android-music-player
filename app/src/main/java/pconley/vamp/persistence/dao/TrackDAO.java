@@ -14,7 +14,6 @@ import pconley.vamp.persistence.LibrarySchema.TagEntry;
 import pconley.vamp.persistence.LibrarySchema.TrackEntry;
 import pconley.vamp.persistence.LibrarySchema.TrackTagRelation;
 import pconley.vamp.persistence.mapper.TrackMapper;
-import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
 import pconley.vamp.persistence.model.Track;
 import pconley.vamp.persistence.util.TrackUtil;
@@ -68,11 +67,11 @@ public class TrackDAO {
 	 * Find the tracks that belong in the given collection.
 	 * <p/>
 	 *
-	 * @param collection
+	 * @param filter
 	 * @return The tracks matching the set of tags in the collection.
 	 */
-	public List<Track> getTracksWithCollection(MusicCollection collection) {
-		int nTags = collection.getHistory().size();
+	public List<Track> getFilteredTracks(List<Tag> filter) {
+		int nTags = filter.size();
 
 		// SELECT trackId, trackUri, tagId, name, value FROM
 		//   buildMatchingTracksQuery
@@ -93,7 +92,7 @@ public class TrackDAO {
 		String[] selectionArgs = new String[nTags];
 		for (int i = 0; i < nTags; i++) {
 			selectionArgs[i] =
-					String.valueOf(collection.getHistory().get(i).getId());
+					String.valueOf(filter.get(i).getId());
 		}
 
 		List<Track> tracks = new LinkedList<Track>();

@@ -19,7 +19,6 @@ import pconley.vamp.persistence.LibrarySchema.TagEntry;
 import pconley.vamp.persistence.LibrarySchema.TrackEntry;
 import pconley.vamp.persistence.LibrarySchema.TrackTagRelation;
 import pconley.vamp.persistence.dao.TrackDAO;
-import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Track;
 import pconley.vamp.preferences.SettingsHelper;
 import pconley.vamp.util.Constants;
@@ -154,9 +153,8 @@ public class TrackDAOTest extends AndroidTestCase {
 		                     new String[] { "bar" });
 
 		// When
-		List<Track> actual = dao.getTracksWithCollection(new MusicCollection(
-				Collections.singletonList(expected.getTags("title").get(0)),
-				null));
+		List<Track> actual = dao.getFilteredTracks(
+				Collections.singletonList(expected.getTags("title").get(0)));
 
 		// Then
 		assertEquals("Find the track matching a single tag",
@@ -185,9 +183,9 @@ public class TrackDAOTest extends AndroidTestCase {
 		                     new String[] { "album2", "title2" });
 
 		// When
-		List<Track> actual = dao.getTracksWithCollection(new MusicCollection(
+		List<Track> actual = dao.getFilteredTracks(
 				Arrays.asList(expected.getTags("album").get(0),
-				              expected.getTags("title").get(0)), null));
+				              expected.getTags("title").get(0)));
 
 		// Then
 		assertEquals("Find the track matching a single tag",
@@ -228,10 +226,10 @@ public class TrackDAOTest extends AndroidTestCase {
 		                     new String[] { "artist2", "album2", "title2" });
 
 		// When
-		List<Track> actual = dao.getTracksWithCollection(new MusicCollection(
+		List<Track> actual = dao.getFilteredTracks(
 				Arrays.asList(expected.getTags("artist").get(0),
 				              expected.getTags("album").get(0),
-				              expected.getTags("title").get(0)), null));
+				              expected.getTags("title").get(0)));
 
 		// Then
 		assertEquals("Find the track matching a single tag",

@@ -156,7 +156,7 @@ public class PlayerActivity extends Activity {
 	 *
 	 * @param view
 	 */
-	public void onPlayPauseClick(View view) {
+	public void onClickPlayPause(View view) {
 
 		// Player may be null if an attentive user presses play/pause before
 		// the service is bound.
@@ -177,7 +177,7 @@ public class PlayerActivity extends Activity {
 	 *
 	 * @param view
 	 */
-	public void onPrevClick(View view) {
+	public void onClickPrev(View view) {
 		if (player != null) {
 			player.previous();
 		}
@@ -191,7 +191,7 @@ public class PlayerActivity extends Activity {
 	 *
 	 * @param view
 	 */
-	public void onNextClick(View view) {
+	public void onClickNext(View view) {
 		if (player != null) {
 			player.next();
 		}

@@ -1,8 +1,8 @@
 package pconley.vamp.library.test;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -14,14 +14,17 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.util.FragmentTestUtil;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 
+import pconley.vamp.library.LibraryActivity;
 import pconley.vamp.library.LibraryFragment;
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TagDAO;
@@ -30,6 +33,7 @@ import pconley.vamp.persistence.model.LibraryItem;
 import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
 import pconley.vamp.persistence.model.Track;
+import pconley.vamp.player.PlayerActivity;
 import pconley.vamp.util.AssetUtils;
 
 import static org.junit.Assert.assertEquals;
@@ -69,7 +73,7 @@ public class LibraryFragmentTest {
 		// Then
 		assertEquals("Fragment was created without filters",
 		             Collections.emptyList(),
-		             fragment.getCollection().getHistory());
+		             fragment.getCollection().getFilter());
 	}
 
 	/**
@@ -83,30 +87,29 @@ public class LibraryFragmentTest {
 
 		// When
 		LibraryFragment fragment = LibraryFragment.newInstance(
-				new MusicCollection(null, null), filters.get(0));
+				new MusicCollection("artist", filters, null), null);
 		startFragment(fragment);
 
 		// Then
 		assertEquals("Fragment was created with filters",
-		             filters, fragment.getCollection().getHistory());
+		             filters, fragment.getCollection().getFilter());
 	}
 
 	/**
-	 * When I use the filtered factory method with an unset filter, then I get
-	 * an exception.
+	 * When I used the filtered factory method with an unset parent name, then I
+	 * get an exception.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void createWithNullTag() throws IllegalArgumentException {
+	public void createWithNullParentName() throws IllegalArgumentException {
 		startFragment(LibraryFragment.newInstance(
-				new MusicCollection(null, null), null));
+				new MusicCollection(null, new LinkedList<Tag>(), null), null));
 	}
 
 	/**
 	 * When I use the filtered factory method with an unset parent collection,
-	 * then I get an exception.
+	 * then I don't get an exception.
 	 */
-	@Test(expected = IllegalArgumentException.class)
-	public void createWithNullParent() throws IllegalArgumentException {
+	public void createWithNullParent() {
 		startFragment(LibraryFragment.newInstance(null, new Tag("foo", "bar")));
 	}
 
@@ -123,7 +126,7 @@ public class LibraryFragmentTest {
 		// Then
 		assertEquals("Fragment in an empty library displays nothing",
 		             Collections.emptyList(),
-		             fragment.getContents());
+		             fragment.getCollection().getContents());
 	}
 
 	/**
@@ -137,8 +140,7 @@ public class LibraryFragmentTest {
 
 		// Given
 		AssetUtils.addTracksToDb(context, new File[] { ogg, flac });
-		List<Tag> expected = tagDAO.getTagsInCollection(new MusicCollection(
-				null, "artist"));
+		List<Tag> expected = tagDAO.getFilteredTags(null, "artist");
 
 
 		// When
@@ -148,7 +150,8 @@ public class LibraryFragmentTest {
 		// Then
 		assertEquals("Unfiltered library displays artists",
 		             new HashSet<LibraryItem>(expected),
-		             new HashSet<LibraryItem>(fragment.getContents()));
+		             new HashSet<LibraryItem>(
+				             fragment.getCollection().getContents()));
 	}
 
 	/**
@@ -157,13 +160,11 @@ public class LibraryFragmentTest {
 	 */
 	@Test
 	public void displayFilteredLibrary() {
-		File ogg = new File("sample.ogg");
-		File flac = new File("sample.flac");
 
 		// Given
-		AssetUtils.addTracksToDb(context, new File[] { ogg, flac });
-		List<Track> expected = trackDAO.getTracksWithCollection(new MusicCollection(
-				null, null));
+		AssetUtils.addTracksToDb(context, new File[] { new File("sample.ogg"),
+				new File("sample.flac") });
+		List<Track> expected = trackDAO.getAllTracks();
 
 		ArrayList<Tag> filters = new ArrayList<Tag>();
 		filters.add(expected.get(0).getTags("artist").get(0));
@@ -171,54 +172,82 @@ public class LibraryFragmentTest {
 
 		// When
 		LibraryFragment fragment = LibraryFragment.newInstance(
-				new MusicCollection(filters.subList(0, 1), "album"),
+				new MusicCollection("album", filters.subList(0, 1), null),
 				filters.get(1));
 		startFragment(fragment);
 
 		// Then
 		assertEquals("Filtered library displays tracks",
 		             new HashSet<LibraryItem>(expected),
-		             new HashSet<LibraryItem>(fragment.getContents()));
+		             new HashSet<LibraryItem>(
+				             fragment.getCollection().getContents()));
 	}
 
-//	/**
-//	 * Given the library is not empty, when I filter against a collection with
-//	 * only one child, then the child is stepped into.
-//	 */
-//	@Test
-//	public void stepThroughSolitaryTags() {
-//		List<Tag> tags = new LinkedList<Tag>();
-//		tags.add(new Tag("artist", "artist"));
-//		tags.add(new Tag("album", "album"));
-//		tags.add(new Tag("title", "title"));
-//
-//		// Given
-//		TrackDAO dao = new TrackDAO(context).openWritableDatabase();
-//		dao.insertTrack(Uri.parse("track1"), tags);
-//		dao.insertTrack(Uri.parse("track2"), tags);
-//
-//		Tag artist = dao.getHistory(new MusicCollection(null, "artist")).get(0);
-//		List<Track> expected = dao.getTracksWithCollection(new MusicCollection(null, null));
-//
-//		// When
-//		LibraryFragment fragment = LibraryFragment.newInstance(
-//				new MusicCollection(null, "artist"), artist);
-//		startFragment(fragment);
-//
-//		// Then
-//		assertEquals("Library skips over single-element collections",
-//		             new HashSet<LibraryItem>(expected),
-//		             new HashSet<LibraryItem>(fragment.getContents()));
-//	}
+	/**
+	 * Given the library is not empty, when I click the Play All button, then
+	 * the PlayerActivity is launched
+	 */
+	@Test
+	public void testClickPlayContents() {
+
+		// Given
+		AssetUtils.addTracksToDb(context, new File[] { new File("sample.ogg"),
+				new File("sample.flac") });
+
+		LibraryFragment fragment = LibraryFragment.newInstance();
+		startFragment(fragment);
+
+		// When
+		fragment.playContents();
+
+		// Then
+		ShadowActivity shadow = Robolectric.shadowOf(fragment.getActivity());
+		Intent next = shadow.peekNextStartedActivity();
+
+		assertEquals("Play All starts the PlayerActivity",
+		             PlayerActivity.class.getCanonicalName(),
+		             next.getComponent().getClassName());
+	}
+
+	// TODO: feature not implemented
+	//	/**
+	//	 * Given the library is not empty, when I filter against a collection with
+	//	 * only one child, then the child is stepped into.
+	//	 */
+	//	@Test
+	//	public void stepThroughSolitaryTags() {
+	//		List<Tag> tags = new LinkedList<Tag>();
+	//		tags.add(new Tag("artist", "artist"));
+	//		tags.add(new Tag("album", "album"));
+	//		tags.add(new Tag("title", "title"));
+	//
+	//		// Given
+	//		TrackDAO dao = new TrackDAO(context).openWritableDatabase();
+	//		dao.insertTrack(Uri.parse("track1"), tags);
+	//		dao.insertTrack(Uri.parse("track2"), tags);
+	//
+	//		Tag artist = dao.getHistory(new MusicCollection(null, "artist")).get(0);
+	//		List<Track> expected = dao.getFilteredTracks(new MusicCollection(null, null));
+	//
+	//		// When
+	//		LibraryFragment fragment = LibraryFragment.newInstance(
+	//				new MusicCollection(null, "artist"), artist);
+	//		startFragment(fragment);
+	//
+	//		// Then
+	//		assertEquals("Library skips over single-element collections",
+	//		             new HashSet<LibraryItem>(expected),
+	//		             new HashSet<LibraryItem>(fragment.getContents()));
+	//	}
 
 	private void startFragment(Fragment fragment) {
-		FragmentTestUtil.startFragment(fragment, MockActivity.class);
+		FragmentTestUtil.startFragment(fragment, MockLibraryActivity.class);
 
 		Robolectric.runBackgroundTasks();
 		Robolectric.runUiThreadTasks();
 	}
 
-	public static class MockActivity extends Activity
+	public static class MockLibraryActivity extends LibraryActivity
 			implements AdapterView.OnItemClickListener {
 
 		public int count = 0;

@@ -10,10 +10,22 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="pconley.vamp.library.LibraryActivity">
 
+    <ImageButton
+        android:id="@+id/library_button_play_all"
+        android:layout_width="@dimen/button_large"
+        android:layout_height="@dimen/button_large"
+        android:onClick="onClickPlayContents"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:contentDescription="@string/play_all"
+        android:background="@android:drawable/ic_media_play"/>
+
     <FrameLayout
         android:id="@+id/library_container"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
+        android:layout_below="@+id/library_button_play_all"
         android:layout_above="@+id/library_tag_history"
         />
 

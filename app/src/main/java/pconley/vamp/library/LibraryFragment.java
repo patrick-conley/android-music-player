@@ -12,14 +12,17 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import org.apache.commons.lang3.text.WordUtils;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import pconley.vamp.R;
 import pconley.vamp.library.action.LibraryActionLocator;
+import pconley.vamp.library.action.LibraryPlayAction;
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TagDAO;
 import pconley.vamp.persistence.dao.TrackDAO;
@@ -33,10 +36,9 @@ public class LibraryFragment extends Fragment
 
 	private Activity activity;
 	private ProgressBar progress;
-	private ListView list;
+	private ListView view;
 
-	MusicCollection collection;
-	List<? extends LibraryItem> contents;
+	private MusicCollection collection;
 
 	/**
 	 * Create a new unfiltered fragment. The library's root tags will be
@@ -53,8 +55,8 @@ public class LibraryFragment extends Fragment
 	 * 		The collection used in this fragment's parent. Should be null if this
 	 * 		is the root fragment.
 	 * @param selected
-	 * 		The item clicked in the parent fragment. Null if this is the root
-	 * 		fragment.
+	 * 		The item clicked in the parent fragment. Usually null if this is the
+	 * 		root fragment.
 	 */
 	public static LibraryFragment newInstance(MusicCollection parentCollection,
 			Tag selected) {
@@ -91,8 +93,8 @@ public class LibraryFragment extends Fragment
 		View view = inflater
 				.inflate(R.layout.fragment_library, container, false);
 
-		list = (ListView) view.findViewById(R.id.library_contents);
-		list.setOnItemClickListener(this);
+		this.view = (ListView) view.findViewById(R.id.library_contents);
+		this.view.setOnItemClickListener(this);
 
 		progress = (ProgressBar) view.findViewById(R.id.library_progress_load);
 
@@ -103,19 +105,9 @@ public class LibraryFragment extends Fragment
 		if (arguments != null) {
 			parentCollection = arguments.getParcelable("parentCollection");
 			selectedTag = arguments.getParcelable("selectedTag");
-
-			if (parentCollection == null && selectedTag != null) {
-				// FIXME: I see no solid reason to prohibit this case -
-				// FIXME: deal with it in the AsyncTask when it's generalized.
-				throw new IllegalArgumentException(
-						"Parent collection is unset");
-			} else if (parentCollection != null && selectedTag == null) {
-				throw new IllegalArgumentException("Selected tag is unset");
-			}
-
 		}
 
-		new LoadCollectionTask(parentCollection, selectedTag).execute();
+		buildCollection(parentCollection, selectedTag);
 
 		return view;
 	}
@@ -134,12 +126,17 @@ public class LibraryFragment extends Fragment
 	@SuppressWarnings(value = "unchecked")
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
-		ArrayAdapter<LibraryItem> adapter
-				= (ArrayAdapter<LibraryItem>) parent.getAdapter();
-
-		LibraryActionLocator.findAction(adapter.getItem(position))
-		                    .execute((LibraryActivity) activity, adapter,
+		LibraryActionLocator.findAction(collection.getContents().get(position))
+		                    .execute((LibraryActivity) activity,
+		                             collection.getContents(),
 		                             position);
+	}
+
+	/**
+	 * Play all the tracks contained in the visible collections.
+	 */
+	public void playContents() {
+		new LoadCollectionTask(null, collection.getFilter(), true).execute();
 	}
 
 	/**
@@ -158,19 +155,38 @@ public class LibraryFragment extends Fragment
 		return collection;
 	}
 
-	/**
-	 * Get the library contents. I rely on it for testing as the filtered
-	 * library doesn't appear to be displayed properly by Robolectric.
-	 *
-	 * @return The items being displayed in the library.
-	 * @throws IllegalStateException
-	 * 		If this is called before the collection has been obtained from the DB.
-	 */
-	public List<? extends LibraryItem> getContents() {
-		if (collection == null) {
-			throw new IllegalStateException("Contents have not been built");
+	private void buildCollection(MusicCollection parent, Tag selected) {
+		List<Tag> filter = new LinkedList<Tag>();
+		String name;
+
+		if (parent == null) {
+			name = "artist";
+		} else {
+			filter.addAll(parent.getFilter());
+
+			if (parent.getName() == null) {
+				throw new IllegalArgumentException(
+						"Tracks (filter name == null) can't have children");
+			}
+
+			switch (parent.getName()) {
+				case "artist":
+					name = "album";
+					break;
+				case "album":
+					name = null;
+					break;
+				default:
+					throw new IllegalArgumentException(
+							"Unknown collection name " + parent.getName());
+			}
 		}
-		return contents;
+
+		if (selected != null) {
+			filter.add(selected);
+		}
+
+		new LoadCollectionTask(name, filter, false).execute();
 	}
 
 	/**
@@ -180,17 +196,15 @@ public class LibraryFragment extends Fragment
 	private class LoadCollectionTask
 			extends AsyncTask<Void, Void, List<? extends LibraryItem>> {
 
-		private MusicCollection coll;
-		private final MusicCollection parentCollection;
-		private final Tag selectedTag;
+		private final String name;
+		private final List<Tag> filter;
+		private final boolean playOnLoad;
 
-		private TrackDAO trackDAO;
-		private TagDAO tagDAO;
-
-		public LoadCollectionTask(MusicCollection parentCollection,
-				Tag selectedTag) {
-			this.parentCollection = parentCollection;
-			this.selectedTag = selectedTag;
+		public LoadCollectionTask(String name, List<Tag> filter,
+				boolean playOnLoad) {
+			this.name = name;
+			this.filter = filter == null ? new ArrayList<Tag>() : filter;
+			this.playOnLoad = playOnLoad;
 		}
 
 		@Override
@@ -199,74 +213,50 @@ public class LibraryFragment extends Fragment
 
 			progress.setVisibility(ProgressBar.VISIBLE);
 
-			LibraryOpenHelper helper = new LibraryOpenHelper(activity);
-			trackDAO = new TrackDAO(helper);
-			tagDAO = new TagDAO(helper);
+			if (name == null) {
+				activity.setTitle(getString(R.string.track));
+			} else {
+				activity.setTitle(WordUtils.capitalize(name));
+			}
 		}
 
 		@Override
 		protected List<? extends LibraryItem> doInBackground(Void... params) {
-			if (parentCollection == null) {
-				coll = new MusicCollection(null, "artist");
-				return tagDAO.getTagsInCollection(coll);
+			LibraryOpenHelper helper = new LibraryOpenHelper(activity);
+
+			if (name == null) {
+				return new TrackDAO(helper).getFilteredTracks(filter);
 			} else {
-				List<Tag> history = new ArrayList<Tag>(
-						parentCollection.getHistory());
-				history.add(selectedTag);
-
-				if (parentCollection.getSelection() == null) {
-					throw new IllegalStateException("Wut? Duplicate state");
-//					coll = new MusicCollection(history, null);
-//					return dao.getTracksWithCollection(coll);
-				}
-
-				switch (parentCollection.getSelection()) {
-					case "artist":
-								coll = new MusicCollection(history, "album");
-								return tagDAO.getTagsInCollection(coll);
-					case "album":
-						coll = new MusicCollection(history, null);
-						return trackDAO.getTracksWithCollection(coll);
-					default:
-						throw new IllegalArgumentException(
-								"Unexpected tag name " +
-								parentCollection.getSelection());
-				}
-
+				return new TagDAO(helper).getFilteredTags(filter, name);
 			}
 		}
 
-		@SuppressWarnings(value = "unchecked")
+		@SuppressWarnings("unchecked")
+		@Override
 		protected void onPostExecute(List<? extends LibraryItem> items) {
-			collection = coll;
-			contents = items;
-
-			ArrayAdapter<? extends LibraryItem> adapter;
-			if (collection.getSelection() == null) {
-				activity.setTitle(getString(R.string.track));
-				adapter = new ArrayAdapter<Track>(
-						activity, R.layout.library_item, R.id.library_item,
-						(List<Track>) items);
+			if (playOnLoad) {
+				new LibraryPlayAction()
+						.execute((LibraryActivity) activity, items, 0);
 			} else {
-				activity.setTitle(WordUtils.capitalize(
-						collection.getSelection()));
-				adapter = new ArrayAdapter<Tag>(
-						activity, R.layout.library_item, R.id.library_item,
-						(List<Tag>) items);
+				collection = new MusicCollection(name, filter, items);
 
+				if (items.isEmpty()) {
+					Toast.makeText(activity, "Filter contains no tracks",
+					               Toast.LENGTH_LONG).show();
+				}
+
+				ArrayAdapter<? extends LibraryItem> adapter;
+				if (name == null) {
+					adapter = new ArrayAdapter<Track>(
+							activity, R.layout.library_item, R.id.library_item,
+							(List<Track>) items);
+				} else {
+					adapter = new ArrayAdapter<Tag>(
+							activity, R.layout.library_item, R.id.library_item,
+							(List<Tag>) items);
+				}
+				view.setAdapter(adapter);
 			}
-
-			list.setAdapter(adapter);
-
-/*
-			// Skip through solitary items
-			// FIXME: Uncomment after solving issues w. history when going back
-			if (items.size() == 1 && collection.getSelection() != null) {
-				new LibraryFilterAction().execute(
-						(LibraryActivity) LibraryFragment.this.activity,
-						(ArrayAdapter<LibraryItem>) adapter, items.size() - 1);
-			}
-*/
 
 			progress.setVisibility(ProgressBar.INVISIBLE);
 		}

@@ -3,7 +3,6 @@ package pconley.vamp.library.action.test;
 import android.app.FragmentManager;
 import android.net.Uri;
 import android.widget.Adapter;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import org.junit.After;
@@ -14,6 +13,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -25,7 +25,6 @@ import pconley.vamp.library.LibraryFragment;
 import pconley.vamp.library.action.LibraryFilterAction;
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TrackDAO;
-import pconley.vamp.persistence.model.LibraryItem;
 import pconley.vamp.persistence.model.Tag;
 import pconley.vamp.persistence.model.Track;
 
@@ -40,8 +39,6 @@ public class LibraryFilterActionTest {
 
 	private TrackDAO dao;
 
-	private ArrayAdapter<LibraryItem> adapter;
-
 	@Before
 	public void setUpTest() {
 		activity = Robolectric.buildActivity(LibraryActivity.class).create()
@@ -49,9 +46,6 @@ public class LibraryFilterActionTest {
 		fm = activity.getFragmentManager();
 
 		dao = new TrackDAO(new LibraryOpenHelper(activity));
-
-		adapter = new ArrayAdapter<LibraryItem>(activity,
-		                                        R.layout.fragment_library);
 	}
 
 	@After
@@ -67,15 +61,17 @@ public class LibraryFilterActionTest {
 	public void testSingleItem() {
 		// Given
 		Tag album = new Tag("album", "foo");
-		adapter.add(album);
+
+		ArrayList<Tag> contents = new ArrayList<Tag>();
+		contents.add(album);
 
 		// When
-		new LibraryFilterAction().execute(activity, adapter, 0);
+		new LibraryFilterAction().execute(activity, contents, 0);
 
 		// Then
 		List<Tag> filters
 				= ((LibraryFragment) fm.findFragmentById(R.id.library))
-				.getCollection().getHistory();
+				.getCollection().getFilter();
 
 		assertEquals("Album filter is added to the fragment",
 		             Collections.singletonList(album), filters);
@@ -89,7 +85,9 @@ public class LibraryFilterActionTest {
 	public void testCommonAlbum() {
 		// Given
 		Tag album = new Tag("album", "foo");
-		adapter.add(album);
+
+		ArrayList<Tag> contents = new ArrayList<Tag>();
+		contents.add(album);
 
 		Set<Track> expected = new HashSet<Track>();
 		Track track = new Track.Builder(0, Uri.parse("one"))
@@ -117,7 +115,7 @@ public class LibraryFilterActionTest {
 		                      .start().restart().get();
 
 		// When
-		new LibraryFilterAction().execute(activity, adapter, 0);
+		new LibraryFilterAction().execute(activity, contents, 0);
 
 		// Then
 		Adapter fragmentAdapter = ((ListView) activity.findViewById(
@@ -138,12 +136,14 @@ public class LibraryFilterActionTest {
 	 */
 	@Test
 	public void testTwoAlbums() {
+		ArrayList<Tag> contents = new ArrayList<Tag>();
+
 		// Given
 		Tag album1 = new Tag("album", "foo");
-		adapter.add(album1);
+		contents.add(album1);
 
 		Tag album2 = new Tag("album", "bar");
-		adapter.add(album2);
+		contents.add(album2);
 
 		Track track = new Track.Builder(0, Uri.parse("one"))
 				.add(album1)
@@ -164,7 +164,7 @@ public class LibraryFilterActionTest {
 		dao.insertTrack(expected);
 
 		// When
-		new LibraryFilterAction().execute(activity, adapter, 1);
+		new LibraryFilterAction().execute(activity, contents, 1);
 
 		// Then
 		Adapter fragmentAdapter = ((ListView) activity.findViewById(

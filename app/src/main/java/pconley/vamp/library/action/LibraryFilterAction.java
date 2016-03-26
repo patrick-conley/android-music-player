@@ -2,7 +2,8 @@ package pconley.vamp.library.action;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.widget.ArrayAdapter;
+
+import java.util.List;
 
 import pconley.vamp.R;
 import pconley.vamp.library.LibraryActivity;
@@ -17,19 +18,18 @@ import pconley.vamp.persistence.model.Tag;
  */
 public class LibraryFilterAction implements LibraryAction {
 
-	// FIXME: split into prepare/execute methods
 	@Override
 	public void execute(LibraryActivity activity,
-			ArrayAdapter<LibraryItem> adapter, int position) {
+			List<? extends LibraryItem> contents, int position) {
 
-		Tag tag = (Tag) adapter.getItem(position);
+		Tag tag = (Tag) contents.get(position);
 
 		FragmentManager fm = activity.getFragmentManager();
 
 		MusicCollection collection = ((LibraryFragment) fm.findFragmentById(
 				R.id.library_container)).getCollection();
 
-		String fragmentName = collection.getHistory().isEmpty()
+		String fragmentName = collection.getName() == null
 		                      ? LibraryActivity.LIBRARY_ROOT_TAG : null;
 
 		// Create a new fragment
