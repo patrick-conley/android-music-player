@@ -1,4 +1,4 @@
-package pconley.vamp.scanner;
+package pconley.vamp.scanner.view;
 
 import android.app.DialogFragment;
 import android.content.BroadcastReceiver;
@@ -16,6 +16,8 @@ import android.widget.Toast;
 
 import pconley.vamp.R;
 import pconley.vamp.library.view.LibraryActivity;
+import pconley.vamp.scanner.ScannerEvent;
+import pconley.vamp.scanner.ScannerService;
 import pconley.vamp.util.BroadcastConstants;
 
 /**

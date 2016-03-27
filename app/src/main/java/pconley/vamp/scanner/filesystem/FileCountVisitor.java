@@ -2,14 +2,13 @@ package pconley.vamp.scanner.filesystem;
 
 import pconley.vamp.scanner.filesystem.model.MediaFile;
 import pconley.vamp.scanner.filesystem.model.MediaFolder;
-import pconley.vamp.scanner.filesystem.model.MediaVisitorBase;
 
 /**
  * Visit part of a filesystem, counting media files.
  *
  * @author pconley
  */
-public class FileCountVisitor implements MediaVisitorBase {
+public class FileCountVisitor implements FileVisitor {
 
 	private int count = 0;
 

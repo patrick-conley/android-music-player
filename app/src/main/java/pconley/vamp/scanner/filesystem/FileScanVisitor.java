@@ -17,9 +17,8 @@ import pconley.vamp.persistence.model.Tag;
 import pconley.vamp.persistence.model.Track;
 import pconley.vamp.scanner.filesystem.model.MediaFile;
 import pconley.vamp.scanner.filesystem.model.MediaFolder;
-import pconley.vamp.scanner.filesystem.model.MediaVisitorBase;
 import pconley.vamp.scanner.ScannerEvent;
-import pconley.vamp.scanner.strategy.StrategyFactory;
+import pconley.vamp.scanner.strategy.TagStrategyLocator;
 import pconley.vamp.scanner.strategy.TagStrategy;
 import pconley.vamp.util.BroadcastConstants;
 
@@ -28,7 +27,7 @@ import pconley.vamp.util.BroadcastConstants;
  *
  * @author pconley
  */
-public class FileScanVisitor implements MediaVisitorBase {
+public class FileScanVisitor implements FileVisitor {
 	private static final String TAG = "FilesystemScanner";
 
 	private int progress = 0;
@@ -82,7 +81,7 @@ public class FileScanVisitor implements MediaVisitorBase {
 	public void close() {
 		new LibraryOpenHelper(context).close();
 
-		StrategyFactory.release();
+		TagStrategyLocator.release();
 	}
 
 	/**
@@ -117,7 +116,7 @@ public class FileScanVisitor implements MediaVisitorBase {
 		fileIntent.putExtra(BroadcastConstants.EXTRA_PROGRESS, progress);
 		broadcastManager.sendBroadcast(fileIntent);
 
-		TagStrategy strategy = StrategyFactory.getStrategy(file);
+		TagStrategy strategy = TagStrategyLocator.getStrategy(file);
 
 		// Read tags
 		List<Tag> tags;

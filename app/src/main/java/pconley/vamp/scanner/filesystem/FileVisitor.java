@@ -1,21 +1,25 @@
-package pconley.vamp.scanner.filesystem.model;
+package pconley.vamp.scanner.filesystem;
+
+import pconley.vamp.scanner.filesystem.model.FileSystemItem;
+import pconley.vamp.scanner.filesystem.model.MediaFile;
+import pconley.vamp.scanner.filesystem.model.MediaFolder;
 
 /**
  * Traverse a hierarchical filesystem. Methods in subclasses of
- * {@link MediaVisitorBase} should only be called from {@link MediaFolder} and
+ * {@link FileVisitor} should only be called from {@link MediaFolder} and
  * {@link MediaFile}.
  *
  * @author pconley
  */
-public interface MediaVisitorBase {
+public interface FileVisitor {
 
 	/**
 	 * Do some work on a directory. The directory is guaranteed to exist and to
 	 * not contain a .nomedia file.
 	 * <p/>
 	 * This method should *not* call
-	 * {@link MediaFileBase#accept(MediaVisitorBase)} on the directory's
-	 * children - {@link MediaFolder#accept(MediaVisitorBase)} does that itself
+	 * {@link FileSystemItem#accept(FileVisitor)} on the directory's
+	 * children - {@link MediaFolder#accept(FileVisitor)} does that itself
 	 * after this method returns.
 	 *
 	 * @param dir

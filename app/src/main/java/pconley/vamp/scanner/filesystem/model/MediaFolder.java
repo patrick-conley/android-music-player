@@ -4,12 +4,14 @@ import android.util.Log;
 
 import java.io.File;
 
+import pconley.vamp.scanner.filesystem.FileVisitor;
+
 /**
  * A visitable directory.
  *
  * @author pconley
  */
-public class MediaFolder extends MediaFileBase {
+public class MediaFolder extends FileSystemItem {
 	private static final String TAG = "FilesystemScanner";
 
 	public MediaFolder(File file) {
@@ -22,7 +24,7 @@ public class MediaFolder extends MediaFileBase {
 	 * appropriate accept methods.
 	 */
 	@Override
-	public void accept(MediaVisitorBase visitor) {
+	public void accept(FileVisitor visitor) {
 
 		// Check the directory is readable
 		if (!getFile().exists() || !getFile().isDirectory()

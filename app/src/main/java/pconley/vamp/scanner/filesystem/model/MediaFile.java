@@ -2,7 +2,9 @@ package pconley.vamp.scanner.filesystem.model;
 
 import java.io.File;
 
-public class MediaFile extends MediaFileBase {
+import pconley.vamp.scanner.filesystem.FileVisitor;
+
+public class MediaFile extends FileSystemItem {
 
 	public MediaFile(File file) {
 		super(file);
@@ -12,7 +14,7 @@ public class MediaFile extends MediaFileBase {
 	 * Validate the file (it must be readable), then visit it.
 	 */
 	@Override
-	public void accept(MediaVisitorBase visitor) {
+	public void accept(FileVisitor visitor) {
 
 		if (!getFile().exists() || !getFile().canRead()) {
 			return;

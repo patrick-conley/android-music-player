@@ -2,7 +2,7 @@ package pconley.vamp.scanner.strategy;
 
 import pconley.vamp.scanner.filesystem.model.MediaFile;
 
-public class StrategyFactory {
+public class TagStrategyLocator {
 
 	private static TagStrategy defaultVorbisStrategy;
 	private static TagStrategy defaultGenericStrategy;
@@ -11,7 +11,7 @@ public class StrategyFactory {
 	/**
 	 * Private constructor.
 	 */
-	private StrategyFactory() {
+	private TagStrategyLocator() {
 	}
 
 	/**

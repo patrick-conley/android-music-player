@@ -4,7 +4,7 @@ import pconley.vamp.R;
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.scanner.filesystem.model.MediaFolder;
-import pconley.vamp.scanner.filesystem.model.MediaVisitorBase;
+import pconley.vamp.scanner.filesystem.FileVisitor;
 import pconley.vamp.preferences.util.SettingsHelper;
 import pconley.vamp.scanner.filesystem.FileCountVisitor;
 import pconley.vamp.scanner.filesystem.FileScanVisitor;
@@ -64,7 +64,7 @@ public class ScannerService extends IntentService {
 		new TrackDAO(new LibraryOpenHelper(getBaseContext())).wipeDatabase();
 
 		// Count
-		MediaVisitorBase visitor = new FileCountVisitor();
+		FileVisitor visitor = new FileCountVisitor();
 		musicFolder.accept(visitor);
 
 		// Scan

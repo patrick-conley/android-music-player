@@ -2,17 +2,19 @@ package pconley.vamp.scanner.filesystem.model;
 
 import java.io.File;
 
+import pconley.vamp.scanner.filesystem.FileVisitor;
+
 /**
  * Representation of a file to be used as part of a hierarchical visitor pattern
- * with {@link MediaVisitorBase}.
+ * with {@link FileVisitor}.
  *
  * @author pconley
  */
-public abstract class MediaFileBase {
+public abstract class FileSystemItem {
 
 	private File file;
 
-	public MediaFileBase(File file) {
+	public FileSystemItem(File file) {
 		this.file = file;
 	}
 
@@ -21,7 +23,7 @@ public abstract class MediaFileBase {
 	 *
 	 * @param visitor
 	 */
-	public abstract void accept(MediaVisitorBase visitor);
+	public abstract void accept(FileVisitor visitor);
 
 	/**
 	 * @return The File underlying this object.

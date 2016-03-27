@@ -7,11 +7,11 @@ import java.io.File;
 import pconley.vamp.scanner.filesystem.model.MediaFile;
 import pconley.vamp.scanner.strategy.GenericTagStrategy;
 import pconley.vamp.scanner.strategy.Mp4TagStrategy;
-import pconley.vamp.scanner.strategy.StrategyFactory;
+import pconley.vamp.scanner.strategy.TagStrategyLocator;
 import pconley.vamp.scanner.strategy.TagStrategy;
 import pconley.vamp.scanner.strategy.VorbisCommentTagStrategy;
 
-public class StrategyFactoryTest extends AndroidTestCase {
+public class TagStrategyLocatorTest extends AndroidTestCase {
 
 	/**
 	 * Ogg Vorbis → Vorbis strategy
@@ -21,7 +21,8 @@ public class StrategyFactoryTest extends AndroidTestCase {
 		File file = new File("sample.ogg");
 
 		// When
-		TagStrategy strategy = StrategyFactory.getStrategy(new MediaFile(file));
+		TagStrategy strategy = TagStrategyLocator.getStrategy(new MediaFile(
+				file));
 
 		// Then
 		assertTrue("Ogg Vorbis uses the Vorbis strategy",
@@ -36,7 +37,8 @@ public class StrategyFactoryTest extends AndroidTestCase {
 		File file = new File("sample.flac");
 
 		// When
-		TagStrategy strategy = StrategyFactory.getStrategy(new MediaFile(file));
+		TagStrategy strategy = TagStrategyLocator.getStrategy(new MediaFile(
+				file));
 
 		// Then
 		assertTrue("Flac uses the Vorbis strategy",
@@ -51,7 +53,8 @@ public class StrategyFactoryTest extends AndroidTestCase {
 		File file = new File("sample.mkv");
 
 		// When
-		TagStrategy strategy = StrategyFactory.getStrategy(new MediaFile(file));
+		TagStrategy strategy = TagStrategyLocator.getStrategy(new MediaFile(
+				file));
 
 		// Then
 		assertTrue("Matroska uses the Vorbis strategy",
@@ -66,7 +69,8 @@ public class StrategyFactoryTest extends AndroidTestCase {
 		File file = new File("sample.mp4");
 
 		// When
-		TagStrategy strategy = StrategyFactory.getStrategy(new MediaFile(file));
+		TagStrategy strategy = TagStrategyLocator.getStrategy(new MediaFile(
+				file));
 
 		// Then
 		assertTrue("MP4 uses the MP4 strategy",
@@ -81,7 +85,8 @@ public class StrategyFactoryTest extends AndroidTestCase {
 		File file = new File("sample.m4a");
 
 		// When
-		TagStrategy strategy = StrategyFactory.getStrategy(new MediaFile(file));
+		TagStrategy strategy = TagStrategyLocator.getStrategy(new MediaFile(
+				file));
 
 		// Then
 		assertTrue("M4A uses the MP4 strategy",
@@ -96,7 +101,8 @@ public class StrategyFactoryTest extends AndroidTestCase {
 		File file = new File("sample.mp3");
 
 		// When
-		TagStrategy strategy = StrategyFactory.getStrategy(new MediaFile(file));
+		TagStrategy strategy = TagStrategyLocator.getStrategy(new MediaFile(
+				file));
 
 		// Then
 		assertTrue("MP3 uses the generic strategy",
@@ -111,7 +117,8 @@ public class StrategyFactoryTest extends AndroidTestCase {
 		File file = new File("sample.jpg");
 
 		// When
-		TagStrategy strategy = StrategyFactory.getStrategy(new MediaFile(file));
+		TagStrategy strategy = TagStrategyLocator.getStrategy(new MediaFile(
+				file));
 
 		// Then
 		assertTrue("JPEG uses the generic strategy",
@@ -126,7 +133,8 @@ public class StrategyFactoryTest extends AndroidTestCase {
 		File file = new File("sample_ogg");
 
 		// When
-		TagStrategy strategy = StrategyFactory.getStrategy(new MediaFile(file));
+		TagStrategy strategy = TagStrategyLocator.getStrategy(new MediaFile(
+				file));
 
 		// Then
 		assertTrue("File without extension uses the generic strategy",
@@ -142,11 +150,12 @@ public class StrategyFactoryTest extends AndroidTestCase {
 	public void testRelease() {
 		// Given
 		File file = new File("sample.mp3");
-		TagStrategy expected = StrategyFactory.getStrategy(new MediaFile(file));
+		TagStrategy expected = TagStrategyLocator.getStrategy(new MediaFile(
+				file));
 
 		// When
-		StrategyFactory.release();
-		TagStrategy actual = StrategyFactory.getStrategy(new MediaFile(file));
+		TagStrategyLocator.release();
+		TagStrategy actual = TagStrategyLocator.getStrategy(new MediaFile(file));
 
 		// Then
 		assertNotSame("Generic strategy instance is reset", expected, actual);
