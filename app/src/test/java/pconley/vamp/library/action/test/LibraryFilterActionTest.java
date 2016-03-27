@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Set;
 
 import pconley.vamp.R;
-import pconley.vamp.library.LibraryActivity;
-import pconley.vamp.library.LibraryFragment;
+import pconley.vamp.library.view.LibraryActivity;
+import pconley.vamp.library.view.LibraryFragment;
 import pconley.vamp.library.action.LibraryFilterAction;
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TrackDAO;

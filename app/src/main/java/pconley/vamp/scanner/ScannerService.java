@@ -5,7 +5,7 @@ import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.scanner.filesystem.model.MediaFolder;
 import pconley.vamp.scanner.filesystem.model.MediaVisitorBase;
-import pconley.vamp.preferences.SettingsHelper;
+import pconley.vamp.preferences.util.SettingsHelper;
 import pconley.vamp.scanner.filesystem.FileCountVisitor;
 import pconley.vamp.scanner.filesystem.FileScanVisitor;
 import pconley.vamp.util.BroadcastConstants;

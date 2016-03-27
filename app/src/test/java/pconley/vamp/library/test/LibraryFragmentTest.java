@@ -24,8 +24,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
-import pconley.vamp.library.LibraryActivity;
-import pconley.vamp.library.LibraryFragment;
+import pconley.vamp.library.view.LibraryActivity;
+import pconley.vamp.library.view.LibraryFragment;
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TagDAO;
 import pconley.vamp.persistence.dao.TrackDAO;
@@ -33,7 +33,7 @@ import pconley.vamp.persistence.model.LibraryItem;
 import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
 import pconley.vamp.persistence.model.Track;
-import pconley.vamp.player.PlayerActivity;
+import pconley.vamp.player.view.PlayerActivity;
 import pconley.vamp.util.AssetUtils;
 
 import static org.junit.Assert.assertEquals;

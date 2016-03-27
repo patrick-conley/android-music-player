@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import pconley.vamp.persistence.LibrarySchema.TagEntry;
 import pconley.vamp.persistence.LibrarySchema.TrackEntry;
 import pconley.vamp.persistence.LibrarySchema.TrackTagRelation;
-import pconley.vamp.preferences.SettingsHelper;
+import pconley.vamp.preferences.util.SettingsHelper;
 
 public class LibraryOpenHelper extends SQLiteOpenHelper {
 

@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="pconley.vamp.library.LibraryActivity">
+    tools:context="pconley.vamp.library.view.LibraryActivity">
 
     <ImageButton
         android:id="@+id/library_button_play_all"
@@ -29,7 +29,7 @@
         android:layout_above="@+id/library_tag_history"
         />
 
-    <pconley.vamp.library.TagHistoryView
+    <pconley.vamp.library.view.TagHistoryView
         android:id="@+id/library_tag_history"
         android:layout_width="fill_parent"
         android:layout_height="@dimen/text_size_large_with_padding"

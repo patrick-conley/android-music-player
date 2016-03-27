@@ -1,4 +1,4 @@
-package pconley.vamp.library;
+package pconley.vamp.library.view;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;

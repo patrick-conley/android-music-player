@@ -6,9 +6,9 @@ import android.app.FragmentTransaction;
 import java.util.List;
 
 import pconley.vamp.R;
-import pconley.vamp.library.LibraryActivity;
-import pconley.vamp.library.LibraryFragment;
-import pconley.vamp.library.TagHistoryView;
+import pconley.vamp.library.view.LibraryActivity;
+import pconley.vamp.library.view.LibraryFragment;
+import pconley.vamp.library.view.TagHistoryView;
 import pconley.vamp.persistence.model.LibraryItem;
 import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;

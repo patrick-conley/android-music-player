@@ -17,7 +17,7 @@ import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.persistence.model.Tag;
 import pconley.vamp.persistence.model.Track;
-import pconley.vamp.preferences.SettingsHelper;
+import pconley.vamp.preferences.util.SettingsHelper;
 
 public final class AssetUtils {
 

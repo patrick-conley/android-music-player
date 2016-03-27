@@ -5,10 +5,10 @@ import android.content.Intent;
 import java.util.ArrayList;
 import java.util.List;
 
-import pconley.vamp.library.LibraryActivity;
+import pconley.vamp.library.view.LibraryActivity;
 import pconley.vamp.persistence.model.LibraryItem;
 import pconley.vamp.persistence.model.Track;
-import pconley.vamp.player.PlayerActivity;
+import pconley.vamp.player.view.PlayerActivity;
 import pconley.vamp.player.PlayerService;
 
 /**

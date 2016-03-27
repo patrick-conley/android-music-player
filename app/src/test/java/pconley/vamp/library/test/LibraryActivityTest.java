@@ -14,11 +14,11 @@ import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.tester.android.view.TestMenuItem;
 
 import pconley.vamp.R;
-import pconley.vamp.library.LibraryActivity;
+import pconley.vamp.library.view.LibraryActivity;
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TrackDAO;
-import pconley.vamp.player.PlayerActivity;
-import pconley.vamp.preferences.SettingsActivity;
+import pconley.vamp.player.view.PlayerActivity;
+import pconley.vamp.preferences.view.SettingsActivity;
 import pconley.vamp.scanner.ScannerProgressDialogFragment;
 import pconley.vamp.scanner.ScannerService;
 

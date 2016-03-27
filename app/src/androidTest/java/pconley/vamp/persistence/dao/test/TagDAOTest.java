@@ -13,9 +13,8 @@ import java.util.Set;
 
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TagDAO;
-import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
-import pconley.vamp.preferences.SettingsHelper;
+import pconley.vamp.preferences.util.SettingsHelper;
 import pconley.vamp.util.Constants;
 
 import static android.test.MoreAsserts.assertEmpty;

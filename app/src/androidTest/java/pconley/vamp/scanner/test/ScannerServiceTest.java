@@ -22,7 +22,7 @@ import pconley.vamp.R;
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.persistence.model.Track;
-import pconley.vamp.preferences.SettingsHelper;
+import pconley.vamp.preferences.util.SettingsHelper;
 import pconley.vamp.scanner.ScannerEvent;
 import pconley.vamp.scanner.ScannerService;
 import pconley.vamp.util.AssetUtils;

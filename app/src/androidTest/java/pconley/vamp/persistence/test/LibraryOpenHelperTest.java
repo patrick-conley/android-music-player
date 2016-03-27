@@ -2,7 +2,7 @@ package pconley.vamp.persistence.test;
 
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.LibrarySchema.TrackEntry;
-import pconley.vamp.preferences.SettingsHelper;
+import pconley.vamp.preferences.util.SettingsHelper;
 import pconley.vamp.util.Constants;
 import android.content.ContentValues;
 import android.content.Context;

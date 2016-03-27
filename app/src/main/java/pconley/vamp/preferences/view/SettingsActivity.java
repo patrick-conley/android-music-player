@@ -1,7 +1,9 @@
-package pconley.vamp.preferences;
+package pconley.vamp.preferences.view;
 
 import android.app.Activity;
 import android.os.Bundle;
+
+import pconley.vamp.preferences.view.SettingsFragment;
 
 public class SettingsActivity extends Activity {
 

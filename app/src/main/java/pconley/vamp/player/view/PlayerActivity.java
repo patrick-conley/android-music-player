@@ -1,4 +1,4 @@
-package pconley.vamp.player;
+package pconley.vamp.player.view;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -29,7 +29,9 @@ import java.util.TimeZone;
 import pconley.vamp.R;
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.model.Track;
-import pconley.vamp.preferences.SettingsActivity;
+import pconley.vamp.player.PlayerEvent;
+import pconley.vamp.player.PlayerService;
+import pconley.vamp.preferences.view.SettingsActivity;
 import pconley.vamp.util.BroadcastConstants;
 
 public class PlayerActivity extends Activity {

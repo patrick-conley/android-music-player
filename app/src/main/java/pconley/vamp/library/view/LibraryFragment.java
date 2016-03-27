@@ -1,8 +1,7 @@
-package pconley.vamp.library;
+package pconley.vamp.library.view;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
@@ -16,16 +15,13 @@ import android.widget.Toast;
 
 import org.apache.commons.lang3.text.WordUtils;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import pconley.vamp.R;
+import pconley.vamp.library.LoadCollectionTask;
 import pconley.vamp.library.action.LibraryActionLocator;
 import pconley.vamp.library.action.LibraryPlayAction;
-import pconley.vamp.persistence.LibraryOpenHelper;
-import pconley.vamp.persistence.dao.TagDAO;
-import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.persistence.model.LibraryItem;
 import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
@@ -37,6 +33,7 @@ public class LibraryFragment extends Fragment
 	private Activity activity;
 	private ProgressBar progress;
 	private ListView view;
+	private boolean playOnLoad = false;
 
 	private MusicCollection collection;
 
@@ -133,10 +130,47 @@ public class LibraryFragment extends Fragment
 	}
 
 	/**
+	 * Callback used to display the collection returned by LoadCollectionTask.
+	 *
+	 * @param collection
+	 */
+	@SuppressWarnings("unchecked")
+	public void onLoadCollection(MusicCollection collection) {
+		this.collection = collection;
+		progress.setVisibility(ProgressBar.INVISIBLE);
+
+		if (playOnLoad) {
+			playOnLoad = false;
+			new LibraryPlayAction().execute(
+					(LibraryActivity) activity, collection.getContents(), 0);
+		} else {
+
+			if (collection.getContents().isEmpty()) {
+				Toast.makeText(activity, "Filter contains no tracks",
+				               Toast.LENGTH_LONG).show();
+			}
+
+			ArrayAdapter<? extends LibraryItem> adapter;
+			if (collection.getName() == null) {
+				adapter = new ArrayAdapter<Track>(
+						activity, R.layout.library_item, R.id.library_item,
+						(List<Track>) collection.getContents());
+			} else {
+				adapter = new ArrayAdapter<Tag>(
+						activity, R.layout.library_item, R.id.library_item,
+						(List<Tag>) collection.getContents());
+			}
+			view.setAdapter(adapter);
+		}
+	}
+
+	/**
 	 * Play all the tracks contained in the visible collections.
 	 */
 	public void playContents() {
-		new LoadCollectionTask(null, collection.getFilter(), true).execute();
+		playOnLoad = true;
+		/* FIXME: use a PlayerActivity, not this */
+		new LoadCollectionTask(this, null, collection.getFilter()).execute();
 	}
 
 	/**
@@ -186,80 +220,13 @@ public class LibraryFragment extends Fragment
 			filter.add(selected);
 		}
 
-		new LoadCollectionTask(name, filter, false).execute();
+		if (name == null) {
+			activity.setTitle(getString(R.string.track));
+		} else {
+			activity.setTitle(WordUtils.capitalize(name));
+		}
+
+		progress.setVisibility(ProgressBar.VISIBLE);
+		new LoadCollectionTask(this, name, filter).execute();
 	}
-
-	/**
-	 * Load the contents of the library into a TextView with execute(). Work is
-	 * done in a background thread.
-	 */
-	private class LoadCollectionTask
-			extends AsyncTask<Void, Void, List<? extends LibraryItem>> {
-
-		private final String name;
-		private final List<Tag> filter;
-		private final boolean playOnLoad;
-
-		public LoadCollectionTask(String name, List<Tag> filter,
-				boolean playOnLoad) {
-			this.name = name;
-			this.filter = filter == null ? new ArrayList<Tag>() : filter;
-			this.playOnLoad = playOnLoad;
-		}
-
-		@Override
-		protected void onPreExecute() {
-			super.onPreExecute();
-
-			progress.setVisibility(ProgressBar.VISIBLE);
-
-			if (name == null) {
-				activity.setTitle(getString(R.string.track));
-			} else {
-				activity.setTitle(WordUtils.capitalize(name));
-			}
-		}
-
-		@Override
-		protected List<? extends LibraryItem> doInBackground(Void... params) {
-			LibraryOpenHelper helper = new LibraryOpenHelper(activity);
-
-			if (name == null) {
-				return new TrackDAO(helper).getFilteredTracks(filter);
-			} else {
-				return new TagDAO(helper).getFilteredTags(filter, name);
-			}
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		protected void onPostExecute(List<? extends LibraryItem> items) {
-			if (playOnLoad) {
-				new LibraryPlayAction()
-						.execute((LibraryActivity) activity, items, 0);
-			} else {
-				collection = new MusicCollection(name, filter, items);
-
-				if (items.isEmpty()) {
-					Toast.makeText(activity, "Filter contains no tracks",
-					               Toast.LENGTH_LONG).show();
-				}
-
-				ArrayAdapter<? extends LibraryItem> adapter;
-				if (name == null) {
-					adapter = new ArrayAdapter<Track>(
-							activity, R.layout.library_item, R.id.library_item,
-							(List<Track>) items);
-				} else {
-					adapter = new ArrayAdapter<Tag>(
-							activity, R.layout.library_item, R.id.library_item,
-							(List<Tag>) items);
-				}
-				view.setAdapter(adapter);
-			}
-
-			progress.setVisibility(ProgressBar.INVISIBLE);
-		}
-	}
-
 }

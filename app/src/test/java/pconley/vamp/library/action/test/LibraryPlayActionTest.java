@@ -14,10 +14,10 @@ import org.robolectric.shadows.ShadowActivity;
 import java.io.File;
 import java.util.ArrayList;
 
-import pconley.vamp.library.LibraryActivity;
+import pconley.vamp.library.view.LibraryActivity;
 import pconley.vamp.library.action.LibraryPlayAction;
 import pconley.vamp.persistence.model.Track;
-import pconley.vamp.player.PlayerActivity;
+import pconley.vamp.player.view.PlayerActivity;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.util.AssetUtils;
 

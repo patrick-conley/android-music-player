@@ -20,7 +20,7 @@ import pconley.vamp.persistence.LibrarySchema.TrackEntry;
 import pconley.vamp.persistence.LibrarySchema.TrackTagRelation;
 import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.persistence.model.Track;
-import pconley.vamp.preferences.SettingsHelper;
+import pconley.vamp.preferences.util.SettingsHelper;
 import pconley.vamp.util.Constants;
 
 import static android.test.MoreAsserts.assertEmpty;

@@ -1,4 +1,4 @@
-package pconley.vamp.library;
+package pconley.vamp.library.view;
 
 import android.app.Activity;
 import android.app.FragmentManager;
@@ -16,8 +16,8 @@ import android.widget.Toast;
 
 import pconley.vamp.R;
 import pconley.vamp.persistence.LibraryOpenHelper;
-import pconley.vamp.player.PlayerActivity;
-import pconley.vamp.preferences.SettingsActivity;
+import pconley.vamp.player.view.PlayerActivity;
+import pconley.vamp.preferences.view.SettingsActivity;
 import pconley.vamp.scanner.ScannerProgressDialogFragment;
 import pconley.vamp.scanner.ScannerService;
 import pconley.vamp.util.BroadcastConstants;

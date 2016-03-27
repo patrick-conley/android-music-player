@@ -15,7 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import pconley.vamp.R;
-import pconley.vamp.library.LibraryActivity;
+import pconley.vamp.library.view.LibraryActivity;
 import pconley.vamp.util.BroadcastConstants;
 
 /**

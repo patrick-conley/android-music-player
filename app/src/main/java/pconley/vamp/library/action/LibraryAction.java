@@ -2,7 +2,7 @@ package pconley.vamp.library.action;
 
 import java.util.List;
 
-import pconley.vamp.library.LibraryActivity;
+import pconley.vamp.library.view.LibraryActivity;
 import pconley.vamp.persistence.model.LibraryItem;
 
 /**

@@ -1,4 +1,4 @@
-package pconley.vamp.preferences;
+package pconley.vamp.preferences.view;
 
 import android.os.Bundle;
 import android.preference.EditTextPreference;
@@ -10,6 +10,7 @@ import android.widget.Toast;
 import java.io.File;
 
 import pconley.vamp.R;
+import pconley.vamp.preferences.util.SettingsHelper;
 
 public class SettingsFragment extends PreferenceFragment {
 

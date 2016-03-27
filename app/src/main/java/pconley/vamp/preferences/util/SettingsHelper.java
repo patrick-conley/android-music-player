@@ -1,4 +1,4 @@
-package pconley.vamp.preferences;
+package pconley.vamp.preferences.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;

@@ -1,6 +1,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="pconley.vamp.player.PlayerActivity" >
+    tools:context="pconley.vamp.player.view.PlayerActivity" >
 
     <item
         android:id="@+id/action_settings"

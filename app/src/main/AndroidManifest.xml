@@ -19,7 +19,7 @@
         android:label="@string/app_name"
         android:theme="@android:style/Theme.Holo">
         <activity
-            android:name=".library.LibraryActivity"
+            android:name=".library.view.LibraryActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -28,13 +28,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".player.PlayerActivity"
+            android:name=".player.view.PlayerActivity"
             android:label="@string/activity_player_name"
             android:launchMode="singleTop"
-            android:parentActivityName=".library.LibraryActivity">
+            android:parentActivityName=".library.view.LibraryActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".library.LibraryActivity"/>
+                android:value=".library.view.LibraryActivity"/>
         </activity>
 
         <receiver android:name=".player.AudioNoisyReceiver">
@@ -47,7 +47,7 @@
         <service android:name=".scanner.ScannerService"/>
 
         <activity
-            android:name=".preferences.SettingsActivity"
+            android:name=".preferences.view.SettingsActivity"
             android:label="@string/activity_settings_name">
         </activity>
     </application>
