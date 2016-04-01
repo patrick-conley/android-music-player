@@ -1,5 +1,6 @@
 package pconley.vamp.library.action;
 
+import android.app.Activity;
 import android.content.Intent;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import pconley.vamp.player.PlayerService;
 public class LibraryPlayAction implements LibraryAction {
 
 	@Override
-	public void execute(LibraryActivity activity,
+	public void execute(Activity activity,
 			List<? extends LibraryItem> contents, int position) {
 
 		ArrayList<Track> tracks = new ArrayList<Track>((List<Track>) contents);

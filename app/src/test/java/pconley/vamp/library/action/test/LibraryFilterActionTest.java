@@ -1,9 +1,8 @@
 package pconley.vamp.library.action.test;
 
+import android.app.Activity;
 import android.app.FragmentManager;
 import android.net.Uri;
-import android.widget.Adapter;
-import android.widget.ListView;
 
 import org.junit.After;
 import org.junit.Before;
@@ -15,16 +14,17 @@ import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import pconley.vamp.R;
-import pconley.vamp.library.view.LibraryActivity;
-import pconley.vamp.library.view.LibraryFragment;
 import pconley.vamp.library.action.LibraryFilterAction;
+import pconley.vamp.library.view.LibraryFragment;
+import pconley.vamp.library.view.MockLibraryActivity;
 import pconley.vamp.persistence.LibraryOpenHelper;
+import pconley.vamp.persistence.dao.TagDAO;
 import pconley.vamp.persistence.dao.TrackDAO;
+import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
 import pconley.vamp.persistence.model.Track;
 
@@ -34,23 +34,26 @@ import static org.junit.Assert.assertEquals;
 @Config(emulateSdk = 18, manifest = "src/main/AndroidManifest.xml")
 public class LibraryFilterActionTest {
 
-	private LibraryActivity activity;
+	private Activity activity;
 	private FragmentManager fm;
 
-	private TrackDAO dao;
+	private TrackDAO trackDao;
+	private TagDAO tagDao;
 
 	@Before
 	public void setUpTest() {
-		activity = Robolectric.buildActivity(LibraryActivity.class).create()
+		activity = Robolectric.buildActivity(MockLibraryActivity.class).create()
 		                      .start().restart().get();
 		fm = activity.getFragmentManager();
 
-		dao = new TrackDAO(new LibraryOpenHelper(activity));
+		LibraryOpenHelper helper = new LibraryOpenHelper(activity);
+		trackDao = new TrackDAO(helper);
+		tagDao = new TagDAO(helper);
 	}
 
 	@After
 	public void tearDownTest() {
-		dao.wipeDatabase();
+		trackDao.wipeDatabase();
 	}
 
 	/**
@@ -67,10 +70,12 @@ public class LibraryFilterActionTest {
 
 		// When
 		new LibraryFilterAction().execute(activity, contents, 0);
+		Robolectric.runBackgroundTasks();
+		Robolectric.runUiThreadTasks();
 
 		// Then
-		List<Tag> filters
-				= ((LibraryFragment) fm.findFragmentById(R.id.library))
+		List<Tag> filters = ((LibraryFragment) fm
+				.findFragmentById(R.id.library_container))
 				.getCollection().getFilter();
 
 		assertEquals("Album filter is added to the fragment",
@@ -86,48 +91,40 @@ public class LibraryFilterActionTest {
 		// Given
 		Tag album = new Tag("album", "foo");
 
-		ArrayList<Tag> contents = new ArrayList<Tag>();
-		contents.add(album);
-
-		Set<Track> expected = new HashSet<Track>();
+		List<Track> expected = new LinkedList<Track>();
 		Track track = new Track.Builder(0, Uri.parse("one"))
 				.add(album)
 				.add(new Tag("title", "foo"))
 				.build();
 		expected.add(track);
-		dao.insertTrack(track);
+		trackDao.insertTrack(track);
 
 		track = new Track.Builder(0, Uri.parse("two"))
 				.add(album)
 				.add(new Tag("title", "bar"))
 				.build();
 		expected.add(track);
-		dao.insertTrack(track);
+		trackDao.insertTrack(track);
 
 		track = new Track.Builder(0, Uri.parse("three"))
 				.add(album)
 				.add(new Tag("title", "baz"))
 				.build();
 		expected.add(track);
-		dao.insertTrack(track);
+		trackDao.insertTrack(track);
 
-		activity = Robolectric.buildActivity(LibraryActivity.class).create()
-		                      .start().restart().get();
+		List<Tag> contents = tagDao.getFilteredTags(null, "album");
 
 		// When
 		new LibraryFilterAction().execute(activity, contents, 0);
 
 		// Then
-		Adapter fragmentAdapter = ((ListView) activity.findViewById(
-				R.id.library_contents)).getAdapter();
+		LibraryFragment fragment = (LibraryFragment) fm.findFragmentById(
+				R.id.library_container);
 
-		Set<Track> actual = new HashSet<Track>();
-		for (int i = 0; i < fragmentAdapter.getCount(); i++) {
-			actual.add((Track) fragmentAdapter.getItem(i));
-		}
-
-		assertEquals("Tracks in the album are displayed", expected, actual);
-
+		assertEquals("Collection is built correctly",
+		             new MusicCollection(null, contents, expected),
+		             fragment.getCollection());
 	}
 
 	/**
@@ -136,44 +133,44 @@ public class LibraryFilterActionTest {
 	 */
 	@Test
 	public void testTwoAlbums() {
-		ArrayList<Tag> contents = new ArrayList<Tag>();
-
 		// Given
 		Tag album1 = new Tag("album", "foo");
-		contents.add(album1);
-
 		Tag album2 = new Tag("album", "bar");
-		contents.add(album2);
 
 		Track track = new Track.Builder(0, Uri.parse("one"))
 				.add(album1)
 				.add(new Tag("title", "foo"))
 				.build();
-		dao.insertTrack(track);
+		trackDao.insertTrack(track);
 
 		track = new Track.Builder(0, Uri.parse("two"))
 				.add(album1)
 				.add(new Tag("title", "bar"))
 				.build();
-		dao.insertTrack(track);
+		trackDao.insertTrack(track);
 
 		Track expected = new Track.Builder(0, Uri.parse("three"))
 				.add(album2)
 				.add(new Tag("title", "baz"))
 				.build();
-		dao.insertTrack(expected);
+		/* FIXME: expected seems to be out of order. Change DAOs to return object w. correct ID */
+		trackDao.insertTrack(expected);
+
+		List<Tag> contents = tagDao.getFilteredTags(null, "album");
 
 		// When
-		new LibraryFilterAction().execute(activity, contents, 1);
+		new LibraryFilterAction().execute(activity, contents, 0);
 
 		// Then
-		Adapter fragmentAdapter = ((ListView) activity.findViewById(
-				R.id.library_contents)).getAdapter();
+		LibraryFragment fragment = (LibraryFragment) fm.findFragmentById(
+				R.id.library_container);
 
-		assertEquals("Adapter contains tracks", 1, fragmentAdapter.getCount());
-		assertEquals("Tracks in the album are displayed", expected,
-		             fragmentAdapter.getItem(0));
-
+		assertEquals("Collection is built correctly",
+		             new MusicCollection(
+				             null,
+				             Collections.singletonList(contents.get(0)),
+				             Collections.singletonList(expected)),
+		             fragment.getCollection());
 	}
 
 }

@@ -13,9 +13,6 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import org.apache.commons.lang3.text.WordUtils;
-
-import java.util.LinkedList;
 import java.util.List;
 
 import pconley.vamp.R;
@@ -36,37 +33,6 @@ public class LibraryFragment extends Fragment
 	private boolean playOnLoad = false;
 
 	private MusicCollection collection;
-
-	/**
-	 * Create a new unfiltered fragment. The library's root tags will be
-	 * displayed.
-	 */
-	public static LibraryFragment newInstance() {
-		return newInstance(null, null);
-	}
-
-	/**
-	 * Create a new fragment, filtering the library against a set of tags.
-	 *
-	 * @param parentCollection
-	 * 		The collection used in this fragment's parent. Should be null if this
-	 * 		is the root fragment.
-	 * @param selected
-	 * 		The item clicked in the parent fragment. Usually null if this is the
-	 * 		root fragment.
-	 */
-	public static LibraryFragment newInstance(MusicCollection parentCollection,
-			Tag selected) {
-
-		Bundle arguments = new Bundle();
-		arguments.putParcelable("parentCollection", parentCollection);
-		arguments.putParcelable("selectedTag", selected);
-
-		LibraryFragment fragment = new LibraryFragment();
-		fragment.setArguments(arguments);
-
-		return fragment;
-	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -90,21 +56,18 @@ public class LibraryFragment extends Fragment
 		View view = inflater
 				.inflate(R.layout.fragment_library, container, false);
 
+		// FIXME: check if coll'n is nonnull here & update views in case of racing
+
 		this.view = (ListView) view.findViewById(R.id.library_contents);
 		this.view.setOnItemClickListener(this);
 
 		progress = (ProgressBar) view.findViewById(R.id.library_progress_load);
 
-		MusicCollection parentCollection = null;
-		Tag selectedTag = null;
-
-		Bundle arguments = getArguments();
-		if (arguments != null) {
-			parentCollection = arguments.getParcelable("parentCollection");
-			selectedTag = arguments.getParcelable("selectedTag");
+		if (collection == null) {
+			progress.setVisibility(ProgressBar.VISIBLE);
+		} else {
+			updateView();
 		}
-
-		buildCollection(parentCollection, selectedTag);
 
 		return view;
 	}
@@ -123,54 +86,9 @@ public class LibraryFragment extends Fragment
 	@SuppressWarnings(value = "unchecked")
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
-		LibraryActionLocator.findAction(collection.getContents().get(position))
-		                    .execute((LibraryActivity) activity,
-		                             collection.getContents(),
-		                             position);
-	}
-
-	/**
-	 * Callback used to display the collection returned by LoadCollectionTask.
-	 *
-	 * @param collection
-	 */
-	@SuppressWarnings("unchecked")
-	public void onLoadCollection(MusicCollection collection) {
-		this.collection = collection;
-		progress.setVisibility(ProgressBar.INVISIBLE);
-
-		if (playOnLoad) {
-			playOnLoad = false;
-			new LibraryPlayAction().execute(
-					(LibraryActivity) activity, collection.getContents(), 0);
-		} else {
-
-			if (collection.getContents().isEmpty()) {
-				Toast.makeText(activity, "Filter contains no tracks",
-				               Toast.LENGTH_LONG).show();
-			}
-
-			ArrayAdapter<? extends LibraryItem> adapter;
-			if (collection.getName() == null) {
-				adapter = new ArrayAdapter<Track>(
-						activity, R.layout.library_item, R.id.library_item,
-						(List<Track>) collection.getContents());
-			} else {
-				adapter = new ArrayAdapter<Tag>(
-						activity, R.layout.library_item, R.id.library_item,
-						(List<Tag>) collection.getContents());
-			}
-			view.setAdapter(adapter);
-		}
-	}
-
-	/**
-	 * Play all the tracks contained in the visible collections.
-	 */
-	public void playContents() {
-		playOnLoad = true;
-		/* FIXME: use a PlayerActivity, not this */
-		new LoadCollectionTask(this, null, collection.getFilter()).execute();
+		LibraryActionLocator
+				.findAction(getCollection().getContents().get(position))
+				.execute(activity, getCollection().getContents(), position);
 	}
 
 	/**
@@ -189,44 +107,58 @@ public class LibraryFragment extends Fragment
 		return collection;
 	}
 
-	private void buildCollection(MusicCollection parent, Tag selected) {
-		List<Tag> filter = new LinkedList<Tag>();
-		String name;
+	/**
+	 * Callback used to display the collection returned by LoadCollectionTask.
+	 *
+	 * @param collection
+	 */
+	@SuppressWarnings("unchecked")
+	public void setCollection(MusicCollection collection) {
+		this.collection = collection;
 
-		if (parent == null) {
-			name = "artist";
+		if (progress != null) {
+			progress.setVisibility(ProgressBar.INVISIBLE);
+		}
+
+		if (playOnLoad) {
+			playOnLoad = false;
+			new LibraryPlayAction().execute(
+					activity, collection.getContents(), 0);
 		} else {
-			filter.addAll(parent.getFilter());
-
-			if (parent.getName() == null) {
-				throw new IllegalArgumentException(
-						"Tracks (filter name == null) can't have children");
+			if (collection.getContents().isEmpty()) {
+				Toast.makeText(activity, "Filter contains no tracks",
+				               Toast.LENGTH_LONG).show();
 			}
 
-			switch (parent.getName()) {
-				case "artist":
-					name = "album";
-					break;
-				case "album":
-					name = null;
-					break;
-				default:
-					throw new IllegalArgumentException(
-							"Unknown collection name " + parent.getName());
+			if (view != null) {
+				updateView();
 			}
 		}
+	}
 
-		if (selected != null) {
-			filter.add(selected);
-		}
-
-		if (name == null) {
-			activity.setTitle(getString(R.string.track));
+	private void updateView() {
+		ArrayAdapter<? extends LibraryItem> adapter;
+		if (getCollection().getName() == null) {
+			adapter = new ArrayAdapter<Track>(
+					activity, R.layout.library_item, R.id.library_item,
+					(List<Track>) collection.getContents());
 		} else {
-			activity.setTitle(WordUtils.capitalize(name));
+			adapter = new ArrayAdapter<Tag>(
+					activity, R.layout.library_item, R.id.library_item,
+					(List<Tag>) collection.getContents());
 		}
+		view.setAdapter(adapter);
+	}
 
+	/**
+	 * Play all the tracks contained in the visible collections.
+	 */
+	public void playContents() {
+		playOnLoad = true;
 		progress.setVisibility(ProgressBar.VISIBLE);
-		new LoadCollectionTask(this, name, filter).execute();
+		// FIXME: don't load the collection if it already shows tracks
+		new LoadCollectionTask(activity, this, null,
+		                       getCollection().getFilter())
+				.execute();
 	}
 }

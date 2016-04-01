@@ -1,5 +1,6 @@
 package pconley.vamp.library;
 
+import android.content.Context;
 import android.os.AsyncTask;
 
 import java.util.ArrayList;
@@ -22,10 +23,12 @@ public class LoadCollectionTask
 
 	private final String name;
 	private final List<Tag> filter;
+	private final Context context;
 	private final LibraryFragment fragment;
 
-	public LoadCollectionTask(LibraryFragment fragment, String name,
-			List<Tag> filter) {
+	public LoadCollectionTask(Context context, LibraryFragment fragment,
+			String name, List<Tag> filter) {
+		this.context = context;
 		this.fragment = fragment;
 		this.name = name;
 		this.filter = filter == null ? new ArrayList<Tag>() : filter;
@@ -33,8 +36,7 @@ public class LoadCollectionTask
 
 	@Override
 	protected List<? extends LibraryItem> doInBackground(Void... params) {
-		LibraryOpenHelper helper =
-				new LibraryOpenHelper(fragment.getActivity());
+		LibraryOpenHelper helper = new LibraryOpenHelper(context);
 
 		if (name == null) {
 			return new TrackDAO(helper).getFilteredTracks(filter);
@@ -45,6 +47,6 @@ public class LoadCollectionTask
 
 	@Override
 	protected void onPostExecute(List<? extends LibraryItem> items) {
-		fragment.onLoadCollection(new MusicCollection(name, filter, items));
+		fragment.setCollection(new MusicCollection(name, filter, items));
 	}
 }

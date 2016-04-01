@@ -1,5 +1,6 @@
 package pconley.vamp.library.action.test;
 
+import android.app.Activity;
 import android.content.Intent;
 
 import org.junit.Before;
@@ -14,11 +15,11 @@ import org.robolectric.shadows.ShadowActivity;
 import java.io.File;
 import java.util.ArrayList;
 
-import pconley.vamp.library.view.LibraryActivity;
 import pconley.vamp.library.action.LibraryPlayAction;
+import pconley.vamp.library.view.MockLibraryActivity;
 import pconley.vamp.persistence.model.Track;
-import pconley.vamp.player.view.PlayerActivity;
 import pconley.vamp.player.PlayerService;
+import pconley.vamp.player.view.PlayerActivity;
 import pconley.vamp.util.AssetUtils;
 
 import static org.junit.Assert.assertEquals;
@@ -27,7 +28,7 @@ import static org.junit.Assert.assertEquals;
 @Config(emulateSdk = 18, manifest = "src/main/AndroidManifest.xml")
 public class LibraryPlayActionTest {
 
-	private LibraryActivity activity;
+	private Activity activity;
 	private ShadowActivity shadow;
 
 	private static ArrayList<Track> tracks;
@@ -42,7 +43,7 @@ public class LibraryPlayActionTest {
 
 	@Before
 	public void setUpTest() {
-		activity = Robolectric.buildActivity(LibraryActivity.class).create()
+		activity = Robolectric.buildActivity(MockLibraryActivity.class).create()
 		                      .start().restart().get();
 		shadow = Robolectric.shadowOf(activity);
 	}

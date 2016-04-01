@@ -1,8 +1,9 @@
 package pconley.vamp.library.action;
 
+import android.app.Activity;
+
 import java.util.List;
 
-import pconley.vamp.library.view.LibraryActivity;
 import pconley.vamp.persistence.model.LibraryItem;
 
 /**
@@ -18,7 +19,7 @@ public interface LibraryAction {
 	 * @param position
 	 * 		Position in the adapter of the item clicked.
 	 */
-	void execute(LibraryActivity activity,
+	void execute(Activity activity,
 			List<? extends LibraryItem> contents,
 			int position);
 }
