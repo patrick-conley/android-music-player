@@ -104,7 +104,7 @@ public class MusicCollection implements Parcelable {
 		@Override
 		public MusicCollection createFromParcel(Parcel source) {
 			String name = source.readString();
-			if (name == null || name.equals("")) {
+			if (name != null && name.equals("")) {
 				name = null;
 			}
 

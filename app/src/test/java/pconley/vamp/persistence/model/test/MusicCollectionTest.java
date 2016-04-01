@@ -8,12 +8,14 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
 import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
+import pconley.vamp.persistence.model.Track;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -45,7 +47,19 @@ public class MusicCollectionTest {
 	}
 
 	/**
-	 * A null list of tags is replaced with an empty list
+	 * A null list of tracks is replaced with an empty list
+	 */
+	@Test
+	public void collectionWrapsNullTracks() {
+		MusicCollection collection = new MusicCollection(null, null, null);
+
+		assertEquals("A missing list of tracks is replaced with an empty list",
+	                 new ArrayList<Track>(),
+	                 collection.getContents());
+	}
+
+	/**
+	 * A null filter is replaced with an empty list
 	 */
 	@Test
 	public void collectionWrapsNullTags() {
@@ -57,7 +71,7 @@ public class MusicCollectionTest {
 	}
 
 	/**
-	 * The list of tags is immutable
+	 * The filter is immutable
 	 */
 	@Test(expected = UnsupportedOperationException.class)
 	public void tagsAreImmutable() {
@@ -84,7 +98,7 @@ public class MusicCollectionTest {
 	}
 
 	/**
-	 * Parcel a collection with a name but without tags
+	 * Parcel an empty unfiltered collection of tags
 	 */
 	@Test
 	public void parcelWithNameWithoutTags() {
@@ -101,7 +115,7 @@ public class MusicCollectionTest {
 	}
 
 	/**
-	 * Parcel a collection with tags but without a name
+	 * Parcel an empty filtered collection of tracks
 	 */
 	@Test
 	public void parcelWithoutNameWithTags() {
@@ -118,7 +132,7 @@ public class MusicCollectionTest {
 	}
 
 	/**
-	 * Parcel a collection with several tags
+	 * Parcel a collection with a filter
 	 */
 	@Test
 	public void parcelWithNameAndTags() {
@@ -138,6 +152,8 @@ public class MusicCollectionTest {
 	 * See {@link Object#hashCode()} and {@link Object#equals(Object)} for
 	 * contracts.
 	 */
+	@SuppressWarnings({ "EqualsBetweenInconvertibleTypes", "ObjectEqualsNull",
+			                  "EqualsWithItself" })
 	@Test
 	public void testHashCodeEqualsContract() {
 		List<Tag> tags = new LinkedList<Tag>();

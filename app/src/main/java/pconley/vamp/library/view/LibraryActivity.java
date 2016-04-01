@@ -15,10 +15,11 @@ import android.view.View;
 import android.widget.Toast;
 
 import pconley.vamp.R;
+import pconley.vamp.library.action.LibraryFilterAction;
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.player.view.PlayerActivity;
 import pconley.vamp.preferences.view.SettingsActivity;
-import pconley.vamp.scanner.ScannerProgressDialogFragment;
+import pconley.vamp.scanner.view.ScannerProgressDialogFragment;
 import pconley.vamp.scanner.ScannerService;
 import pconley.vamp.util.BroadcastConstants;
 
@@ -125,13 +126,9 @@ public class LibraryActivity extends Activity {
 	 * scanned. Existing filters may have been invalidated by the scan.
 	 */
 	public void loadLibrary() {
-		FragmentManager fm = getFragmentManager();
-
-		fm.popBackStack(LIBRARY_ROOT_TAG,
+		getFragmentManager().popBackStack(LIBRARY_ROOT_TAG,
 		                FragmentManager.POP_BACK_STACK_INCLUSIVE);
-		fm.beginTransaction()
-		  .replace(R.id.library_container, LibraryFragment.newInstance())
-		  .commit();
+		new LibraryFilterAction(this).execute(null, -1);
 	}
 
 	private class PlayerEventReceiver extends BroadcastReceiver {

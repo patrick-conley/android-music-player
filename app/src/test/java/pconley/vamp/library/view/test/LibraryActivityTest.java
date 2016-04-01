@@ -1,4 +1,4 @@
-package pconley.vamp.library.test;
+package pconley.vamp.library.view.test;
 
 import android.content.Context;
 import android.content.Intent;
@@ -19,7 +19,7 @@ import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.player.view.PlayerActivity;
 import pconley.vamp.preferences.view.SettingsActivity;
-import pconley.vamp.scanner.ScannerProgressDialogFragment;
+import pconley.vamp.scanner.view.ScannerProgressDialogFragment;
 import pconley.vamp.scanner.ScannerService;
 
 import static org.junit.Assert.assertEquals;

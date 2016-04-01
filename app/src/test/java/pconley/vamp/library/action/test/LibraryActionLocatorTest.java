@@ -31,7 +31,7 @@ public class LibraryActionLocatorTest {
 	@Test
 	public void testTrack() {
 		// When
-		LibraryAction action = LibraryActionLocator
+		LibraryAction action = new LibraryActionLocator(null)
 				.findAction(new Track.Builder(0, Uri.parse("/")).build());
 
 		// Then
@@ -46,7 +46,7 @@ public class LibraryActionLocatorTest {
 	@Test
 	public void testTag() {
 		// When
-		LibraryAction action = LibraryActionLocator
+		LibraryAction action = new LibraryActionLocator(null)
 				.findAction(new Tag("foo", "bar"));
 
 		// Then
@@ -61,7 +61,7 @@ public class LibraryActionLocatorTest {
 	@Test
 	public void testAnonymous() {
 		// When
-		LibraryAction action = LibraryActionLocator.findAction(
+		LibraryAction action = new LibraryActionLocator(null).findAction(
 				new LibraryItem() {
 					@Override
 					public int describeContents() {

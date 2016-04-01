@@ -77,7 +77,9 @@ public final class AssetUtils {
 
 		File musicFolder = new File(context.getCacheDir(), "music");
 		FileUtils.deleteDirectory(musicFolder);
-		musicFolder.mkdir();
+		if (!musicFolder.mkdir()) {
+			throw new IOException("Could not create music folder");
+		}
 
 		SharedPreferences preferences = context.getSharedPreferences(
 				Constants.PREFERENCES_NAME, Context.MODE_PRIVATE);
@@ -109,7 +111,9 @@ public final class AssetUtils {
 	 */
 	public static Track addAssetToFolder(Context context, String asset,
 			File destination) throws IOException {
-		destination.createNewFile();
+		if (!destination.createNewFile()) {
+			throw new IOException("Could not create asset");
+		}
 
 		InputStream inStream = context.getAssets().open(asset);
 		OutputStream outStream = new FileOutputStream(destination);
@@ -156,8 +160,8 @@ public final class AssetUtils {
 
 		TrackDAO dao = new TrackDAO(new LibraryOpenHelper(context));
 
-		for (int i = 0; i < files.length; i++) {
-			Track track = buildTrack(files[i]);
+		for (File file : files) {
+			Track track = buildTrack(file);
 
 			dao.insertTrack(track);
 		}
