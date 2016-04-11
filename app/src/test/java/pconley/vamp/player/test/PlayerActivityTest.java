@@ -21,9 +21,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import pconley.vamp.R;
+import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Track;
-import pconley.vamp.player.view.PlayerActivity;
 import pconley.vamp.player.PlayerService;
+import pconley.vamp.player.view.PlayerActivity;
 import pconley.vamp.util.AssetUtils;
 
 import static org.junit.Assert.assertEquals;
@@ -67,8 +68,8 @@ public class PlayerActivityTest {
 		// Default intent to start the player
 		serviceIntent = new Intent(context, PlayerService.class);
 		serviceIntent.setAction(PlayerService.ACTION_PLAY);
-		serviceIntent.putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS,
-		                                          tracks);
+		serviceIntent.putExtra(PlayerService.EXTRA_COLLECTION,
+		                       new MusicCollection(null, null, tracks));
 
 		// Instance of the player service to be returned on bind
 		controller = Robolectric.buildService(PlayerService.class).create();

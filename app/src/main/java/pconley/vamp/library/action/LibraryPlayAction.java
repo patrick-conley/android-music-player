@@ -42,14 +42,10 @@ public class LibraryPlayAction extends LibraryAction {
 	@SuppressWarnings("unchecked")
 	private void playCollection(MusicCollection collection, int position) {
 		/* FIXME: DAOs should create an OpenHelper themselves */
-		/* FIXME: PlayerService should take a collection, not a list */
-		ArrayList<Track> tracks = new ArrayList<Track>(
-				(List<Track>) collection.getContents());
-
 		Intent intent = new Intent(getContext(), PlayerService.class);
 		intent.setAction(PlayerService.ACTION_PLAY)
 		      .putExtra(PlayerService.EXTRA_START_POSITION, position)
-		      .putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS, tracks);
+		      .putExtra(PlayerService.EXTRA_COLLECTION, collection);
 		getContext().startService(intent);
 
 		getContext().startActivity(new Intent(getContext(),

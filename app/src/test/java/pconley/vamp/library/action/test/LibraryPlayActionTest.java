@@ -67,16 +67,18 @@ public class LibraryPlayActionTest {
 		ArrayList<Track> singleTrack = new ArrayList<Track>();
 		singleTrack.add(tracks.get(0));
 
+		MusicCollection collection = new MusicCollection(null, null,
+		                                                 singleTrack);
+
 		// When
 		new LibraryPlayAction(activity).execute(
-				new MusicCollection(null, null, singleTrack), position);
+				collection, position);
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);
 		expected.setAction(PlayerService.ACTION_PLAY)
 		        .putExtra(PlayerService.EXTRA_START_POSITION, position)
-		        .putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS,
-		                                     singleTrack);
+		        .putExtra(PlayerService.EXTRA_COLLECTION, collection);
 		assertEquals("Play action begins playing", expected,
 		             shadow.getNextStartedService());
 
@@ -94,16 +96,16 @@ public class LibraryPlayActionTest {
 	public void testValidPosition() {
 		int position = 1;
 
+		MusicCollection collection = new MusicCollection(null, null, tracks);
+
 		// When
-		new LibraryPlayAction(activity).execute(
-				new MusicCollection(null, null, tracks), position);
+		new LibraryPlayAction(activity).execute( collection, position);
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);
 		expected.setAction(PlayerService.ACTION_PLAY)
 		        .putExtra(PlayerService.EXTRA_START_POSITION, position)
-		        .putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS,
-		                                     tracks);
+		        .putExtra(PlayerService.EXTRA_COLLECTION, collection);
 		assertEquals("Play action begins playing", expected,
 		             shadow.getNextStartedService());
 	}
@@ -117,16 +119,16 @@ public class LibraryPlayActionTest {
 	public void testInvalidPosition() {
 		int position = 3;
 
+		MusicCollection collection = new MusicCollection(null, null, tracks);
+
 		// When
-		new LibraryPlayAction(activity).execute(
-				new MusicCollection(null, null, tracks), position);
+		new LibraryPlayAction(activity).execute(collection, position);
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);
 		expected.setAction(PlayerService.ACTION_PLAY)
 		        .putExtra(PlayerService.EXTRA_START_POSITION, position)
-		        .putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS,
-		                                     tracks);
+		        .putExtra(PlayerService.EXTRA_COLLECTION, collection);
 		assertEquals("Play action begins playing", expected,
 		             shadow.getNextStartedService());
 	}
@@ -139,17 +141,16 @@ public class LibraryPlayActionTest {
 	public void testEmptyPlaylist() {
 		int position = 0;
 
+		MusicCollection collection = new MusicCollection(null, null, new ArrayList<Track>());
+
 		// When
-		new LibraryPlayAction(activity).execute(
-				new MusicCollection(null, null, new ArrayList<Track>()),
-				position);
+		new LibraryPlayAction(activity).execute( collection, position);
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);
 		expected.setAction(PlayerService.ACTION_PLAY)
 		        .putExtra(PlayerService.EXTRA_START_POSITION, position)
-		        .putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS,
-		                                     new ArrayList<Track>());
+		        .putExtra(PlayerService.EXTRA_COLLECTION, collection);
 		assertEquals("Play action begins playing", expected,
 		             shadow.getNextStartedService());
 	}
@@ -167,26 +168,26 @@ public class LibraryPlayActionTest {
 		ArrayList<Tag> contents = new ArrayList<>();
 		contents.add(album);
 
-		List<Track> expected = new LinkedList<Track>();
+		List<Track> expectedTracks = new LinkedList<Track>();
 		Track track = new Track.Builder(0, Uri.parse("one"))
 				.add(album)
 				.add(new Tag("title", "foo"))
 				.build();
-		expected.add(track);
+		expectedTracks.add(track);
 		trackDAO.insertTrack(track);
 
 		track = new Track.Builder(0, Uri.parse("two"))
 				.add(album)
 				.add(new Tag("title", "bar"))
 				.build();
-		expected.add(track);
+		expectedTracks.add(track);
 		trackDAO.insertTrack(track);
 
 		track = new Track.Builder(0, Uri.parse("three"))
 				.add(album)
 				.add(new Tag("title", "baz"))
 				.build();
-		expected.add(track);
+		expectedTracks.add(track);
 		trackDAO.insertTrack(track);
 
 		// When
@@ -196,10 +197,10 @@ public class LibraryPlayActionTest {
 		Robolectric.runUiThreadTasks();
 
 		// Then
-		assertEquals("Play All loads tracks", expected,
+		assertEquals("Play All loads tracks",
+		             new MusicCollection(null, null, expectedTracks),
 		             shadow.peekNextStartedService()
-		                   .getParcelableArrayListExtra(
-				                   PlayerService.EXTRA_TRACKS));
+		                   .getParcelableExtra(PlayerService.EXTRA_COLLECTION));
 	}
 
 }

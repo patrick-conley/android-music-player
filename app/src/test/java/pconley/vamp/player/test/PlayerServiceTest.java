@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import pconley.vamp.R;
+import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Track;
 import pconley.vamp.player.PlayerEvent;
 import pconley.vamp.player.PlayerFactory;
@@ -270,8 +271,8 @@ public class PlayerServiceTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testPlayIntentWithZeroTracks() throws InterruptedException {
 		serviceIntent.setAction(PlayerService.ACTION_PLAY)
-		             .putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS,
-		                                          new ArrayList<Track>());
+		             .putExtra(PlayerService.EXTRA_COLLECTION,
+		                       new MusicCollection(null, null, null));
 
 		// When
 		startService();
@@ -286,8 +287,8 @@ public class PlayerServiceTest {
 
 		// Given
 		serviceIntent.setAction(PlayerService.ACTION_PLAY)
-		             .putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS,
-		                                          missing);
+		             .putExtra(PlayerService.EXTRA_COLLECTION,
+		                       new MusicCollection(null, null, missing));
 
 		// When
 		startService();
@@ -332,8 +333,8 @@ public class PlayerServiceTest {
 		ArrayList<Track> single = new ArrayList<Track>();
 		single.add(tracks.get(0));
 		serviceIntent.setAction(PlayerService.ACTION_PLAY)
-		             .putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS,
-		                                          single);
+		             .putExtra(PlayerService.EXTRA_COLLECTION,
+		                       new MusicCollection(null, null, single));
 
 		audioManager.setNextFocusRequestResponse(
 				AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
@@ -358,8 +359,9 @@ public class PlayerServiceTest {
 		ArrayList<Track> single = new ArrayList<Track>();
 		single.add(tracks.get(0));
 		serviceIntent.setAction(PlayerService.ACTION_PLAY)
-		             .putParcelableArrayListExtra(PlayerService.EXTRA_TRACKS,
-		                                          single);
+		             .putExtra(
+				             PlayerService.EXTRA_COLLECTION,
+				             new MusicCollection(null, null, single));
 
 		audioManager.setNextFocusRequestResponse(
 				AudioManager.AUDIOFOCUS_REQUEST_FAILED);
@@ -488,8 +490,9 @@ public class PlayerServiceTest {
 		ArrayList<Track> newTracks = new ArrayList<Track>();
 		newTracks.add(tracks.get(1));
 
-		serviceIntent.putParcelableArrayListExtra(
-				PlayerService.EXTRA_TRACKS, newTracks);
+		serviceIntent.putExtra(
+				PlayerService.EXTRA_COLLECTION, new MusicCollection(null, null,
+				                                                    newTracks));
 		audioManager.setNextFocusRequestResponse(
 				AudioManager.AUDIOFOCUS_REQUEST_FAILED);
 		startService();
@@ -1083,8 +1086,9 @@ public class PlayerServiceTest {
 		trackList.add(missing.get(0));
 		trackList.add(tracks.get(0));
 
-		serviceIntent.putParcelableArrayListExtra(
-				PlayerService.EXTRA_TRACKS, trackList);
+		serviceIntent.putExtra(
+				PlayerService.EXTRA_COLLECTION,
+				new MusicCollection(null, null, trackList));
 
 		// When
 		startService();
@@ -1128,8 +1132,8 @@ public class PlayerServiceTest {
 		}
 
 		serviceIntent.setAction(PlayerService.ACTION_PLAY)
-		             .putParcelableArrayListExtra(
-				             PlayerService.EXTRA_TRACKS, preparedTracks);
+		             .putExtra(PlayerService.EXTRA_COLLECTION,
+		                       new MusicCollection(null, null, preparedTracks));
 		audioManager.setNextFocusRequestResponse(
 				AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
 	}

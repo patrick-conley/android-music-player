@@ -16,9 +16,9 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import pconley.vamp.R;
+import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Track;
 import pconley.vamp.player.view.PlayerActivity;
 import pconley.vamp.util.BroadcastConstants;
@@ -51,14 +51,15 @@ public class PlayerService extends Service implements
 	/**
 	 * Action for incoming intents. Start playing a new track.
 	 * <p/>
-	 * Use EXTRA_TRACK_LIST to set an array of IDs of tracks to play, and
+	 * Use EXTRA_COLLECTION to set the collection to play, and
 	 * EXTRA_START_POSITION to specify the start position in the list (if not
 	 * included, begin with the first track).
 	 */
 	public static final String ACTION_PLAY = "pconley.vamp.player.play";
 	public static final String EXTRA_START_POSITION
 			= "pconley.vamp.player.position";
-	public static final String EXTRA_TRACKS = "pconley.vamp.player.tracks";
+	public static final String EXTRA_COLLECTION
+			= "pconley.vamp.player.collection";
 
 	/**
 	 * Action for incoming intents. Pause the player, provided it's playing.
@@ -68,7 +69,7 @@ public class PlayerService extends Service implements
 
 	private static final int SEC = 1000;
 
-	private List<Track> playlist;
+	private MusicCollection collection;
 	private int position;
 
 	private boolean isPlaying = false;
@@ -154,13 +155,14 @@ public class PlayerService extends Service implements
 		switch (intent.getAction()) {
 			case ACTION_PLAY:
 
-				playlist = intent.getParcelableArrayListExtra(EXTRA_TRACKS);
-				if (playlist == null) {
-					throw new IllegalArgumentException("EXTRA_TRACKS not set");
+				collection = intent.getParcelableExtra(EXTRA_COLLECTION);
+				if (collection == null) {
+					throw new IllegalArgumentException("EXTRA_COLLECTION not set");
 				}
 
 				position = intent.getIntExtra(EXTRA_START_POSITION, 0);
-				if (position < 0 || position >= playlist.size()) {
+				if (position < 0 ||
+				    position >= collection.getContents().size()) {
 					throw new IllegalArgumentException(
 							"EXTRA_START_POSITION invalid");
 				}
@@ -234,7 +236,7 @@ public class PlayerService extends Service implements
 	 * prepared by the MediaPlayer. Returns null otherwise.
 	 */
 	public Track getCurrentTrack() {
-		return isPrepared ? playlist.get(position) : null;
+		return isPrepared ? (Track) collection.getContents().get(position) : null;
 	}
 
 	/**
@@ -269,7 +271,7 @@ public class PlayerService extends Service implements
 	 * 		paused.
 	 */
 	private void start(boolean beginPlayback) {
-		Track current = playlist.get(position);
+		Track current = (Track) collection.getContents().get(position);
 
 		try {
 
@@ -300,7 +302,7 @@ public class PlayerService extends Service implements
 			Log.e(TAG, getString(R.string.player_error_read, current.getUri()));
 
 			// Skip to next track on error
-			if (position < playlist.size() - 1) {
+			if (position < collection.getContents().size() - 1) {
 				position++;
 				start(beginPlayback);
 			} else {
@@ -477,7 +479,7 @@ public class PlayerService extends Service implements
 		if (!isPrepared) {
 			Log.w(TAG, "Can't go to next: player not prepared.");
 			return false;
-		} else if (position < playlist.size() - 1) {
+		} else if (position < collection.getContents().size() - 1) {
 			position++;
 			start(isPlaying);
 		} else {
