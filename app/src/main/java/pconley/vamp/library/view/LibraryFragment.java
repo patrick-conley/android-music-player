@@ -56,6 +56,8 @@ public class LibraryFragment extends Fragment
 		View view = inflater
 				.inflate(R.layout.fragment_library, container, false);
 
+		// FIXME: check if coll'n is nonnull here & update views in case of racing
+
 		this.view = (ListView) view.findViewById(R.id.library_contents);
 		this.view.setOnItemClickListener(this);
 

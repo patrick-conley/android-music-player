@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pconley.vamp.library.action.LibraryAction;
-import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TagDAO;
 import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.persistence.model.LibraryItem;
