@@ -1,5 +1,6 @@
 package pconley.vamp.persistence.model.test;
 
+import android.net.Uri;
 import android.os.Parcel;
 
 import org.junit.BeforeClass;
@@ -9,22 +10,21 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
 import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
 import pconley.vamp.persistence.model.Track;
+import pconley.vamp.persistence.model.TrackCollection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(emulateSdk = 18, manifest = "src/main/AndroidManifest.xml")
-public class MusicCollectionTest {
+public class TrackCollectionTest {
 
 	private static List<Tag> tags;
 
@@ -37,47 +37,15 @@ public class MusicCollectionTest {
 	}
 
 	/**
-	 * A null name is allowed
-	 */
-	@Test
-	public void collectionAcceptsNullName() {
-		MusicCollection collection = new MusicCollection(null, tags, null);
-
-		assertNull("A null name is allowed", collection.getName());
-	}
-
-	/**
 	 * A null list of tracks is replaced with an empty list
 	 */
 	@Test
 	public void collectionWrapsNullTracks() {
-		MusicCollection collection = new MusicCollection(null, null, null);
+		MusicCollection collection = new TrackCollection(null, null);
 
 		assertEquals("A missing list of tracks is replaced with an empty list",
-	                 new ArrayList<Track>(),
-	                 collection.getContents());
-	}
-
-	/**
-	 * A null filter is replaced with an empty list
-	 */
-	@Test
-	public void collectionWrapsNullTags() {
-		MusicCollection collection = new MusicCollection("name", null, null);
-
-		assertEquals("A missing list of tags is replaced with an empty list",
-		             Collections.emptyList(),
-		             collection.getFilter());
-	}
-
-	/**
-	 * The filter is immutable
-	 */
-	@Test(expected = UnsupportedOperationException.class)
-	public void tagsAreImmutable() {
-		MusicCollection collection = new MusicCollection("name", tags, null);
-
-		collection.getFilter().add(new Tag("foo", "bar"));
+		             new ArrayList<Track>(),
+		             collection.getContents());
 	}
 
 	/**
@@ -85,31 +53,14 @@ public class MusicCollectionTest {
 	 */
 	@Test
 	public void parcelWithoutNameOrTags() {
-		MusicCollection collection = new MusicCollection(null, null, null);
+		MusicCollection collection = new TrackCollection(null, null);
 
 		Parcel parcel = Parcel.obtain();
 		collection.writeToParcel(parcel, 0);
 		parcel.setDataPosition(0);
 
 		MusicCollection actual =
-				MusicCollection.CREATOR.createFromParcel(parcel);
-		assertEquals("Collection can be parceled and rebuilt", collection,
-		             actual);
-	}
-
-	/**
-	 * Parcel an empty unfiltered collection of tags
-	 */
-	@Test
-	public void parcelWithNameWithoutTags() {
-		MusicCollection collection = new MusicCollection("name", null, null);
-
-		Parcel parcel = Parcel.obtain();
-		collection.writeToParcel(parcel, 0);
-		parcel.setDataPosition(0);
-
-		MusicCollection actual =
-				MusicCollection.CREATOR.createFromParcel(parcel);
+				TrackCollection.CREATOR.createFromParcel(parcel);
 		assertEquals("Collection can be parceled and rebuilt", collection,
 		             actual);
 	}
@@ -119,31 +70,14 @@ public class MusicCollectionTest {
 	 */
 	@Test
 	public void parcelWithoutNameWithTags() {
-		MusicCollection collection = new MusicCollection(null, tags, null);
+		MusicCollection collection = new TrackCollection(tags, null);
 
 		Parcel parcel = Parcel.obtain();
 		collection.writeToParcel(parcel, 0);
 		parcel.setDataPosition(0);
 
 		MusicCollection actual =
-				MusicCollection.CREATOR.createFromParcel(parcel);
-		assertEquals("Collection can be parceled and rebuilt", collection,
-		             actual);
-	}
-
-	/**
-	 * Parcel a collection with a filter
-	 */
-	@Test
-	public void parcelWithNameAndTags() {
-		MusicCollection collection = new MusicCollection("name", tags, null);
-
-		Parcel parcel = Parcel.obtain();
-		collection.writeToParcel(parcel, 0);
-		parcel.setDataPosition(0);
-
-		MusicCollection actual =
-				MusicCollection.CREATOR.createFromParcel(parcel);
+				TrackCollection.CREATOR.createFromParcel(parcel);
 		assertEquals("Collection can be parceled and rebuilt", collection,
 		             actual);
 	}
@@ -163,14 +97,25 @@ public class MusicCollectionTest {
 		tags.add(new Tag("foo 2", "bar 2"));
 		dTags.add(new Tag("ham", "spam"));
 
-		MusicCollection x = new MusicCollection("name", tags, null);
-		MusicCollection y = new MusicCollection("name", tags, null);
-		MusicCollection z = new MusicCollection("name", tags, null);
+		List<Track> tracks = new LinkedList<Track>();
+		List<Track> dTracks = new LinkedList<Track>();
+
+		tracks.add(new Track.Builder(0, Uri.parse("sample"))
+				           .add(tags.get(0))
+				           .add(tags.get(1))
+				           .build());
+		dTracks.add(new Track.Builder(0, Uri.parse("sample"))
+				            .add(dTags.get(0))
+				            .build());
+
+		MusicCollection x = new TrackCollection(tags, tracks);
+		MusicCollection y = new TrackCollection(tags, tracks);
+		MusicCollection z = new TrackCollection(tags, tracks);
 
 		// Different tags
-		MusicCollection d1 = new MusicCollection("name", dTags, null);
+		MusicCollection d1 = new TrackCollection(dTags, null);
 		// Different name
-		MusicCollection d2 = new MusicCollection("new name", tags, null);
+		MusicCollection d2 = new TrackCollection(tags, dTracks);
 		String other = "foo: bar";
 
 		/*

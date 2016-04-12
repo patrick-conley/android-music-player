@@ -2,14 +2,10 @@ package pconley.vamp.library.action;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.annotation.NonNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import pconley.vamp.persistence.LoadCollectionTask;
+import pconley.vamp.persistence.LoadTrackCollectionTask;
 import pconley.vamp.persistence.model.MusicCollection;
-import pconley.vamp.persistence.model.Track;
+import pconley.vamp.persistence.model.TrackCollection;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.player.view.PlayerActivity;
 
@@ -19,24 +15,23 @@ import pconley.vamp.player.view.PlayerActivity;
  */
 public class LibraryPlayAction extends LibraryAction {
 
-	public LibraryPlayAction(Activity activity) {
-		super(activity);
+	public LibraryPlayAction(Activity activity, MusicCollection collection) {
+		super(activity, collection);
 	}
 
 	@Override
-	public void execute(@NonNull MusicCollection collection, int position) {
+	public void execute(int position) {
 
-		if (collection.getName() == null) {
-			playCollection(collection, position);
+		if (getCollection() instanceof TrackCollection) {
+			playCollection(getCollection(), position);
 		} else {
-			new LoadCollectionTask(this, null,
-			                       collection.getFilter()).execute();
+			new LoadTrackCollectionTask(this, getCollection().getFilter()).execute();
 		}
 	}
 
 	@Override
-	public void onLoadCollection(MusicCollection collection) {
-		playCollection(collection, 0);
+	public void onLoadCollection(MusicCollection child) {
+		playCollection(child, 0);
 	}
 
 	@SuppressWarnings("unchecked")

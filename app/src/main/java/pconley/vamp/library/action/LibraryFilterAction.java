@@ -9,12 +9,15 @@ import java.util.LinkedList;
 import java.util.List;
 
 import pconley.vamp.R;
-import pconley.vamp.persistence.LoadCollectionTask;
 import pconley.vamp.library.view.LibraryActivity;
 import pconley.vamp.library.view.LibraryFragment;
 import pconley.vamp.library.view.TagHistoryView;
+import pconley.vamp.persistence.LoadMusicCollectionTask;
+import pconley.vamp.persistence.LoadTagCollectionTask;
+import pconley.vamp.persistence.LoadTrackCollectionTask;
 import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
+import pconley.vamp.persistence.model.TagCollection;
 
 /**
  * Replace the contents of the library by filtering against the clicked-on tag.
@@ -23,31 +26,31 @@ public class LibraryFilterAction extends LibraryAction {
 
 	private LibraryFragment childFragment = new LibraryFragment();
 
-	public LibraryFilterAction(Activity activity) {
-		super(activity);
+	public LibraryFilterAction(Activity activity, TagCollection collection) {
+		super(activity, collection);
 	}
 
 	@Override
-	public void execute(MusicCollection collection, int position) {
+	public void execute(int position) {
 		Activity activity = (Activity) getContext();
-		FragmentManager fm =  activity.getFragmentManager();
+		FragmentManager fm = activity.getFragmentManager();
 		LibraryFragment parent = (LibraryFragment) fm.findFragmentById(
 				R.id.library_container);
 
-		if (collection != null && collection.getName() == null) {
-			throw new IllegalArgumentException("Can't filter a list of tracks.");
-		}
-
-		Tag selected = (collection == null)
-		               ? null
-		               : (Tag) collection.getContents().get(position);
+		TagCollection coll = (TagCollection) getCollection();
+		Tag selected = (coll == null) ? null : coll.getContents().get(position);
 
 		// Build the new collection
 		String childName = buildChildName(selected);
-		List<Tag> childFilter = buildChildFilter(collection, selected);
+		List<Tag> childFilter = buildChildFilter(getCollection(), selected);
 
-		new LoadCollectionTask(this, childName, childFilter)
-				.execute();
+		LoadMusicCollectionTask task;
+		if (childName == null) {
+			task = new LoadTrackCollectionTask(this, childFilter);
+		} else {
+			task = new LoadTagCollectionTask(this, childFilter);
+		}
+		task.execute(childName);
 
 		// Create a new fragment
 		fm.beginTransaction()
@@ -72,15 +75,16 @@ public class LibraryFilterAction extends LibraryAction {
 	}
 
 	@Override
-	public void onLoadCollection(MusicCollection collection) {
-		childFragment.setCollection(collection);
+	public void onLoadCollection(MusicCollection child) {
+		childFragment.setCollection(child);
 	}
 
 	private String buildChildName(Tag selected) {
 		if (selected == null) {
 			return "artist";
 		} else if (selected.getName() == null) {
-			throw new IllegalArgumentException("Tracks can't have children");
+			throw new IllegalArgumentException(
+					"Unnamed collections can't have children");
 		} else {
 
 			switch (selected.getName()) {

@@ -29,8 +29,9 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import pconley.vamp.R;
-import pconley.vamp.persistence.model.MusicCollection;
+import pconley.vamp.persistence.model.TagCollection;
 import pconley.vamp.persistence.model.Track;
+import pconley.vamp.persistence.model.TrackCollection;
 import pconley.vamp.player.PlayerEvent;
 import pconley.vamp.player.PlayerFactory;
 import pconley.vamp.player.PlayerService;
@@ -261,7 +262,20 @@ public class PlayerServiceTest {
 
 		// When
 		startService();
+	}
 
+	/**
+	 * When I start the service with a collection of tags, then an exception is
+	 * thrown.
+	 */
+	@Test(expected = ClassCastException.class)
+	public void testStartWithTagCollection() {
+		serviceIntent.setAction(PlayerService.ACTION_PLAY);
+		serviceIntent.putExtra(PlayerService.EXTRA_COLLECTION,
+		                       new TagCollection(null, null, null));
+
+		// When
+		startService();
 	}
 
 	/**
@@ -272,7 +286,7 @@ public class PlayerServiceTest {
 	public void testPlayIntentWithZeroTracks() throws InterruptedException {
 		serviceIntent.setAction(PlayerService.ACTION_PLAY)
 		             .putExtra(PlayerService.EXTRA_COLLECTION,
-		                       new MusicCollection(null, null, null));
+		                       new TrackCollection(null, null));
 
 		// When
 		startService();
@@ -288,7 +302,7 @@ public class PlayerServiceTest {
 		// Given
 		serviceIntent.setAction(PlayerService.ACTION_PLAY)
 		             .putExtra(PlayerService.EXTRA_COLLECTION,
-		                       new MusicCollection(null, null, missing));
+		                       new TrackCollection(null, missing));
 
 		// When
 		startService();
@@ -334,7 +348,7 @@ public class PlayerServiceTest {
 		single.add(tracks.get(0));
 		serviceIntent.setAction(PlayerService.ACTION_PLAY)
 		             .putExtra(PlayerService.EXTRA_COLLECTION,
-		                       new MusicCollection(null, null, single));
+		                       new TrackCollection(null, single));
 
 		audioManager.setNextFocusRequestResponse(
 				AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
@@ -359,9 +373,8 @@ public class PlayerServiceTest {
 		ArrayList<Track> single = new ArrayList<Track>();
 		single.add(tracks.get(0));
 		serviceIntent.setAction(PlayerService.ACTION_PLAY)
-		             .putExtra(
-				             PlayerService.EXTRA_COLLECTION,
-				             new MusicCollection(null, null, single));
+		             .putExtra(PlayerService.EXTRA_COLLECTION,
+		                       new TrackCollection(null, single));
 
 		audioManager.setNextFocusRequestResponse(
 				AudioManager.AUDIOFOCUS_REQUEST_FAILED);
@@ -491,8 +504,8 @@ public class PlayerServiceTest {
 		newTracks.add(tracks.get(1));
 
 		serviceIntent.putExtra(
-				PlayerService.EXTRA_COLLECTION, new MusicCollection(null, null,
-				                                                    newTracks));
+				PlayerService.EXTRA_COLLECTION,
+				new TrackCollection(null, newTracks));
 		audioManager.setNextFocusRequestResponse(
 				AudioManager.AUDIOFOCUS_REQUEST_FAILED);
 		startService();
@@ -1088,7 +1101,7 @@ public class PlayerServiceTest {
 
 		serviceIntent.putExtra(
 				PlayerService.EXTRA_COLLECTION,
-				new MusicCollection(null, null, trackList));
+				new TrackCollection(null, trackList));
 
 		// When
 		startService();
@@ -1133,7 +1146,7 @@ public class PlayerServiceTest {
 
 		serviceIntent.setAction(PlayerService.ACTION_PLAY)
 		             .putExtra(PlayerService.EXTRA_COLLECTION,
-		                       new MusicCollection(null, null, preparedTracks));
+		                       new TrackCollection(null, preparedTracks));
 		audioManager.setNextFocusRequestResponse(
 				AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
 	}

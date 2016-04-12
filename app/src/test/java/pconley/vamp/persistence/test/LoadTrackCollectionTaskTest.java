@@ -3,6 +3,7 @@ package pconley.vamp.persistence.test;
 import android.app.Activity;
 import android.net.Uri;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,21 +13,22 @@ import org.robolectric.annotation.Config;
 
 import java.util.List;
 
-import pconley.vamp.persistence.LoadCollectionTask;
-import pconley.vamp.library.action.LibraryAction;
+import pconley.vamp.library.action.MockLibraryAction;
 import pconley.vamp.library.view.MockLibraryActivity;
 import pconley.vamp.persistence.LibraryOpenHelper;
+import pconley.vamp.persistence.LoadTrackCollectionTask;
 import pconley.vamp.persistence.dao.TagDAO;
 import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
 import pconley.vamp.persistence.model.Track;
+import pconley.vamp.persistence.model.TrackCollection;
 
 import static org.junit.Assert.assertEquals;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(emulateSdk = 18, manifest = "src/main/AndroidManifest.xml")
-public class LoadCollectionTaskTest {
+public class LoadTrackCollectionTaskTest {
 
 	private TrackDAO trackDAO;
 	private TagDAO tagDAO;
@@ -34,10 +36,11 @@ public class LoadCollectionTaskTest {
 
 	@Before
 	public void setUp() {
-		Activity activity = Robolectric.buildActivity(MockLibraryActivity.class).create()
-		                      .start().restart().get();
+		Activity activity = Robolectric.buildActivity(MockLibraryActivity.class)
+		                               .create()
+		                               .start().restart().get();
 
-		action = new MockLibraryAction(activity);
+		action = new MockLibraryAction(activity, null);
 
 		LibraryOpenHelper helper = new LibraryOpenHelper(activity);
 		trackDAO = new TrackDAO(helper);
@@ -54,49 +57,33 @@ public class LoadCollectionTaskTest {
 		trackDAO.insertTrack(track);
 	}
 
+	@After
+	public void tearDown() {
+		trackDAO.wipeDatabase();
+	}
+
 	/**
 	 * When I run the task without a caller, then an exception is thrown
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void nullCaller() {
-		new LoadCollectionTask(null, null, null);
+		new LoadTrackCollectionTask(null, null);
 	}
 
 	/**
-	 * Given the library contains tags, when I run the task with a name and no
-	 * filter, then root tags are returned.
+	 * When I call the task's post method, then the method's tags are passed to
+	 * the calling action.
 	 */
 	@Test
-	public void loadUnfilteredTags() {
-		MusicCollection expected
-				= new MusicCollection("artist", null,
-				                      tagDAO.getFilteredTags(null, "artist"));
+	public void testSetCollection() {
+		List<Track> tracks = trackDAO.getAllTracks();
 
 		// When
-		new LoadCollectionTask(action, "artist", null).execute();
+		new LoadTrackCollectionTask(action, null).onPostExecute(tracks);
 
 		// Then
-		assertEquals("Task can load tags without a filter", expected,
-		             action.getCollection());
-	}
-
-	/**
-	 * Given the library contains tags, when I run the task with a name and a
-	 * filter, then appropriate tags are returned.
-	 */
-	@Test
-	public void loadFilteredTags() {
-		List<Tag> filter = tagDAO.getFilteredTags(null, "artist");
-		MusicCollection expected
-				= new MusicCollection("album", filter,
-				                      tagDAO.getFilteredTags(filter, "album"));
-
-		// When
-		new LoadCollectionTask(action, "album", filter).execute();
-
-		// Then
-		assertEquals("Task can load tags with a filter", expected,
-		             action.getCollection());
+		assertEquals("Task results are returned to the caller",
+		             new TrackCollection(null, tracks), action.getCollection());
 	}
 
 	/**
@@ -106,11 +93,10 @@ public class LoadCollectionTaskTest {
 	@Test
 	public void loadAllTracks() {
 		MusicCollection expected
-				= new MusicCollection(null, null,
-				                      trackDAO.getAllTracks());
+				= new TrackCollection(null, trackDAO.getAllTracks());
 
 		// When
-		new LoadCollectionTask(action, null, null).execute();
+		new LoadTrackCollectionTask(action, null).execute();
 
 		// Then
 		assertEquals("Task can load tracks without a filter", expected,
@@ -125,37 +111,15 @@ public class LoadCollectionTaskTest {
 	public void loadFilteredTracks() {
 		List<Tag> filter = tagDAO.getFilteredTags(null, "album").subList(0, 1);
 		MusicCollection expected
-				= new MusicCollection(null, filter,
-				                      trackDAO.getFilteredTracks(filter));
+				= new TrackCollection(filter, trackDAO.getFilteredTracks(
+				filter));
 
 		// When
-		new LoadCollectionTask(action, null, filter).execute();
+		new LoadTrackCollectionTask(action, filter).execute();
 
 		// Then
 		assertEquals("Task can load tracks with a filter", expected,
 		             action.getCollection());
 	}
 
-	private class MockLibraryAction extends LibraryAction {
-
-		private MusicCollection collection;
-
-		public MockLibraryAction(Activity activity) {
-			super(activity);
-		}
-
-		@Override
-		public void execute(MusicCollection collection, int position) {
-			// Does nothing
-		}
-
-		@Override
-		public void onLoadCollection(MusicCollection collection) {
-			this.collection = collection;
-		}
-
-		public MusicCollection getCollection() {
-			return collection;
-		}
-	}
 }

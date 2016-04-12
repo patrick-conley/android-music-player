@@ -128,7 +128,7 @@ public class LibraryActivity extends Activity {
 	public void loadLibrary() {
 		getFragmentManager().popBackStack(LIBRARY_ROOT_TAG,
 		                FragmentManager.POP_BACK_STACK_INCLUSIVE);
-		new LibraryFilterAction(this).execute(null, -1);
+		new LibraryFilterAction(this, null).execute(-1);
 	}
 
 	private class PlayerEventReceiver extends BroadcastReceiver {

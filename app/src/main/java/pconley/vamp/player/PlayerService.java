@@ -18,8 +18,8 @@ import java.io.File;
 import java.io.IOException;
 
 import pconley.vamp.R;
-import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Track;
+import pconley.vamp.persistence.model.TrackCollection;
 import pconley.vamp.player.view.PlayerActivity;
 import pconley.vamp.util.BroadcastConstants;
 
@@ -51,7 +51,7 @@ public class PlayerService extends Service implements
 	/**
 	 * Action for incoming intents. Start playing a new track.
 	 * <p/>
-	 * Use EXTRA_COLLECTION to set the collection to play, and
+	 * Use EXTRA_COLLECTION to set the collection of tracks to play, and
 	 * EXTRA_START_POSITION to specify the start position in the list (if not
 	 * included, begin with the first track).
 	 */
@@ -69,7 +69,7 @@ public class PlayerService extends Service implements
 
 	private static final int SEC = 1000;
 
-	private MusicCollection collection;
+	private TrackCollection collection;
 	private int position;
 
 	private boolean isPlaying = false;
@@ -157,7 +157,8 @@ public class PlayerService extends Service implements
 
 				collection = intent.getParcelableExtra(EXTRA_COLLECTION);
 				if (collection == null) {
-					throw new IllegalArgumentException("EXTRA_COLLECTION not set");
+					throw new IllegalArgumentException(
+							"EXTRA_COLLECTION not set");
 				}
 
 				position = intent.getIntExtra(EXTRA_START_POSITION, 0);
@@ -236,7 +237,7 @@ public class PlayerService extends Service implements
 	 * prepared by the MediaPlayer. Returns null otherwise.
 	 */
 	public Track getCurrentTrack() {
-		return isPrepared ? (Track) collection.getContents().get(position) : null;
+		return isPrepared ? collection.getContents().get(position) : null;
 	}
 
 	/**
@@ -271,7 +272,7 @@ public class PlayerService extends Service implements
 	 * 		paused.
 	 */
 	private void start(boolean beginPlayback) {
-		Track current = (Track) collection.getContents().get(position);
+		Track current = collection.getContents().get(position);
 
 		try {
 

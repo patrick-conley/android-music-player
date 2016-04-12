@@ -14,31 +14,35 @@ import pconley.vamp.persistence.model.MusicCollection;
 public abstract class LibraryAction {
 
 	private final Activity activity;
+	private MusicCollection collection;
 
-	public LibraryAction(Activity activity) {
+	public LibraryAction(Activity activity, MusicCollection parent) {
 		this.activity = activity;
+		this.collection = parent;
 	}
 
 	public Context getContext() {
 		return activity;
 	}
 
+	public MusicCollection getCollection() {
+		return collection;
+	}
+
 	/**
 	 * Run the task. Result of running an action twice may or may not be defined
 	 * for an implementing class.
 	 *
-	 * @param collection
-	 * 		Current contents of the library
 	 * @param position
 	 * 		Position in the adapter of the item clicked.
 	 */
-	public abstract void execute(MusicCollection collection, int position);
+	public abstract void execute(int position);
 
 	/**
 	 * If the action needs to load a MusicCollection asynchronously, that
 	 * collection is returned to this callback.
 	 *
-	 * @param collection
+	 * @param child
 	 */
-	public abstract void onLoadCollection(MusicCollection collection);
+	public abstract void onLoadCollection(MusicCollection child);
 }

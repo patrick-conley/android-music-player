@@ -1,6 +1,5 @@
 package pconley.vamp.library.action.test;
 
-import android.net.Uri;
 import android.os.Parcel;
 
 import org.junit.Test;
@@ -8,13 +7,17 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.util.List;
+
 import pconley.vamp.library.action.LibraryAction;
 import pconley.vamp.library.action.LibraryActionLocator;
-import pconley.vamp.library.action.LibraryPlayAction;
 import pconley.vamp.library.action.LibraryFilterAction;
+import pconley.vamp.library.action.LibraryPlayAction;
 import pconley.vamp.persistence.model.LibraryItem;
+import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
-import pconley.vamp.persistence.model.Track;
+import pconley.vamp.persistence.model.TagCollection;
+import pconley.vamp.persistence.model.TrackCollection;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -32,11 +35,12 @@ public class LibraryActionLocatorTest {
 	public void testTrack() {
 		// When
 		LibraryAction action = new LibraryActionLocator(null)
-				.findAction(new Track.Builder(0, Uri.parse("/")).build());
+				.findAction(new TrackCollection(null, null));
 
 		// Then
 		assertNotNull("Tracks have a handler", action);
-		assertTrue("Track handler is correct", action instanceof LibraryPlayAction);
+		assertTrue("Track handler is correct",
+		           action instanceof LibraryPlayAction);
 	}
 
 	/**
@@ -47,11 +51,12 @@ public class LibraryActionLocatorTest {
 	public void testTag() {
 		// When
 		LibraryAction action = new LibraryActionLocator(null)
-				.findAction(new Tag("foo", "bar"));
+				.findAction(new TagCollection(null, null, null));
 
 		// Then
 		assertNotNull("Tags have a handler", action);
-		assertTrue("Tag handler is correct", action instanceof LibraryFilterAction);
+		assertTrue("Tag handler is correct",
+		           action instanceof LibraryFilterAction);
 	}
 
 	/**
@@ -62,7 +67,17 @@ public class LibraryActionLocatorTest {
 	public void testAnonymous() {
 		// When
 		LibraryAction action = new LibraryActionLocator(null).findAction(
-				new LibraryItem() {
+				new MusicCollection() {
+					@Override
+					public List<Tag> getFilter() {
+						return null;
+					}
+
+					@Override
+					public List<? extends LibraryItem> getContents() {
+						return null;
+					}
+
 					@Override
 					public int describeContents() {
 						return 0;
@@ -70,11 +85,7 @@ public class LibraryActionLocatorTest {
 
 					@Override
 					public void writeToParcel(Parcel dest, int flags) {
-					}
 
-					@Override
-					public long getId() {
-						return 0;
 					}
 				});
 

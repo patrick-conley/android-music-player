@@ -24,9 +24,10 @@ import pconley.vamp.library.view.MockLibraryActivity;
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TagDAO;
 import pconley.vamp.persistence.dao.TrackDAO;
-import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
+import pconley.vamp.persistence.model.TagCollection;
 import pconley.vamp.persistence.model.Track;
+import pconley.vamp.persistence.model.TrackCollection;
 
 import static org.junit.Assert.assertEquals;
 
@@ -69,9 +70,9 @@ public class LibraryFilterActionTest {
 		contents.add(album);
 
 		// When
-		new LibraryFilterAction(activity).execute(
-				new MusicCollection("name", null, contents),
-				0);
+		new LibraryFilterAction(activity,
+		                        new TagCollection("name", null, contents))
+				.execute(0);
 		Robolectric.runBackgroundTasks();
 		Robolectric.runUiThreadTasks();
 
@@ -118,15 +119,16 @@ public class LibraryFilterActionTest {
 		List<Tag> contents = tagDao.getFilteredTags(null, "album");
 
 		// When
-		new LibraryFilterAction(activity).execute(
-				new MusicCollection("name", null, contents), 0);
+		new LibraryFilterAction(activity,
+		                        new TagCollection("name", null, contents))
+				.execute(0);
 
 		// Then
 		LibraryFragment fragment = (LibraryFragment) fm.findFragmentById(
 				R.id.library_container);
 
 		assertEquals("Collection is built correctly",
-		             new MusicCollection(null, contents, expected),
+		             new TrackCollection(contents, expected),
 		             fragment.getCollection());
 	}
 
@@ -162,30 +164,19 @@ public class LibraryFilterActionTest {
 		List<Tag> contents = tagDao.getFilteredTags(null, "album");
 
 		// When
-		new LibraryFilterAction(activity).execute(
-				new MusicCollection("name", null, contents), 0);
+		new LibraryFilterAction(activity,
+		                        new TagCollection("name", null, contents))
+				.execute(0);
 
 		// Then
 		LibraryFragment fragment = (LibraryFragment) fm.findFragmentById(
 				R.id.library_container);
 
 		assertEquals("Collection is built correctly",
-		             new MusicCollection(
-				             null,
+		             new TrackCollection(
 				             Collections.singletonList(contents.get(0)),
 				             Collections.singletonList(expected)),
 		             fragment.getCollection());
-	}
-
-	/**
-	 * Given a collection of tracks, when I run the action, then an exception is
-	 * thrown.
-	 */
-	@Test(expected = IllegalArgumentException.class)
-	public void testFilterTracks() {
-
-		new LibraryFilterAction(activity).execute(
-				new MusicCollection(null, null, null), 0);
 	}
 
 }

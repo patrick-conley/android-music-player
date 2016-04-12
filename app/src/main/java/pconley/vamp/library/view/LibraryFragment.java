@@ -13,15 +13,15 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import java.util.List;
-
 import pconley.vamp.R;
 import pconley.vamp.library.action.LibraryActionLocator;
 import pconley.vamp.library.action.LibraryPlayAction;
 import pconley.vamp.persistence.model.LibraryItem;
 import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
+import pconley.vamp.persistence.model.TagCollection;
 import pconley.vamp.persistence.model.Track;
+import pconley.vamp.persistence.model.TrackCollection;
 
 public class LibraryFragment extends Fragment
 		implements AdapterView.OnItemClickListener {
@@ -87,8 +87,7 @@ public class LibraryFragment extends Fragment
 	@SuppressWarnings(value = "unchecked")
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
-		actionLocator.findAction(getCollection().getContents().get(position))
-		             .execute(getCollection(), position);
+		actionLocator.findAction(getCollection()).execute(position);
 	}
 
 	/**
@@ -131,16 +130,17 @@ public class LibraryFragment extends Fragment
 
 	@SuppressWarnings("unchecked")
 	private void updateView() {
-		ArrayAdapter<? extends LibraryItem> adapter;
-		if (getCollection().getName() == null) {
+		ArrayAdapter<? extends LibraryItem> adapter = null;
+		if (getCollection() instanceof TrackCollection) {
 			adapter = new ArrayAdapter<Track>(
 					activity, R.layout.library_item, R.id.library_item,
-					(List<Track>) collection.getContents());
-		} else {
+					((TrackCollection) collection).getContents());
+		} else if (getCollection() instanceof TagCollection){
 			adapter = new ArrayAdapter<Tag>(
 					activity, R.layout.library_item, R.id.library_item,
-					(List<Tag>) collection.getContents());
+					((TagCollection) collection).getContents());
 		}
+
 		view.setAdapter(adapter);
 	}
 
@@ -150,6 +150,6 @@ public class LibraryFragment extends Fragment
 	public void playContents() {
 		/* FIXME: don't display a progress bar? Or hide it somehow after load? */
 		progress.setVisibility(ProgressBar.VISIBLE);
-		new LibraryPlayAction(activity).execute(getCollection(), 0);
+		new LibraryPlayAction(activity, getCollection()).execute(0);
 	}
 }

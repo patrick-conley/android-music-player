@@ -25,9 +25,10 @@ import pconley.vamp.library.view.LibraryFragment;
 import pconley.vamp.library.view.MockLibraryActivity;
 import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TrackDAO;
-import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
+import pconley.vamp.persistence.model.TagCollection;
 import pconley.vamp.persistence.model.Track;
+import pconley.vamp.persistence.model.TrackCollection;
 import pconley.vamp.player.view.PlayerActivity;
 
 import static junit.framework.Assert.assertNotNull;
@@ -103,7 +104,7 @@ public class LibraryFragmentTest {
 		startFragment(fragment);
 
 		// When
-		fragment.setCollection(new MusicCollection("artist", null, contents));
+		fragment.setCollection(new TagCollection("artist", null, contents));
 
 		// Then
 		Adapter adapter = ((ListView) fragment.getView().findViewById(
@@ -127,7 +128,7 @@ public class LibraryFragmentTest {
 		LibraryFragment fragment = new LibraryFragment();
 
 		// When
-		fragment.setCollection(new MusicCollection("artist", null, contents));
+		fragment.setCollection(new TagCollection("artist", null, contents));
 		startFragment(fragment);
 
 		// Then
@@ -165,7 +166,7 @@ public class LibraryFragmentTest {
 
 		// Given
 		LibraryFragment fragment = new LibraryFragment();
-		fragment.setCollection(new MusicCollection(null, null, contents));
+		fragment.setCollection(new TrackCollection(null, contents));
 		startFragment(fragment);
 
 		// When

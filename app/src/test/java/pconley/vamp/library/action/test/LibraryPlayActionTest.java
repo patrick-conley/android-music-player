@@ -24,7 +24,9 @@ import pconley.vamp.persistence.LibraryOpenHelper;
 import pconley.vamp.persistence.dao.TrackDAO;
 import pconley.vamp.persistence.model.MusicCollection;
 import pconley.vamp.persistence.model.Tag;
+import pconley.vamp.persistence.model.TagCollection;
 import pconley.vamp.persistence.model.Track;
+import pconley.vamp.persistence.model.TrackCollection;
 import pconley.vamp.player.PlayerService;
 import pconley.vamp.player.view.PlayerActivity;
 import pconley.vamp.util.AssetUtils;
@@ -67,12 +69,11 @@ public class LibraryPlayActionTest {
 		ArrayList<Track> singleTrack = new ArrayList<Track>();
 		singleTrack.add(tracks.get(0));
 
-		MusicCollection collection = new MusicCollection(null, null,
+		MusicCollection collection = new TrackCollection(null,
 		                                                 singleTrack);
 
 		// When
-		new LibraryPlayAction(activity).execute(
-				collection, position);
+		new LibraryPlayAction(activity, collection).execute(position);
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);
@@ -96,10 +97,10 @@ public class LibraryPlayActionTest {
 	public void testValidPosition() {
 		int position = 1;
 
-		MusicCollection collection = new MusicCollection(null, null, tracks);
+		MusicCollection collection = new TrackCollection(null, tracks);
 
 		// When
-		new LibraryPlayAction(activity).execute( collection, position);
+		new LibraryPlayAction(activity, collection).execute(position);
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);
@@ -119,10 +120,10 @@ public class LibraryPlayActionTest {
 	public void testInvalidPosition() {
 		int position = 3;
 
-		MusicCollection collection = new MusicCollection(null, null, tracks);
+		MusicCollection collection = new TrackCollection(null, tracks);
 
 		// When
-		new LibraryPlayAction(activity).execute(collection, position);
+		new LibraryPlayAction(activity, collection).execute(position);
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);
@@ -141,10 +142,11 @@ public class LibraryPlayActionTest {
 	public void testEmptyPlaylist() {
 		int position = 0;
 
-		MusicCollection collection = new MusicCollection(null, null, new ArrayList<Track>());
+		MusicCollection collection = new TrackCollection(null,
+		                                                 new ArrayList<Track>());
 
 		// When
-		new LibraryPlayAction(activity).execute( collection, position);
+		new LibraryPlayAction(activity, collection).execute(position);
 
 		// Then
 		Intent expected = new Intent(activity, PlayerService.class);
@@ -191,14 +193,15 @@ public class LibraryPlayActionTest {
 		trackDAO.insertTrack(track);
 
 		// When
-		new LibraryPlayAction(activity)
-				.execute(new MusicCollection("album", null, contents), 0);
+		new LibraryPlayAction(activity,
+		                      new TagCollection("album", null, contents))
+				.execute(0);
 		Robolectric.runBackgroundTasks();
 		Robolectric.runUiThreadTasks();
 
 		// Then
 		assertEquals("Play All loads tracks",
-		             new MusicCollection(null, null, expectedTracks),
+		             new TrackCollection(null, expectedTracks),
 		             shadow.peekNextStartedService()
 		                   .getParcelableExtra(PlayerService.EXTRA_COLLECTION));
 	}

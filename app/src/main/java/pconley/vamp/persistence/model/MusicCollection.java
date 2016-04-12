@@ -1,14 +1,7 @@
 package pconley.vamp.persistence.model;
 
-import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.Nullable;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -17,127 +10,15 @@ import java.util.List;
  * are tags, then they have a common name and belong to tracks with a set of
  * tags in common.
  */
-public class MusicCollection implements Parcelable {
-
-	private String name;
-	private List<Tag> filter;
-	private List<? extends LibraryItem> contents;
+public interface MusicCollection extends Parcelable {
 
 	/**
-	 * Constructor.
-	 *
-	 * @param name
-	 * 		Name of the tags in the contents. Should be null iff the collection
-	 * 		contains tracks
-	 * @param filter
-	 * 		The set of tags used to filter the library and build the collection.
-	 * @param contents
+	 * @return The set of tags that the library was filtered against to build this collection
 	 */
-	public MusicCollection(String name, @Nullable List<Tag> filter,
-			List<? extends LibraryItem> contents) {
+	List<Tag> getFilter();
 
-		if (name == null && contents != null && !contents.isEmpty() &&
-		    contents.get(0) instanceof Tag) {
-			throw new IllegalArgumentException(
-					"Track collection contains tags");
-		}
-
-		this.name = name;
-		this.filter = filter == null ? new LinkedList<Tag>() : filter;
-		if (contents != null) {
-			this.contents = contents;
-		} else if (name == null) {
-			this.contents = new LinkedList<Track>();
-		} else {
-			this.contents = new LinkedList<Tag>();
-		}
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public List<Tag> getFilter() {
-		return Collections.unmodifiableList(filter);
-	}
-
-	public List<? extends LibraryItem> getContents() {
-		return Collections.unmodifiableList(contents);
-	}
-
-	@Override
-	public String toString() {
-		return "(" + name + ", " + filter + "): " + contents;
-	}
-
-	@Override
-	public int hashCode() {
-		return new HashCodeBuilder(17, 37)
-				.append(name)
-				.append(filter)
-				.append(contents)
-				.toHashCode();
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-
-		MusicCollection other = (MusicCollection) o;
-
-		return new EqualsBuilder()
-				.append(name, other.name)
-				.append(filter, other.filter)
-				.append(contents, other.contents)
-				.isEquals();
-	}
-
-	public static final Parcelable.Creator<MusicCollection> CREATOR
-			= new Parcelable.Creator<MusicCollection>() {
-
-		@Override
-		public MusicCollection createFromParcel(Parcel source) {
-			String name = source.readString();
-			if (name != null && name.equals("")) {
-				name = null;
-			}
-
-			List<Tag> tags = new LinkedList<Tag>();
-			source.readTypedList(tags, Tag.CREATOR);
-
-			if (name == null) {
-				List<Track> contents = new LinkedList<Track>();
-				source.readTypedList(contents, Track.CREATOR);
-				return new MusicCollection(null, tags, contents);
-			} else {
-				List<Tag> contents = new LinkedList<Tag>();
-				source.readTypedList(contents, Tag.CREATOR);
-				return new MusicCollection(name, tags, contents);
-			}
-		}
-
-		@Override
-		public MusicCollection[] newArray(int size) {
-			return new MusicCollection[size];
-		}
-	};
-
-	@Override
-	public int describeContents() {
-		return 0;
-	}
-
-	@Override
-	public void writeToParcel(Parcel dest, int flags) {
-		dest.writeString(name);
-		dest.writeTypedList(filter);
-		dest.writeTypedList(contents);
-	}
-
+	/**
+	 * @return Displayable tracks or tags in the collection.
+	 */
+	List<? extends LibraryItem> getContents();
 }
