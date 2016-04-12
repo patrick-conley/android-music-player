@@ -112,20 +112,19 @@ public class TagCollectionTest {
 		List<Tag> tags = new LinkedList<Tag>();
 		List<Tag> dTags = new LinkedList<Tag>();
 
-		/* FIXME: test contents */
-
 		tags.add(new Tag("foo", "bar"));
 		tags.add(new Tag("foo 2", "bar 2"));
 		dTags.add(new Tag("ham", "spam"));
 
-		MusicCollection x = new TagCollection("name", tags, null);
-		MusicCollection y = new TagCollection("name", tags, null);
-		MusicCollection z = new TagCollection("name", tags, null);
+		MusicCollection x = new TagCollection("name", tags, tags);
+		MusicCollection y = new TagCollection("name", tags, tags);
+		MusicCollection z = new TagCollection("name", tags, tags);
 
 		// Different tags
-		MusicCollection d1 = new TagCollection("name", dTags, null);
+		MusicCollection d1 = new TagCollection("name", dTags, tags);
 		// Different name
-		MusicCollection d2 = new TagCollection("new name", tags, null);
+		MusicCollection d2 = new TagCollection("new name", tags, tags);
+		MusicCollection d3 = new TagCollection("name", tags, dTags);
 		String other = "foo: bar";
 
 		/*
@@ -135,6 +134,7 @@ public class TagCollectionTest {
 		assertTrue("Equals is correct (x,z)", x.equals(z));
 		assertFalse("Equals is correct (x,d1)", x.equals(d1));
 		assertFalse("Equals is correct (x,d2)", x.equals(d2));
+		assertFalse("Equals is correct (x,d3)", x.equals(d3));
 
 		assertEquals("HashCode is correct (x,y)", x.hashCode(), y.hashCode());
 		assertEquals("HashCode is correct (x,z)", x.hashCode(), z.hashCode());
@@ -143,6 +143,7 @@ public class TagCollectionTest {
 		assertFalse("Null is never equal (x,null)", x.equals(null));
 		assertFalse("Null is never equal (d1,null)", d1.equals(null));
 		assertFalse("Null is never equal (d2,null)", d2.equals(null));
+		assertFalse("Null is never equal (d3,null)", d3.equals(null));
 
 		/*
 		 * Equals is reflexive
