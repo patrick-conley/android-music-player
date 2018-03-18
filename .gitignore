@@ -1,15 +1,9 @@
-# Files referring to project path
-/.idea
-/local.properties
-
-# Config that changes on a whim
 *.iml
-
-# OS X
-/.DS_STORE
-
-# Gradle
-/.gradle
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
 /build
-/app/build
-
+/captures
+.externalNativeBuild

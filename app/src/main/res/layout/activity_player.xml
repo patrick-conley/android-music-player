@@ -1,115 +1,125 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingBottom="@dimen/activity_vertical_margin"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:paddingRight="@dimen/activity_horizontal_margin"
-                android:paddingTop="@dimen/activity_vertical_margin"
-                tools:context="pconley.vamp.player.PlayerActivity">
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="io.github.patrickconley.arbutus.player.PlayerActivity">
 
     <TextView
         android:id="@+id/player_view_uri"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/text_size"/>
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="file://file/uri"
+        android:textSize="@dimen/text_size"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/player_row_controls"
-        android:layout_below="@+id/player_view_uri">
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/player_button_playpause"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/player_view_uri">
 
         <TextView
             android:id="@+id/player_view_tags"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/text_size"/>
+            android:text="Tags\nkey = value\nkey = value"
+            android:textSize="@dimen/text_size" />
     </ScrollView>
 
-    <RelativeLayout
-        android:id="@+id/player_row_controls"
-        android:layout_width="match_parent"
+    <ImageButton
+        android:id="@+id/player_button_prev"
+        android:layout_width="@dimen/button_large"
+        android:layout_height="@dimen/button_large"
+        android:layout_centerVertical="true"
+        android:background="@android:drawable/ic_media_previous"
+        android:contentDescription="@string/player_button_previous"
+        android:onClick="onClickPrev"
+        app:layout_constraintBottom_toBottomOf="@+id/player_button_playpause"
+        app:layout_constraintEnd_toStartOf="@+id/player_button_playpause"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/player_button_playpause" />
+
+    <ImageButton
+        android:id="@+id/player_button_playpause"
+        android:layout_width="@dimen/button_xlarge"
+        android:layout_height="@dimen/button_xlarge"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_margin="@dimen/generic_padding"
+        android:layout_marginBottom="8dp"
+        android:background="@android:drawable/ic_media_play"
+        android:onClick="onClickPlayPause"
+        android:contentDescription="@string/player_button_play_pause"
+        app:layout_constraintBottom_toTopOf="@+id/player_seek"
+        app:layout_constraintEnd_toStartOf="@+id/player_button_next"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/player_button_prev" />
+
+    <ImageButton
+        android:id="@+id/player_button_next"
+        android:layout_width="@dimen/button_large"
+        android:layout_height="@dimen/button_large"
+        android:layout_centerVertical="true"
+        android:background="@android:drawable/ic_media_next"
+        android:contentDescription="@string/player_button_next"
+        android:onClick="onClickNext"
+        app:layout_constraintBottom_toBottomOf="@+id/player_button_playpause"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/player_button_playpause"
+        app:layout_constraintTop_toTopOf="@+id/player_button_playpause" />
+
+    <TextView
+        android:id="@+id/player_view_position"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/player_row_position"
-        android:layout_marginTop="@dimen/activity_vertical_margin">
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="8dp"
+        android:text="@string/player_blank_time"
+        android:textSize="@dimen/text_size_large"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_chainStyle="spread_inside"
+        app:layout_constraintStart_toStartOf="parent" />
 
-        <ImageButton
-            android:id="@+id/player_button_prev"
-            android:layout_width="@dimen/button_large"
-            android:layout_height="@dimen/button_large"
-            android:layout_centerVertical="true"
-            android:layout_toLeftOf="@+id/player_button_playpause"
-            android:layout_toStartOf="@+id/player_button_playpause"
-            android:background="@android:drawable/ic_media_previous"
-            android:contentDescription="@string/player_button_previous"
-            android:onClick="onClickPrev"
-            />
-
-        <ImageButton
-            android:id="@+id/player_button_playpause"
-            android:layout_width="@dimen/button_xlarge"
-            android:layout_height="@dimen/button_xlarge"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:layout_margin="@dimen/generic_padding"
-            android:background="@android:drawable/ic_media_play"
-            android:clickable="true"
-            android:contentDescription="@string/player_button_play_pause"
-            android:onClick="onClickPlayPause"/>
-
-        <ImageButton
-            android:id="@+id/player_button_next"
-            android:layout_width="@dimen/button_large"
-            android:layout_height="@dimen/button_large"
-            android:layout_centerVertical="true"
-            android:layout_toEndOf="@+id/player_button_playpause"
-            android:layout_toRightOf="@+id/player_button_playpause"
-            android:background="@android:drawable/ic_media_next"
-            android:contentDescription="@string/player_button_next"
-            android:onClick="onClickNext"/>
-
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/player_row_position"
-        android:layout_width="match_parent"
+    <SeekBar
+        android:id="@+id/player_seek"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginTop="@dimen/activity_vertical_margin">
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:indeterminate="false"
+        android:progress="0"
+        android:onClick="onClickSeek"
+        app:layout_constraintBottom_toBottomOf="@+id/player_view_position"
+        app:layout_constraintEnd_toStartOf="@+id/player_view_duration"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/player_view_position"
+        app:layout_constraintTop_toTopOf="@+id/player_view_position" />
 
-        <TextView
-            android:id="@+id/player_view_position"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:text="@string/player_blank_time"
-            android:textSize="@dimen/text_size_large"/>
+    <TextView
+        android:id="@+id/player_view_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/player_blank_time"
+        android:textSize="@dimen/text_size_large"
+        app:layout_constraintBottom_toBottomOf="@+id/player_seek"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/player_seek" />
 
-        <SeekBar
-            android:id="@+id/player_seek"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_toEndOf="@+id/player_view_position"
-            android:layout_toLeftOf="@+id/player_view_duration"
-            android:layout_toRightOf="@+id/player_view_position"
-            android:layout_toStartOf="@+id/player_view_duration"
-            android:indeterminate="false"
-            android:progress="0"/>
-
-        <TextView
-            android:id="@+id/player_view_duration"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:gravity="end"
-            android:text="@string/player_blank_time"
-            android:textSize="@dimen/text_size_large"/>
-    </RelativeLayout>
-
-</RelativeLayout>
+</android.support.constraint.ConstraintLayout>

@@ -1,1 +1,0 @@
-../../../../../androidTest/java/pconley/vamp/util/AssetUtils.java
