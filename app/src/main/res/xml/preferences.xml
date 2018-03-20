@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <Preference android:title="@string/setting_library_path_title">
+    <Preference
+        android:key="library path"
+        android:summary="@string/setting_library_path_default_summary">
+        android:title="@string/setting_library_path_title">
         <intent
-            android:targetClass="io.github.patrickconley.arbutus.settings.view.FilePickerActivity"
-            android:targetPackage="io.github.patrickconley.arbutus"
-             />
+            android:targetClass="io.github.patrickconley.arbutus.settings.view.LibraryPathChooserActivity"
+            android:targetPackage="io.github.patrickconley.arbutus" />
     </Preference>
 
 </PreferenceScreen>

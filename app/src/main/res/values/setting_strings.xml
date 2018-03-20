@@ -2,4 +2,5 @@
 <resources>
     <string name="settings_activity_name">Settings</string>
     <string name="setting_library_path_title">Music Folder</string>
+    <string name="setting_library_path_default_summary">&lt; no path set&gt;</string>
 </resources>
