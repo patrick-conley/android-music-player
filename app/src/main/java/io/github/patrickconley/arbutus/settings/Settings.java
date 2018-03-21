@@ -1,21 +1,16 @@
 package io.github.patrickconley.arbutus.settings;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+// Keys must match those in preferences.xml
+public enum Settings {
+    LIBRARY_PATH("library path"), SCAN_NOW("scan library"),;
 
-public class Settings {
+    private String key;
 
-    private static final String LIBRARY_PATH = "library path";
-
-    private final SharedPreferences preferences;
-
-    public Settings(Context context) {
-        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+    Settings(String key) {
+        this.key = key;
     }
 
-    public String getLibraryPath() {
-        return preferences.getString(LIBRARY_PATH, null);
+    public String getKey() {
+        return key;
     }
-
 }

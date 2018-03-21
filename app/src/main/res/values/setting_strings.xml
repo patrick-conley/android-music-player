@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="settings_activity_name">Settings</string>
-    <string name="setting_library_path_title">Music Folder</string>
-    <string name="setting_library_path_default_summary">&lt; no path set&gt;</string>
+    <string name="setting_library_path_title">Select Music Folder</string>
+    <string name="setting_library_path_default_summary">no folder selected</string>
+
+    <string name="setting_library_path_scan_title">Scan the music folder</string>
+
 </resources>

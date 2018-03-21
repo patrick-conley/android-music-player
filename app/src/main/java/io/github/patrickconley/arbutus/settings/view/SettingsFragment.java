@@ -7,6 +7,7 @@ import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
 
 import io.github.patrickconley.arbutus.R;
+import io.github.patrickconley.arbutus.settings.Settings;
 
 public class SettingsFragment extends PreferenceFragment
         implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -26,7 +27,8 @@ public class SettingsFragment extends PreferenceFragment
         preferences.registerOnSharedPreferenceChangeListener(this);
 
         // Set value-dependent summaries
-        onSharedPreferenceChanged(preferences, "library path");
+        initLibraryPath(preferences);
+        initScanLibrary(preferences);
     }
 
     @Override
@@ -38,10 +40,33 @@ public class SettingsFragment extends PreferenceFragment
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        Preference preference = findPreference(key);
-        preference.setTitle(R.string.setting_library_path_title);
-        preference.setSummary(sharedPreferences.getString(key,
+
+        if (key.equals(Settings.LIBRARY_PATH.getKey())) {
+            initLibraryPath(sharedPreferences);
+        }
+    }
+
+    private void initLibraryPath(SharedPreferences sharedPreferences) {
+        String key = Settings.LIBRARY_PATH.getKey();
+        findPreference(key).setSummary(sharedPreferences.getString(key,
                 getString(R.string.setting_library_path_default_summary)));
+    }
+
+    private void initScanLibrary(final SharedPreferences sharedPreferences) {
+        Preference preference = findPreference(Settings.SCAN_NOW.getKey());
+        if (sharedPreferences.getString(Settings.LIBRARY_PATH.getKey(), null) == null) {
+            preference.setEnabled(false);
+        } else {
+            preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    LibraryScannerService.startActionFoo(SettingsFragment.this.getActivity(),
+                            sharedPreferences.getString(Settings.LIBRARY_PATH.getKey(), null));
+                    return true;
+                }
+            });
+        }
 
     }
 

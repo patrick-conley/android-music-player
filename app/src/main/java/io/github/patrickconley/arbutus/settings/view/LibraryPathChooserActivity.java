@@ -19,6 +19,7 @@ public class LibraryPathChooserActivity extends AppCompatActivity
                 .allowCustomPath(true)
                 .setType(StorageChooser.DIRECTORY_CHOOSER)
                 .filter(StorageChooser.FileType.AUDIO)
+                .hideFreeSpaceLabel(true)
                 .build();
 
         chooser.setOnSelectListener(this);

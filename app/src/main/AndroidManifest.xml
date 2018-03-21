@@ -11,24 +11,24 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        tools:replace="android:theme"
-        android:theme="@style/Theme.AppCompat.NoActionBar">
-
+        android:theme="@style/Theme.AppCompat.NoActionBar"
+        tools:replace="android:theme">
         <activity android:name=".player.PlayerActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".settings.view.SettingsActivity"
             android:label="@string/settings_activity_name"
-            android:theme="@style/Theme.AppCompat">
-        </activity>
-
+            android:theme="@style/Theme.AppCompat"></activity>
         <activity android:name=".settings.view.LibraryPathChooserActivity" />
 
+        <service
+            android:name=".settings.view.LibraryScannerService"
+            android:exported="false"></service>
     </application>
 
 </manifest>

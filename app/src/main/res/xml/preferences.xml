@@ -3,11 +3,16 @@
 
     <Preference
         android:key="library path"
-        android:summary="@string/setting_library_path_default_summary">
+        android:summary="@string/setting_library_path_default_summary"
         android:title="@string/setting_library_path_title">
         <intent
             android:targetClass="io.github.patrickconley.arbutus.settings.view.LibraryPathChooserActivity"
             android:targetPackage="io.github.patrickconley.arbutus" />
+    </Preference>
+
+    <Preference
+        android:key="scan library"
+        android:title="@string/setting_library_path_scan_title">
     </Preference>
 
 </PreferenceScreen>
