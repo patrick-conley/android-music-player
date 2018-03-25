@@ -4,14 +4,15 @@ import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 
-import io.github.patrickconley.arbutus.domain.model.Track;
+import io.github.patrickconley.arbutus.domain.model.TrackTag;
 
 @Dao
-public interface TrackDAO {
+public interface TrackTagDAO {
 
     @Insert
-    long insert(Track track);
+    void insert(TrackTag trackTag);
 
-    @Query("delete from track")
+    @Query("delete from tracktag")
     void truncate();
+
 }

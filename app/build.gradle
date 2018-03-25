@@ -32,6 +32,7 @@ dependencies {
     implementation "com.android.support.constraint:constraint-layout:1.0.2"
     implementation "android.arch.persistence.room:runtime:1.0.0"
     implementation "com.github.codekidX:storage-chooser:a1c8028"
+    implementation "org.bitbucket.ijabz:jaudiotagger:Version2_2_2"
 
     annotationProcessor "android.arch.persistence.room:compiler:1.0.0"
 

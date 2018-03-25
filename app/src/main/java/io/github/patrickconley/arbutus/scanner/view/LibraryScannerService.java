@@ -1,17 +1,28 @@
-package io.github.patrickconley.arbutus.settings.view;
+package io.github.patrickconley.arbutus.scanner.view;
 
 import android.app.IntentService;
-import android.content.Intent;
 import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
+
+import java.io.File;
+
+import io.github.patrickconley.arbutus.domain.AppDatabase;
+import io.github.patrickconley.arbutus.scanner.filesystem.FileScanVisitor;
+import io.github.patrickconley.arbutus.scanner.filesystem.model.MediaFolder;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
  * a service on a separate handler thread.
  */
 public class LibraryScannerService extends IntentService {
+    private final String tag = getClass().getName();
+
     // might eventually add another action to refresh the library
-    private static final String ACTION_SCAN_LIBRARY = "io.github.patrickconley.arbutus.settings.view.action.SCAN_LIBRARY";
-    private static final String LIBRARY_PATH = "io.github.patrickconley.arbutus.settings.view.extra.LIBRARY_PATH";
+    private static final String ACTION_SCAN_LIBRARY
+            = "io.github.patrickconley.arbutus.settings.view.action.SCAN_LIBRARY";
+    private static final String LIBRARY_PATH
+            = "io.github.patrickconley.arbutus.settings.view.extra.LIBRARY_PATH";
 
     public LibraryScannerService() {
         super("LibraryScannerService");
@@ -35,10 +46,17 @@ public class LibraryScannerService extends IntentService {
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_SCAN_LIBRARY.equals(action)) {
-                final String libraryPath = intent.getStringExtra(LIBRARY_PATH);
-                handleScanLibrary(libraryPath);
+                truncateDatabase();
+                handleScanLibrary(intent.getStringExtra(LIBRARY_PATH));
             }
         }
+    }
+
+    private void truncateDatabase() {
+        AppDatabase db = AppDatabase.getInstance(this);
+        db.trackTagDAO().truncate();
+        db.tagDao().truncate();
+        db.trackDao().truncate();
     }
 
     /**
@@ -46,7 +64,13 @@ public class LibraryScannerService extends IntentService {
      * parameters.
      */
     private void handleScanLibrary(String libraryPath) {
-        throw new UnsupportedOperationException("Not yet implemented: " + libraryPath);
+        MediaFolder library = new MediaFolder(new File(libraryPath));
+
+        FileScanVisitor visitor = new FileScanVisitor(this);
+        long fileCount = library.accept(visitor);
+        visitor.close();
+
+        Log.i(tag, "Scanned " + fileCount + " files");
     }
 
 }

@@ -7,6 +7,7 @@ import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
 
 import io.github.patrickconley.arbutus.R;
+import io.github.patrickconley.arbutus.scanner.view.LibraryScannerService;
 import io.github.patrickconley.arbutus.settings.Settings;
 
 public class SettingsFragment extends PreferenceFragment
@@ -42,6 +43,7 @@ public class SettingsFragment extends PreferenceFragment
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 
         if (key.equals(Settings.LIBRARY_PATH.getKey())) {
+            initScanLibrary(sharedPreferences);
             initLibraryPath(sharedPreferences);
         }
     }

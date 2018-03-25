@@ -27,7 +27,7 @@
         <activity android:name=".settings.view.LibraryPathChooserActivity" />
 
         <service
-            android:name=".settings.view.LibraryScannerService"
+            android:name=".scanner.view.LibraryScannerService"
             android:exported="false"></service>
     </application>
 

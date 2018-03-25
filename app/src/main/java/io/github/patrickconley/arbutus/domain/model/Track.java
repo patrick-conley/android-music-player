@@ -8,11 +8,17 @@ import android.net.Uri;
 @Entity
 public class Track {
 
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "track_id")
     private long trackId;
 
     private Uri uri;
+
+    public Track() {}
+
+    public Track(Uri uri) {
+        this.uri = uri;
+    }
 
     public long getTrackId() {
         return trackId;

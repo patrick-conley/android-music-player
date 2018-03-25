@@ -10,12 +10,19 @@ import android.arch.persistence.room.PrimaryKey;
 })
 public class Tag {
 
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "tag_id")
     private long tagId;
 
     private String key;
     private String value;
+
+    public Tag() {}
+
+    public Tag(String key, String value) {
+        this.key = key;
+        this.value = value;
+    }
 
     public long getTagId() {
         return tagId;

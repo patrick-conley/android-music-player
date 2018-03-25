@@ -17,13 +17,20 @@ import static android.arch.persistence.room.ForeignKey.CASCADE;
 })
 public class TrackTag {
 
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     private long id;
 
     @ColumnInfo(name = "track_id")
     private long trackId;
     @ColumnInfo(name = "tag_id")
     private long tagId;
+
+    public TrackTag() {}
+
+    public TrackTag(long trackId, long tagId) {
+        this.trackId = trackId;
+        this.tagId = tagId;
+    }
 
     public long getId() {
         return id;
