@@ -27,6 +27,7 @@ import io.github.patrickconley.arbutus.scanner.strategy.TagStrategy;
 public class FileScanVisitor implements MediaVisitorBase {
     private final String tag = getClass().getName();
 
+    private AppDatabase db;
     private TrackDAO trackDao;
     private TagDAO tagDao;
     private TrackTagDAO trackTagDAO;
@@ -38,8 +39,7 @@ public class FileScanVisitor implements MediaVisitorBase {
      *         The context running the visitor.
      */
     public FileScanVisitor(Context context) {
-
-        AppDatabase db = AppDatabase.getInstance(context);
+        this.db = AppDatabase.getInstance(context);
         this.trackDao = db.trackDao();
         this.tagDao = db.tagDao();
         this.trackTagDAO = db.trackTagDAO();
@@ -62,15 +62,24 @@ public class FileScanVisitor implements MediaVisitorBase {
      */
     @Override
     public void visit(MediaFile file) {
+        List<Tag> tags;
 
-        TagStrategy strategy = StrategyFactory.getStrategy(file);
-
-        Track track = new Track(Uri.fromFile(file.getFile()));
-        long trackId = trackDao.insert(track);
-
-        // Read tags
+        // Read tags - note GenericTagStrategy will return null if the file isn't a media file
         try {
-            List<Tag> tags = strategy.getTags(file.getFile());
+            TagStrategy strategy = StrategyFactory.getStrategy(file);
+            tags = strategy.getTags(file.getFile());
+            if (tags == null) {
+                return;
+            }
+        } catch (Exception e) {
+            Log.e(tag, "Failed to read tags from " + file, e);
+            return;
+        }
+
+        // Save track
+        try {
+            db.beginTransaction();
+            long trackId = trackDao.insert(new Track(Uri.fromFile(file.getFile())));
 
             for (Tag tag : tags) {
                 Tag savedTag = tagDao.getTag(tag);
@@ -78,9 +87,13 @@ public class FileScanVisitor implements MediaVisitorBase {
 
                 trackTagDAO.insert(new TrackTag(trackId, tagId));
             }
+
+            db.setTransactionSuccessful();
         } catch (Exception e) {
             // FIXME: broadcast failures
-            Log.e(tag, "Failed to read tags", e);
+            Log.e(tag, "Failed to save " + file, e);
+        } finally {
+            db.endTransaction();
         }
 
     }

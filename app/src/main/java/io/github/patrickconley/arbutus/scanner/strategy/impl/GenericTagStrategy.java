@@ -46,7 +46,7 @@ public class GenericTagStrategy implements TagStrategy {
             metadataRetriever.setDataSource(file.getAbsolutePath());
         } catch (RuntimeException e) {
             if (e.getMessage().endsWith("0xFFFFFFEA")) {
-                Log.w(tag, "Skipping non-media file");
+                Log.w(tag, "Skipping non-media file " + file);
                 return null;
             } else {
                 throw e;
@@ -56,7 +56,7 @@ public class GenericTagStrategy implements TagStrategy {
         // Check the file is audio
         if (metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO) ==
             null) {
-            Log.w(tag, "Skipping non-audio media file");
+            Log.w(tag, "Skipping non-audio media file " + file);
             return null;
         }
 
