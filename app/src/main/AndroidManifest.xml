@@ -13,22 +13,24 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar"
         tools:replace="android:theme">
-        <activity android:name=".player.PlayerActivity">
+        <activity android:name=".player.PlayerActivity" />
+        <activity
+            android:name=".settings.view.SettingsActivity"
+            android:label="@string/settings_activity_name"
+            android:theme="@style/Theme.AppCompat" />
+        <activity android:name=".settings.view.LibraryPathChooserActivity" />
+
+        <service
+            android:name=".scanner.view.LibraryScannerService"
+            android:exported="false" />
+
+        <activity android:name=".library.view.LibraryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".settings.view.SettingsActivity"
-            android:label="@string/settings_activity_name"
-            android:theme="@style/Theme.AppCompat"></activity>
-        <activity android:name=".settings.view.LibraryPathChooserActivity" />
-
-        <service
-            android:name=".scanner.view.LibraryScannerService"
-            android:exported="false"></service>
     </application>
 
 </manifest>
