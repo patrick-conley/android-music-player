@@ -1,7 +1,8 @@
-package io.github.patrickconley.arbutus.scanner.filesystem;
+package io.github.patrickconley.arbutus.scanner.visitor.impl;
 
-import io.github.patrickconley.arbutus.scanner.filesystem.model.MediaFile;
-import io.github.patrickconley.arbutus.scanner.filesystem.model.MediaFolder;
+import io.github.patrickconley.arbutus.scanner.model.impl.MediaFile;
+import io.github.patrickconley.arbutus.scanner.model.impl.MediaFolder;
+import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
 
 /**
  * Visit part of a filesystem, counting media files.

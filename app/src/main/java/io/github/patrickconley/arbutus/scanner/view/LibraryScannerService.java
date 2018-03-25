@@ -8,8 +8,8 @@ import android.util.Log;
 import java.io.File;
 
 import io.github.patrickconley.arbutus.domain.AppDatabase;
-import io.github.patrickconley.arbutus.scanner.filesystem.FileScanVisitor;
-import io.github.patrickconley.arbutus.scanner.filesystem.model.MediaFolder;
+import io.github.patrickconley.arbutus.scanner.visitor.impl.FileScanVisitor;
+import io.github.patrickconley.arbutus.scanner.model.impl.MediaFolder;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in

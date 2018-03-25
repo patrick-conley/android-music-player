@@ -1,4 +1,4 @@
-package io.github.patrickconley.arbutus.scanner.strategy;
+package io.github.patrickconley.arbutus.scanner.strategy.impl;
 
 import android.media.MediaMetadataRetriever;
 import android.util.Log;
@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import io.github.patrickconley.arbutus.domain.model.Tag;
+import io.github.patrickconley.arbutus.scanner.strategy.TagStrategy;
 
 /**
  * Read the tags from an MP3 file using {@link MediaMetadataRetriever}.

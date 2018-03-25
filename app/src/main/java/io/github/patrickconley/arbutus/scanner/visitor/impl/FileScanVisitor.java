@@ -1,4 +1,4 @@
-package io.github.patrickconley.arbutus.scanner.filesystem;
+package io.github.patrickconley.arbutus.scanner.visitor.impl;
 
 import android.content.Context;
 import android.net.Uri;
@@ -13,8 +13,9 @@ import io.github.patrickconley.arbutus.domain.dao.TrackTagDAO;
 import io.github.patrickconley.arbutus.domain.model.Tag;
 import io.github.patrickconley.arbutus.domain.model.Track;
 import io.github.patrickconley.arbutus.domain.model.TrackTag;
-import io.github.patrickconley.arbutus.scanner.filesystem.model.MediaFile;
-import io.github.patrickconley.arbutus.scanner.filesystem.model.MediaFolder;
+import io.github.patrickconley.arbutus.scanner.model.impl.MediaFile;
+import io.github.patrickconley.arbutus.scanner.model.impl.MediaFolder;
+import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
 import io.github.patrickconley.arbutus.scanner.strategy.StrategyFactory;
 import io.github.patrickconley.arbutus.scanner.strategy.TagStrategy;
 

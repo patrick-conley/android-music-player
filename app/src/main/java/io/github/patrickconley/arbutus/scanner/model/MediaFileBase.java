@@ -1,8 +1,8 @@
-package io.github.patrickconley.arbutus.scanner.filesystem.model;
+package io.github.patrickconley.arbutus.scanner.model;
 
 import java.io.File;
 
-import io.github.patrickconley.arbutus.scanner.filesystem.MediaVisitorBase;
+import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
 
 /**
  * Representation of a file to be used as part of a hierarchical visitor pattern

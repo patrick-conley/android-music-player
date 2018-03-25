@@ -1,8 +1,7 @@
-package io.github.patrickconley.arbutus.scanner.filesystem;
+package io.github.patrickconley.arbutus.scanner.visitor;
 
-import io.github.patrickconley.arbutus.scanner.filesystem.model.MediaFile;
-import io.github.patrickconley.arbutus.scanner.filesystem.model.MediaFileBase;
-import io.github.patrickconley.arbutus.scanner.filesystem.model.MediaFolder;
+import io.github.patrickconley.arbutus.scanner.model.impl.MediaFile;
+import io.github.patrickconley.arbutus.scanner.model.impl.MediaFolder;
 
 /**
  * Traverse a hierarchical filesystem. Methods in subclasses of

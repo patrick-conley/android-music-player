@@ -1,6 +1,9 @@
 package io.github.patrickconley.arbutus.scanner.strategy;
 
-import io.github.patrickconley.arbutus.scanner.filesystem.model.MediaFile;
+import io.github.patrickconley.arbutus.scanner.model.impl.MediaFile;
+import io.github.patrickconley.arbutus.scanner.strategy.impl.GenericTagStrategy;
+import io.github.patrickconley.arbutus.scanner.strategy.impl.Mp4TagStrategy;
+import io.github.patrickconley.arbutus.scanner.strategy.impl.VorbisCommentTagStrategy;
 
 public class StrategyFactory {
 

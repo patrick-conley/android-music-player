@@ -1,10 +1,11 @@
-package io.github.patrickconley.arbutus.scanner.filesystem.model;
+package io.github.patrickconley.arbutus.scanner.model.impl;
 
 import android.util.Log;
 
 import java.io.File;
 
-import io.github.patrickconley.arbutus.scanner.filesystem.MediaVisitorBase;
+import io.github.patrickconley.arbutus.scanner.model.MediaFileBase;
+import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
 
 /**
  * A visitable directory.
