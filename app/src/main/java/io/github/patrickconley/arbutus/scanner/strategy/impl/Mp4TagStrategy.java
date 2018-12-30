@@ -44,6 +44,11 @@ public class Mp4TagStrategy implements TagStrategy {
         return tags;
     }
 
+    @Override
+    public void release() {
+        // nothing to do
+    }
+
     /*
      * Reverse JAudioTagger's mapping between field IDs and names.
      */

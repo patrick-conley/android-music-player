@@ -22,4 +22,8 @@ public interface TagStrategy {
      */
     List<Tag> getTags(File file) throws Exception;
 
+    /**
+     * Release any native resources
+     */
+    void release();
 }

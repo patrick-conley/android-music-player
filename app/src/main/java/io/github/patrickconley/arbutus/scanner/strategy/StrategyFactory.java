@@ -11,9 +11,6 @@ public class StrategyFactory {
     private static TagStrategy defaultGenericStrategy;
     private static TagStrategy defaultMp4Strategy;
 
-    /**
-     * Private constructor.
-     */
     private StrategyFactory() {
     }
 
@@ -21,8 +18,7 @@ public class StrategyFactory {
      * Identify the appropriate tag-reading strategy using the media file's
      * extension.
      *
-     * @param file
-     *         File to read
+     * @param file File to read
      */
     public static TagStrategy getStrategy(MediaFile file) {
         int index = file.toString().lastIndexOf('.');
@@ -46,8 +42,16 @@ public class StrategyFactory {
      */
     public static void release() {
         if (defaultGenericStrategy != null) {
-            ((GenericTagStrategy) defaultGenericStrategy).release();
+            defaultGenericStrategy.release();
             defaultGenericStrategy = null;
+        }
+        if (defaultVorbisStrategy != null) {
+            defaultVorbisStrategy.release();
+            defaultVorbisStrategy = null;
+        }
+        if (defaultMp4Strategy != null) {
+            defaultMp4Strategy.release();
+            defaultMp4Strategy = null;
         }
     }
 

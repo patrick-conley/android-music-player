@@ -29,9 +29,6 @@ public class GenericTagStrategy implements TagStrategy {
         buildKeyMap();
     }
 
-    /**
-     * Release native resources.
-     */
     public void release() {
         metadataRetriever.release();
     }

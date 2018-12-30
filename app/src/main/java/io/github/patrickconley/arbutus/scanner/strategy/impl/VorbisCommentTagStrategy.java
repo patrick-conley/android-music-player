@@ -43,4 +43,8 @@ public class VorbisCommentTagStrategy implements TagStrategy {
         return comments;
     }
 
+    @Override
+    public void release() {
+        // nothing to do
+    }
 }
