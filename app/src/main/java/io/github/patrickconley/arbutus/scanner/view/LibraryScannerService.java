@@ -18,7 +18,7 @@ import io.github.patrickconley.arbutus.scanner.model.impl.MediaFolder;
 public class LibraryScannerService extends IntentService {
     private final String tag = getClass().getName();
 
-    // might eventually add another action to refresh the library
+    // I might eventually add another action to refresh the library
     private static final String ACTION_SCAN_LIBRARY
             = "io.github.patrickconley.arbutus.settings.view.action.SCAN_LIBRARY";
     private static final String LIBRARY_PATH
@@ -29,12 +29,12 @@ public class LibraryScannerService extends IntentService {
     }
 
     /**
-     * Starts this service to perform action Foo with the given parameters. If
+     * Starts this service to scan the library. If
      * the service is already performing a task this action will be queued.
      *
      * @see IntentService
      */
-    public static void startActionFoo(Context context, String libraryPath) {
+    public static void startActionScanLibrary(Context context, String libraryPath) {
         Intent intent = new Intent(context, LibraryScannerService.class);
         intent.setAction(ACTION_SCAN_LIBRARY);
         intent.putExtra(LIBRARY_PATH, libraryPath);
@@ -65,6 +65,7 @@ public class LibraryScannerService extends IntentService {
      */
     private void handleScanLibrary(String libraryPath) {
         MediaFolder library = new MediaFolder(new File(libraryPath));
+        Log.i(tag, "Scanning " + libraryPath);
 
         FileScanVisitor visitor = new FileScanVisitor(this);
         long fileCount = library.accept(visitor);

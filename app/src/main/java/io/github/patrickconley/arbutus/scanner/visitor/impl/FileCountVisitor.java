@@ -11,23 +11,29 @@ import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
  */
 public class FileCountVisitor implements MediaVisitorBase {
 
-	private int count = 0;
+    private int count = 0;
 
-	@Override
-	public void visit(MediaFolder dir) {
+    @Override
+    public void visit(MediaFolder dir) {
+        // TODO does this work? Is it much faster?
+        //		count += dir.getFile().listFiles(new FileFilter() {
+        //			@Override
+        //			public boolean accept(File pathname) {
+        //				return pathname.isFile();
+        //			}
+        //		}).length;
+    }
 
-	}
+    @Override
+    public void visit(MediaFile file) {
+        count++;
+    }
 
-	@Override
-	public void visit(MediaFile file) {
-		count++;
-	}
-
-	/**
-	 * @return The number of files (but not folders) in the system.
-	 */
-	public int getCount() {
-		return count;
-	}
+    /**
+     * @return The number of files (but not folders) in the system.
+     */
+    public int getCount() {
+        return count;
+    }
 
 }

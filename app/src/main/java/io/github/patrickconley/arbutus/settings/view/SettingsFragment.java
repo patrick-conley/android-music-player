@@ -63,7 +63,7 @@ public class SettingsFragment extends PreferenceFragment
 
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    LibraryScannerService.startActionFoo(SettingsFragment.this.getActivity(),
+                    LibraryScannerService.startActionScanLibrary(SettingsFragment.this.getActivity(),
                             sharedPreferences.getString(Settings.LIBRARY_PATH.getKey(), null));
                     return true;
                 }
