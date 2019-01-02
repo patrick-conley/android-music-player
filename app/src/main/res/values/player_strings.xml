@@ -1,0 +1,8 @@
+<resources>
+
+    <string name="player_blank_time">&#8211;:&#8211;&#8211;</string>
+    <string name="player_button_play_pause">play/pause</string>
+    <string name="player_button_previous">prev</string>
+    <string name="player_button_next">next</string>
+
+</resources>

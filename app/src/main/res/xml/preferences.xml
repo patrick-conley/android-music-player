@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <SwitchPreference
-        android:defaultValue="false"
-        android:key="debug mode"
-        android:summary="@string/setting_debug_summary"
-        android:title="@string/setting_debug_title" />
+    <Preference
+        android:key="library path"
+        android:summary="@string/setting_library_path_default_summary"
+        android:title="@string/setting_library_path_title">
+        <intent
+            android:targetClass="io.github.patrickconley.arbutus.settings.view.LibraryPathChooserActivity"
+            android:targetPackage="io.github.patrickconley.arbutus" />
+    </Preference>
 
-    <EditTextPreference
-        android:key="music folder"
-        android:summary="@string/setting_library_path_summary"
-        android:title="@string/setting_library_path_title" />
+    <Preference
+        android:key="scan library"
+        android:title="@string/setting_library_path_scan_title">
+    </Preference>
 
 </PreferenceScreen>

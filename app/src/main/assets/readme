@@ -1,3 +1,0 @@
-Robolectric must point to the app project's Android_Manifest.xml, which does
-not give it direct access to the test project's assets. This directory must
-exist so Robolectric tests can access test assets by relative path.

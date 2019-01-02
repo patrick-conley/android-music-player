@@ -1,11 +1,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context="pconley.vamp.player.PlayerActivity" >
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="@string/activity_settings_name"/>
+    <!-- Settings, should always be in the overflow -->
+    <item android:id="@+id/action_settings"
+        android:title="@string/settings_activity_name"
+        app:showAsAction="never"/>
 
 </menu>
