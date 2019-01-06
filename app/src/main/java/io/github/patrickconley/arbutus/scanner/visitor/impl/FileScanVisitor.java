@@ -6,13 +6,13 @@ import android.util.Log;
 
 import java.util.List;
 
-import io.github.patrickconley.arbutus.domain.AppDatabase;
-import io.github.patrickconley.arbutus.domain.dao.TagDAO;
-import io.github.patrickconley.arbutus.domain.dao.TrackDAO;
-import io.github.patrickconley.arbutus.domain.dao.TrackTagDAO;
-import io.github.patrickconley.arbutus.domain.model.Tag;
-import io.github.patrickconley.arbutus.domain.model.Track;
-import io.github.patrickconley.arbutus.domain.model.TrackTag;
+import io.github.patrickconley.arbutus.metadata.AppDatabase;
+import io.github.patrickconley.arbutus.metadata.dao.TagDAO;
+import io.github.patrickconley.arbutus.metadata.dao.TrackDAO;
+import io.github.patrickconley.arbutus.metadata.dao.TrackTagDAO;
+import io.github.patrickconley.arbutus.metadata.model.Tag;
+import io.github.patrickconley.arbutus.metadata.model.Track;
+import io.github.patrickconley.arbutus.metadata.model.TrackTag;
 import io.github.patrickconley.arbutus.scanner.model.impl.MediaFile;
 import io.github.patrickconley.arbutus.scanner.model.impl.MediaFolder;
 import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;

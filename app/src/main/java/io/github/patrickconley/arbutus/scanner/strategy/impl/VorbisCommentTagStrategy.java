@@ -14,7 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
-import io.github.patrickconley.arbutus.domain.model.Tag;
+import io.github.patrickconley.arbutus.metadata.model.Tag;
 import io.github.patrickconley.arbutus.scanner.strategy.TagStrategy;
 
 public class VorbisCommentTagStrategy implements TagStrategy {

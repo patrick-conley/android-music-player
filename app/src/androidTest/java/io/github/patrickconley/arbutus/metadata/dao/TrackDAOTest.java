@@ -1,4 +1,4 @@
-package io.github.patrickconley.arbutus.domain.dao;
+package io.github.patrickconley.arbutus.metadata.dao;
 
 import android.arch.persistence.room.Room;
 import android.content.Context;
@@ -10,8 +10,8 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import io.github.patrickconley.arbutus.domain.AppDatabase;
-import io.github.patrickconley.arbutus.domain.model.Track;
+import io.github.patrickconley.arbutus.metadata.AppDatabase;
+import io.github.patrickconley.arbutus.metadata.model.Track;
 
 @RunWith(AndroidJUnit4.class)
 public class TrackDAOTest {

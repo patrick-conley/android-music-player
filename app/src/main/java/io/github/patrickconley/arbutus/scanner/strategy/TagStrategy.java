@@ -3,7 +3,7 @@ package io.github.patrickconley.arbutus.scanner.strategy;
 import java.io.File;
 import java.util.List;
 
-import io.github.patrickconley.arbutus.domain.model.Tag;
+import io.github.patrickconley.arbutus.metadata.model.Tag;
 
 /**
  * Read the metadata from a file.

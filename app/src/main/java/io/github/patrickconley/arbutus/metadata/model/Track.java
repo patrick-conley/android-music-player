@@ -1,4 +1,4 @@
-package io.github.patrickconley.arbutus.domain.model;
+package io.github.patrickconley.arbutus.metadata.model;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;

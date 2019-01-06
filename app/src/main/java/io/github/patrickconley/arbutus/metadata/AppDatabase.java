@@ -1,4 +1,4 @@
-package io.github.patrickconley.arbutus.domain;
+package io.github.patrickconley.arbutus.metadata;
 
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.Room;
@@ -6,13 +6,13 @@ import android.arch.persistence.room.RoomDatabase;
 import android.arch.persistence.room.TypeConverters;
 import android.content.Context;
 
-import io.github.patrickconley.arbutus.domain.dao.Converters;
-import io.github.patrickconley.arbutus.domain.dao.TagDAO;
-import io.github.patrickconley.arbutus.domain.dao.TrackDAO;
-import io.github.patrickconley.arbutus.domain.dao.TrackTagDAO;
-import io.github.patrickconley.arbutus.domain.model.Tag;
-import io.github.patrickconley.arbutus.domain.model.Track;
-import io.github.patrickconley.arbutus.domain.model.TrackTag;
+import io.github.patrickconley.arbutus.metadata.dao.Converters;
+import io.github.patrickconley.arbutus.metadata.dao.TagDAO;
+import io.github.patrickconley.arbutus.metadata.dao.TrackDAO;
+import io.github.patrickconley.arbutus.metadata.dao.TrackTagDAO;
+import io.github.patrickconley.arbutus.metadata.model.Tag;
+import io.github.patrickconley.arbutus.metadata.model.Track;
+import io.github.patrickconley.arbutus.metadata.model.TrackTag;
 
 @Database(entities = { Track.class, Tag.class, TrackTag.class }, version = 1)
 @TypeConverters({ Converters.class })
