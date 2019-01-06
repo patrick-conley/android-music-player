@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-import io.github.patrickconley.arbutus.metadata.AppDatabase;
+import io.github.patrickconley.arbutus.datastorage.AppDatabase;
 import io.github.patrickconley.arbutus.metadata.model.Tag;
 import io.github.patrickconley.arbutus.metadata.model.Track;
 import io.github.patrickconley.arbutus.metadata.model.TrackTag;

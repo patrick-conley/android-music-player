@@ -10,8 +10,7 @@ import android.support.annotation.NonNull;
 public class Track {
 
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "track_id")
-    private long trackId;
+    private long id;
 
     @NonNull
     private Uri uri;
@@ -20,12 +19,12 @@ public class Track {
         this.uri = uri;
     }
 
-    public long getTrackId() {
-        return trackId;
+    public long getId() {
+        return id;
     }
 
-    public void setTrackId(long trackId) {
-        this.trackId = trackId;
+    public void setId(long id) {
+        this.id = id;
     }
 
     public @NonNull Uri getUri() {

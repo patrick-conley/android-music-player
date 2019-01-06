@@ -1,6 +1,5 @@
 package io.github.patrickconley.arbutus.metadata.model;
 
-import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
@@ -12,23 +11,25 @@ import android.support.annotation.NonNull;
 public class Tag {
 
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "tag_id")
-    private long tagId;
+    private long id;
 
-    private @NonNull String key;
-    private @NonNull String value;
+    @NonNull
+    private String key;
+
+    @NonNull
+    private String value;
 
     public Tag(@NonNull String key, @NonNull String value) {
         this.key = key;
         this.value = value;
     }
 
-    public long getTagId() {
-        return tagId;
+    public long getId() {
+        return id;
     }
 
-    public void setTagId(long tagId) {
-        this.tagId = tagId;
+    public void setId(long id) {
+        this.id = id;
     }
 
     @NonNull

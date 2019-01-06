@@ -7,7 +7,7 @@ import android.util.Log;
 
 import java.io.File;
 
-import io.github.patrickconley.arbutus.metadata.AppDatabase;
+import io.github.patrickconley.arbutus.datastorage.AppDatabase;
 import io.github.patrickconley.arbutus.scanner.visitor.impl.FileScanVisitor;
 import io.github.patrickconley.arbutus.scanner.model.impl.MediaFolder;
 

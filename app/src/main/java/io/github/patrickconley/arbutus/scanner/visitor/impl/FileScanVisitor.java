@@ -6,7 +6,7 @@ import android.util.Log;
 
 import java.util.List;
 
-import io.github.patrickconley.arbutus.metadata.AppDatabase;
+import io.github.patrickconley.arbutus.datastorage.AppDatabase;
 import io.github.patrickconley.arbutus.metadata.dao.TagDAO;
 import io.github.patrickconley.arbutus.metadata.dao.TrackDAO;
 import io.github.patrickconley.arbutus.metadata.dao.TrackTagDAO;
@@ -83,7 +83,7 @@ public class FileScanVisitor implements MediaVisitorBase {
 
             for (Tag tag : tags) {
                 Tag savedTag = tagDao.getTag(tag);
-                long tagId = savedTag != null ? savedTag.getTagId() : tagDao.insert(tag);
+                long tagId = savedTag != null ? savedTag.getId() : tagDao.insert(tag);
 
                 trackTagDAO.insert(new TrackTag(trackId, tagId));
             }
