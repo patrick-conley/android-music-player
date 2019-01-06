@@ -10,7 +10,7 @@ import io.github.patrickconley.arbutus.metadata.model.TrackTag;
 public interface TrackTagDAO {
 
     @Insert
-    void insert(TrackTag trackTag);
+    long insert(TrackTag trackTag);
 
     @Query("delete from tracktag")
     void truncate();

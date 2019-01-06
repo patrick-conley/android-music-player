@@ -4,6 +4,7 @@ import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
 @Entity
 public class Track {
@@ -12,11 +13,10 @@ public class Track {
     @ColumnInfo(name = "track_id")
     private long trackId;
 
+    @NonNull
     private Uri uri;
 
-    public Track() {}
-
-    public Track(Uri uri) {
+    public Track(@NonNull Uri uri) {
         this.uri = uri;
     }
 
@@ -28,11 +28,11 @@ public class Track {
         this.trackId = trackId;
     }
 
-    public Uri getUri() {
+    public @NonNull Uri getUri() {
         return uri;
     }
 
-    public void setUri(Uri uri) {
+    public void setUri(@NonNull Uri uri) {
         this.uri = uri;
     }
 }

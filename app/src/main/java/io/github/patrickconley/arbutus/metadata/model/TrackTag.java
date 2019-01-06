@@ -1,10 +1,6 @@
 package io.github.patrickconley.arbutus.metadata.model;
 
-import android.arch.persistence.room.ColumnInfo;
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.ForeignKey;
-import android.arch.persistence.room.Index;
-import android.arch.persistence.room.PrimaryKey;
+import android.arch.persistence.room.*;
 
 import static android.arch.persistence.room.ForeignKey.CASCADE;
 
@@ -22,10 +18,9 @@ public class TrackTag {
 
     @ColumnInfo(name = "track_id")
     private long trackId;
+
     @ColumnInfo(name = "tag_id")
     private long tagId;
-
-    public TrackTag() {}
 
     public TrackTag(long trackId, long tagId) {
         this.trackId = trackId;
@@ -44,15 +39,7 @@ public class TrackTag {
         return trackId;
     }
 
-    public void setTrackId(long trackId) {
-        this.trackId = trackId;
-    }
-
     public long getTagId() {
         return tagId;
-    }
-
-    public void setTagId(long tagId) {
-        this.tagId = tagId;
     }
 }
