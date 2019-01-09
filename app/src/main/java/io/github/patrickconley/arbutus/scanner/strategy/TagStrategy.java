@@ -1,9 +1,9 @@
 package io.github.patrickconley.arbutus.scanner.strategy;
 
-import java.io.File;
-import java.util.List;
-
 import io.github.patrickconley.arbutus.metadata.model.Tag;
+
+import java.io.File;
+import java.util.Set;
 
 /**
  * Read the metadata from a file.
@@ -20,7 +20,7 @@ public interface TagStrategy {
      *
      * @return Key/value pairs.
      */
-    List<Tag> getTags(File file) throws Exception;
+    Set<Tag> readTags(File file) throws Exception;
 
     /**
      * Release any native resources

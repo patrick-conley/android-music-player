@@ -1,20 +1,19 @@
 package io.github.patrickconley.arbutus.scanner.strategy.impl;
 
 import android.media.MediaMetadataRetriever;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.SparseArray;
-
-import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
-
 import io.github.patrickconley.arbutus.metadata.model.Tag;
 import io.github.patrickconley.arbutus.scanner.strategy.TagStrategy;
 
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
- * Read the tags from an MP3 file using {@link MediaMetadataRetriever}.
- * JAudioTagger uses sun.nio.ch.DirectBuffer (which is not available on Android)
- * to work around a Windows bug.
+ * Read the tags from an MP3 file using {@link MediaMetadataRetriever}. JAudioTagger uses sun.nio.ch.DirectBuffer (which
+ * is not available on Android) to work around a Windows bug.
  */
 public class GenericTagStrategy implements TagStrategy {
     private final String tag = getClass().getName();
@@ -34,37 +33,54 @@ public class GenericTagStrategy implements TagStrategy {
     }
 
     @Override
-    public List<Tag> getTags(File file) throws Exception {
-        List<Tag> tags = new LinkedList<>();
+    public Set<Tag> readTags(File file) {
 
         // Scan the file. Identifying the MIME type is a bit tricky, so let the
         // retriever determine what it can read.
+        if (!setRetrieverDataSource(file)) {
+            return null;
+        }
+
+        // Check the file is audio
+        if (checkFileIsAudio(file)) {
+            return null;
+        }
+
+        // Read and store data for each key
+        return readTags();
+    }
+
+    private boolean setRetrieverDataSource(File file) {
         try {
             metadataRetriever.setDataSource(file.getAbsolutePath());
         } catch (RuntimeException e) {
             if (e.getMessage().endsWith("0xFFFFFFEA")) {
                 Log.w(tag, "Skipping non-media file " + file);
-                return null;
+                return false;
             } else {
                 throw e;
             }
         }
+        return true;
+    }
 
-        // Check the file is audio
-        if (metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO) ==
-            null) {
+    private boolean checkFileIsAudio(File file) {
+        if (metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO) == null) {
             Log.w(tag, "Skipping non-audio media file " + file);
-            return null;
+            return false;
         }
+        return true;
+    }
 
-        // Read and store data for each key
+    @NonNull
+    private Set<Tag> readTags() {
+        Set<Tag> tags = new HashSet<>();
         for (int i = 0; i < keys.size(); i++) {
             String value = metadataRetriever.extractMetadata(keys.keyAt(i));
             if (value != null && !value.equals("0")) {
                 tags.add(new Tag(keys.valueAt(i), value));
             }
         }
-
         return tags;
     }
 
