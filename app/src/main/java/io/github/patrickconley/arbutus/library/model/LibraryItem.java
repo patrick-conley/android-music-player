@@ -7,21 +7,23 @@ import io.github.patrickconley.arbutus.metadata.model.Tag;
 import io.github.patrickconley.arbutus.metadata.model.Track;
 
 @Entity(foreignKeys = {
-    @ForeignKey(entity = LibraryNode.class, parentColumns = "id", childColumns = "nodeId"),
-    @ForeignKey(entity = Tag.class, parentColumns = "id", childColumns = "tagId"),
-    @ForeignKey(entity = Track.class, parentColumns = "id", childColumns = "trackId")
+        @ForeignKey(entity = LibraryItem.class, parentColumns = "id", childColumns = "parentId"),
+        @ForeignKey(entity = LibraryNode.class, parentColumns = "id", childColumns = "nodeId"),
+        @ForeignKey(entity = Tag.class, parentColumns = "id", childColumns = "tagId"),
+        @ForeignKey(entity = Track.class, parentColumns = "id", childColumns = "trackId")
 })
 public class LibraryItem {
 
     @PrimaryKey(autoGenerate = true)
     private long id;
 
-    private long parentId;
+    // FIXME should parentId/nodeId/tagId be a unique tuple?
+    private Long parentId;
     private long nodeId;
-    private long tagId;
-    private long trackId;
+    private Long tagId;
+    private Long trackId;
 
-    public LibraryItem(long parentId, long nodeId, long tagId, long trackId) {
+    public LibraryItem(Long parentId, long nodeId, Long tagId, Long trackId) {
         this.parentId = parentId;
         this.nodeId = nodeId;
         this.tagId = tagId;
@@ -36,7 +38,7 @@ public class LibraryItem {
         this.id = id;
     }
 
-    public long getParentId() {
+    public Long getParentId() {
         return parentId;
     }
 
@@ -44,11 +46,11 @@ public class LibraryItem {
         return nodeId;
     }
 
-    public long getTagId() {
+    public Long getTagId() {
         return tagId;
     }
 
-    public long getTrackId() {
+    public Long getTrackId() {
         return trackId;
     }
 

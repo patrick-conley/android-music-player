@@ -70,6 +70,6 @@ public class TagDAOTest {
         long id = dao.insert(new Tag("key", "getTag"));
         Tag actual = dao.getTag(new Tag("key", "getTag"));
 
-        assertEquals(id, actual.getTagId());
+        assertEquals(id, actual.getId());
     }
 }
