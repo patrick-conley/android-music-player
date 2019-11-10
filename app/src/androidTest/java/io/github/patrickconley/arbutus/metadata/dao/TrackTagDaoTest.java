@@ -17,14 +17,14 @@ import org.junit.runner.RunWith;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
-public class TrackTagDAOTest {
+public class TrackTagDaoTest {
 
     private Context context = InstrumentationRegistry.getTargetContext();
 
     private AppDatabase db = Room.inMemoryDatabaseBuilder(context, AppDatabase.class).build();
-    private TagDAO tagDao = db.tagDao();
-    private TrackDAO trackDao = db.trackDao();
-    private TrackTagDAO dao = db.trackTagDAO();
+    private TagDao tagDao = db.tagDao();
+    private TrackDao trackDao = db.trackDao();
+    private TrackTagDao dao = db.trackTagDao();
 
     @After
     public void after() {

@@ -22,6 +22,11 @@ public class TrackTag {
         this.tagId = tagId;
     }
 
+    public TrackTag(Track track, Tag tag) {
+        this.trackId = track.getId();
+        this.tagId = tag.getId();
+    }
+
     public long getId() {
         return id;
     }

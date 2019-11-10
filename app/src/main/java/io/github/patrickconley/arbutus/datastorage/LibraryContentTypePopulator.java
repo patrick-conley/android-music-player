@@ -3,6 +3,9 @@ package io.github.patrickconley.arbutus.datastorage;
 import android.util.Log;
 import io.github.patrickconley.arbutus.library.model.LibraryContentType;
 
+/**
+ * Populate the 'contenttype' table with the the only possible types 'tag' and 'track'
+ */
 class LibraryContentTypePopulator implements Runnable {
 
     private final AppDatabase db;

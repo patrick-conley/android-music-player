@@ -9,7 +9,10 @@ import org.jaudiotagger.tag.TagField;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
 
 import io.github.patrickconley.arbutus.metadata.model.Tag;
 import io.github.patrickconley.arbutus.scanner.strategy.TagStrategy;
@@ -18,23 +21,18 @@ public class VorbisCommentTagStrategy implements TagStrategy {
 
     /**
      * Read Vorbis Comments.
-     *
-     * @throws CannotReadException
-     * @throws IOException
-     * @throws TagException
-     * @throws ReadOnlyFileException
-     * @throws InvalidAudioFrameException
      */
     @Override
-    public Set<Tag> readTags(File file)
+    public Map<String, Tag> readTags(File file)
             throws TagException, ReadOnlyFileException, CannotReadException,
-            InvalidAudioFrameException, IOException {
-        Set<Tag> comments = new HashSet<>();
+                   InvalidAudioFrameException, IOException {
+        Map<String, Tag> comments = new HashMap<>();
 
         Iterator<TagField> tags = AudioFileIO.read(file).getTag().getFields();
         while (tags.hasNext()) {
             TagField tag = tags.next();
-            comments.add(new Tag(tag.getId().toLowerCase(Locale.US), tag.toString()));
+            String key = tag.getId().toLowerCase(Locale.getDefault());
+            comments.put(key, new Tag(key, tag.toString()));
         }
 
         return comments;

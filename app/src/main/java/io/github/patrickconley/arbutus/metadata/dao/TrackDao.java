@@ -7,11 +7,16 @@ import android.arch.persistence.room.Query;
 import io.github.patrickconley.arbutus.metadata.model.Track;
 
 @Dao
-public interface TrackDAO {
+public abstract class TrackDao {
 
     @Insert
-    long insert(Track track);
+    abstract long insertForId(Track track);
+
+    public Track insert(Track track) {
+        track.setId(insertForId(track));
+        return track;
+    }
 
     @Query("delete from track")
-    void truncate();
+    public abstract void truncate();
 }

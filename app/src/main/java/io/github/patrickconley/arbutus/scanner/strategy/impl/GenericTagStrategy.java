@@ -4,12 +4,13 @@ import android.media.MediaMetadataRetriever;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.SparseArray;
-import io.github.patrickconley.arbutus.metadata.model.Tag;
-import io.github.patrickconley.arbutus.scanner.strategy.TagStrategy;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+
+import io.github.patrickconley.arbutus.metadata.model.Tag;
+import io.github.patrickconley.arbutus.scanner.strategy.TagStrategy;
 
 /**
  * Read the tags from an MP3 file using {@link MediaMetadataRetriever}. JAudioTagger uses sun.nio.ch.DirectBuffer (which
@@ -33,7 +34,7 @@ public class GenericTagStrategy implements TagStrategy {
     }
 
     @Override
-    public Set<Tag> readTags(File file) {
+    public Map<String, Tag> readTags(File file) {
 
         // Scan the file. Identifying the MIME type is a bit tricky, so let the
         // retriever determine what it can read.
@@ -73,12 +74,12 @@ public class GenericTagStrategy implements TagStrategy {
     }
 
     @NonNull
-    private Set<Tag> readTags() {
-        Set<Tag> tags = new HashSet<>();
+    private Map<String, Tag> readTags() {
+        Map<String, Tag> tags = new HashMap<>();
         for (int i = 0; i < keys.size(); i++) {
             String value = metadataRetriever.extractMetadata(keys.keyAt(i));
             if (value != null && !value.equals("0")) {
-                tags.add(new Tag(keys.valueAt(i), value));
+                tags.put(keys.valueAt(i), new Tag(keys.valueAt(i), value));
             }
         }
         return tags;

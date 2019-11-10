@@ -16,12 +16,12 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(AndroidJUnit4.class)
-public class TagDAOTest {
+public class TagDaoTest {
 
     private Context context = InstrumentationRegistry.getTargetContext();
 
     private AppDatabase db = Room.inMemoryDatabaseBuilder(context, AppDatabase.class).build();
-    private TagDAO dao = db.tagDao();
+    private TagDao dao = db.tagDao();
 
     @After
     public void after() {

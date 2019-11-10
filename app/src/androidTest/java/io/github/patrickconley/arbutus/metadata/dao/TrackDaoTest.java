@@ -5,21 +5,23 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-import io.github.patrickconley.arbutus.datastorage.AppDatabase;
-import io.github.patrickconley.arbutus.metadata.model.Track;
+
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertTrue;
+import io.github.patrickconley.arbutus.datastorage.AppDatabase;
+import io.github.patrickconley.arbutus.metadata.model.Track;
+
+import static com.google.common.truth.Truth.assertThat;
 
 @RunWith(AndroidJUnit4.class)
-public class TrackDAOTest {
+public class TrackDaoTest {
 
     private Context context = InstrumentationRegistry.getTargetContext();
 
     private AppDatabase db = Room.inMemoryDatabaseBuilder(context, AppDatabase.class).build();
-    private TrackDAO dao = db.trackDao();
+    private TrackDao dao = db.trackDao();
 
     @After
     public void after() {
@@ -28,7 +30,7 @@ public class TrackDAOTest {
 
     @Test
     public void insertShouldReturnValidId() {
-        assertTrue(0 < dao.insert(new Track(Uri.parse("file:///sample.ogg"))));
+        assertThat(dao.insert(new Track(Uri.parse("file:///sample.ogg"))).getId()).isGreaterThan(0);
     }
 
     @SuppressWarnings("ConstantConditions")

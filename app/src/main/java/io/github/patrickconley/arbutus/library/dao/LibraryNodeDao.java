@@ -8,23 +8,23 @@ import io.github.patrickconley.arbutus.library.model.LibraryNode;
 import java.util.List;
 
 @Dao
-public abstract class LibraryNodeDAO {
+public abstract class LibraryNodeDao {
 
     @Insert
     public abstract long insert(LibraryNode node);
 
     @Query("select * from LibraryNode where parentId is null")
-    abstract List<LibraryNode> _getRootNodes();
+    abstract List<LibraryNode> getRootNodes();
 
     @Query("select * from LibraryNode where parentId = :parentId")
-    abstract List<LibraryNode> _getByParent(long parentId);
+    abstract List<LibraryNode> getByParent(long parentId);
 
-    public List<LibraryNode> getByParent(Long parentId) {
-        if (parentId == null) {
-            return _getRootNodes();
+    public List<LibraryNode> getChildrenOf(LibraryNode parent) {
+        if (parent == null) {
+            return getRootNodes();
         }
 
-        return _getByParent(parentId);
+        return getByParent(parent.getId());
     }
 
 }

@@ -5,7 +5,7 @@ import android.arch.persistence.room.Insert;
 import io.github.patrickconley.arbutus.library.model.LibraryContentType;
 
 @Dao
-public interface LibraryContentTypeDAO {
+public interface LibraryContentTypeDao {
 
     @Insert
     void insert(LibraryContentType... libraryContentType);

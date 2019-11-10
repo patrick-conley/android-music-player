@@ -19,8 +19,8 @@ public class Mp4TagStrategy implements TagStrategy {
     }
 
     @Override
-    public Set<Tag> readTags(File file) throws Exception {
-        Set<Tag> tags = new HashSet<>();
+    public Map<String, Tag> readTags(File file) throws Exception {
+        Map<String, Tag> tags = new HashMap<>();
 
         Iterator<TagField> tagIterator = AudioFileIO.read(file).getTag().getFields();
         while (tagIterator.hasNext()) {
@@ -33,7 +33,7 @@ public class Mp4TagStrategy implements TagStrategy {
                 key = tag.getId();
             }
 
-            tags.add(new Tag(key, tag.toString()));
+            tags.put(key, new Tag(key, tag.toString()));
         }
 
         return tags;

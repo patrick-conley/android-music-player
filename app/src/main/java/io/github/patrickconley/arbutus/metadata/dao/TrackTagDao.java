@@ -7,7 +7,7 @@ import android.arch.persistence.room.Query;
 import io.github.patrickconley.arbutus.metadata.model.TrackTag;
 
 @Dao
-public interface TrackTagDAO {
+public interface TrackTagDao {
 
     @Insert
     long insert(TrackTag trackTag);
