@@ -13,10 +13,11 @@ import io.github.patrickconley.arbutus.metadata.model.Tag;
 import io.github.patrickconley.arbutus.metadata.model.Track;
 
 @Entity(foreignKeys = {
-        @ForeignKey(entity = LibraryEntry.class, parentColumns = "id", childColumns = "parentId"),
+        /* foreign keys conflict with nulls */
+        // @ForeignKey(entity = LibraryEntry.class, parentColumns = "id", childColumns = "parentId"),
         @ForeignKey(entity = LibraryNode.class, parentColumns = "id", childColumns = "nodeId"),
-        @ForeignKey(entity = Tag.class, parentColumns = "id", childColumns = "tagId"),
-        @ForeignKey(entity = Track.class, parentColumns = "id", childColumns = "trackId")
+        // @ForeignKey(entity = Tag.class, parentColumns = "id", childColumns = "tagId"),
+        //        @ForeignKey(entity = Track.class, parentColumns = "id", childColumns = "trackId")
 })
 public class LibraryEntry {
 

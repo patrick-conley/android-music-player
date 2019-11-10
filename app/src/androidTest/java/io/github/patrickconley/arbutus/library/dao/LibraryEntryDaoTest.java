@@ -9,6 +9,7 @@ import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -23,6 +24,7 @@ import io.github.patrickconley.arbutus.metadata.model.Track;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 
 @RunWith(AndroidJUnit4.class)
 public class LibraryEntryDaoTest {
@@ -40,10 +42,6 @@ public class LibraryEntryDaoTest {
     private final Tag tag = new Tag("key", "value");
     private final Track track = new Track(Uri.parse("file:///sample.ogg"));
 
-    private long nodeId;
-    private long tagId;
-    private long trackId;
-
     @After
     public void after() {
         db.close();
@@ -52,100 +50,110 @@ public class LibraryEntryDaoTest {
     @Before
     public void before() {
         contentTypeDao.insert(new LibraryContentType(LibraryContentType.Type.Tag));
-        nodeId = nodeDao.insert(node);
-        tagId = tagDao.insert(tag);
-        trackId = trackDao.insert(track);
+        nodeDao.insert(node);
+        tagDao.insert(tag);
+        trackDao.insert(track);
     }
 
     @Test(expected = SQLiteConstraintException.class)
-    public void insertWithInvalidParent() {
-        dao.insert(new LibraryEntry(-1L, nodeId, tagId, trackId));
+    public void invalidParent() {
+        dao.insert(new LibraryEntry(-1L, node.getId(), tag.getId(), track.getId()));
     }
 
     @Test(expected = SQLiteConstraintException.class)
     public void insertWithInvalidNode() {
-        long id = dao.insert(new LibraryEntry(null, node, tag, null));
-        dao.insert(new LibraryEntry(id, -1, tagId, trackId));
+        LibraryEntry root = dao.insert(new LibraryEntry(null, node, tag, null));
+        dao.insert(new LibraryEntry(root.getId(), -1, tag.getId(), track.getId()));
     }
 
     @Test(expected = SQLiteConstraintException.class)
-    public void insertWithInvalidTag() {
-        long id = dao.insert(new LibraryEntry(null, node, tag, null));
-        dao.insert(new LibraryEntry(id, nodeId, -1L, trackId));
+    public void invalidTag() {
+        LibraryEntry root = dao.insert(new LibraryEntry(null, node, tag, null));
+        dao.insert(new LibraryEntry(root.getId(), node.getId(), -1L, track.getId()));
     }
 
     @Test(expected = SQLiteConstraintException.class)
-    public void insertInvalidTrack() {
-        long id = dao.insert(new LibraryEntry(null, node, tag, null));
-        dao.insert(new LibraryEntry(id, nodeId, tagId, -1L));
+    public void invalidTrack() {
+        LibraryEntry root = dao.insert(new LibraryEntry(null, node, tag, null));
+        dao.insert(new LibraryEntry(root.getId(), node.getId(), tag.getId(), -1L));
     }
 
     @Test
     public void trackAtRoot() {
-        LibraryEntry entry = new LibraryEntry(null, node, tag, track);
-        dao.insert(entry);
+        LibraryEntry entry = dao.insert(new LibraryEntry(null, node, tag, track));
         assertEquals(entry, dao.getEntry(null, tag, track));
     }
 
     @Test
     public void tagAtRoot() {
-        LibraryEntry entry = new LibraryEntry(null, node, tag, null);
-        dao.insert(entry);
+        LibraryEntry entry = dao.insert(new LibraryEntry(null, node, tag, null));
         assertEquals(entry, dao.getEntry(null, tag, null));
     }
 
     @Test
     public void nullTagAtRoot() {
-        LibraryEntry entry = new LibraryEntry(null, node, null, null);
-        dao.insert(entry);
+        LibraryEntry entry = dao.insert(new LibraryEntry(null, node, null, null));
         assertEquals(entry, dao.getEntry((LibraryEntry) null, null, null));
     }
 
     @Test
+    public void trackWithNullTagAtRoot() {
+        LibraryEntry entry = dao.insert(new LibraryEntry(null, node, null, track));
+        assertEquals(entry, dao.getEntry(null, null, track));
+    }
+
+    @Test
+    public void tagBelowRoot() {
+        LibraryEntry parent = dao.insert(new LibraryEntry(null, node, tag, null));
+        LibraryEntry entry = dao.insert(new LibraryEntry(parent, node, tag, null));
+
+        assertEquals(entry, dao.getEntry(parent, tag, null));
+    }
+
+    @Test
+    public void nullTagBelowRoot() {
+        LibraryEntry parent = dao.insert(new LibraryEntry(null, node, tag, null));
+        LibraryEntry entry = dao.insert(new LibraryEntry(parent, node, null, null));
+
+        assertEquals(entry, dao.getEntry(parent, null, null));
+    }
+
+    @Test
     public void trackBelowRoot() {
-        LibraryEntry parent = new LibraryEntry(null, node, tag, null);
-        parent.setId(dao.insert(parent));
-
-        LibraryEntry entry = new LibraryEntry(parent, node, tag, track);
-        entry.setId(dao.insert(entry));
-
+        LibraryEntry parent = dao.insert(new LibraryEntry(null, node, tag, null));
+        LibraryEntry entry = dao.insert(new LibraryEntry(parent, node, tag, track));
         assertEquals(entry, dao.getEntry(parent, tag, track));
     }
 
-    @Test public void getTrackBelowRoot() { }
-    @Test public void getTagBelowRoot() { }
-    @Test public void getNullTagBelowRoot() { }
-    @Test public void getEntryWithInvalidParent() { }
-    @Test public void getEntryWithInvalidTag() { }
-    @Test public void getEntryWithInvalidTrack() { }
+    @Test
+    public void trackWithNullTagBelowRoot() {
+        LibraryEntry parent = dao.insert(new LibraryEntry(null, node, tag, null));
+        LibraryEntry entry = dao.insert(new LibraryEntry(parent, node, null, track));
+
+        assertEquals(entry, dao.getEntry(parent, null, track));
+    }
 
     @Test
     public void insertTracksWithSameParent() {
-        LibraryEntry parent = new LibraryEntry(null, nodeId, tagId, null);
-        parent.setId( dao.insert(parent));
+        LibraryEntry parent = dao.insert(new LibraryEntry(null, node, tag, null));
 
-        Track track1 = new Track(Uri.parse("file://sample.ogg"));
-         track1.setId(trackDao.insert(track1));
-        long child1 = dao.insert(new LibraryEntry(parent, node, tag, track1));
+        Track track1 = trackDao.insert(new Track(Uri.parse("file://sample.ogg")));
+        LibraryEntry child1 = dao.insert(new LibraryEntry(parent, node, tag, track1));
 
-        Track track2 = new Track(Uri.parse("file://sample.mp3"));
-        track2.setId(trackDao.insert(track2));
-        long child2 = dao.insert(new LibraryEntry(parent, node, tag, track2));
+        Track track2 = trackDao.insert(new Track(Uri.parse("file://sample.mp3")));
+        LibraryEntry child2 = dao.insert(new LibraryEntry(parent, node, tag, track2));
 
         assertNotEquals(child1, child2);
-        assertEquals(child1, dao.getEntry())
+        assertNotEquals(child1.getId(), child2.getId());
+        assertEquals(child1, dao.getEntry(parent, tag, track1));
+        assertEquals(child2, dao.getEntry(parent, tag, track2));
     }
 
     @Test
-    public void insertTrackWithNullTag() {
-        long id = dao.insert(new LibraryEntry(null, nodeId, tagId, null));
-        dao.insert(new LibraryEntry(id, nodeId, null, trackId));
-    }
-
-    @Test
-    public void insertInnerTag() {
-        long id = dao.insert(new LibraryEntry(null, nodeId, tagId, null));
-        dao.insert(new LibraryEntry(id, nodeId, tagId, null));
+    public void getMissingEntry() {
+        dao.insert(new LibraryEntry(null, node, tag, track));
+        LibraryEntry root2 = new LibraryEntry(null, node, null, null);
+        assertNull(dao.getEntry(root2, tag, track));
     }
 
 }
