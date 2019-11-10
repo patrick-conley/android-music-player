@@ -6,15 +6,17 @@ import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-import io.github.patrickconley.arbutus.datastorage.AppDatabase;
-import io.github.patrickconley.arbutus.metadata.model.Tag;
-import io.github.patrickconley.arbutus.metadata.model.Track;
-import io.github.patrickconley.arbutus.metadata.model.TrackTag;
+
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertTrue;
+import io.github.patrickconley.arbutus.datastorage.AppDatabase;
+import io.github.patrickconley.arbutus.metadata.model.Tag;
+import io.github.patrickconley.arbutus.metadata.model.Track;
+import io.github.patrickconley.arbutus.metadata.model.TrackTag;
+
+import static com.google.common.truth.Truth.assertThat;
 
 @RunWith(AndroidJUnit4.class)
 public class TrackTagDaoTest {
@@ -33,26 +35,26 @@ public class TrackTagDaoTest {
 
     @Test
     public void insertShouldReturnValidId() {
-        long trackId = trackDao.insert(new Track(Uri.parse("file:///sample.ogg")));
-        long tagId = tagDao.insert(new Tag("key", "insertShouldReturnValidId"));
+        Track track = trackDao.insert(new Track(Uri.parse("file:///sample.ogg")));
+        Tag tag = tagDao.insert(new Tag("key", "insertShouldReturnValidId"));
 
-        assertTrue(0 < dao.insert(new TrackTag(trackId, tagId)));
+        assertThat(dao.insert(new TrackTag(track, tag)).getId()).isGreaterThan(0);
     }
 
     @Test(expected = SQLiteConstraintException.class)
     public void insertShouldFailOnInvalidTrackId() {
-        long trackId = trackDao.insert(new Track(Uri.parse("file:///sample.ogg")));
-        long tagId = tagDao.insert(new Tag("key", "insertShouldFailOnInvalidTrackId"));
+        Track track = trackDao.insert(new Track(Uri.parse("file:///sample.ogg")));
+        Tag tag = tagDao.insert(new Tag("key", "insertShouldFailOnInvalidTrackId"));
 
-        dao.insert(new TrackTag(trackId + 1, tagId));
+        dao.insert(new TrackTag(track.getId() + 1, tag.getId()));
     }
 
     @Test(expected = SQLiteConstraintException.class)
     public void insertShouldFailOnInvalidTagId() {
-        long trackId = trackDao.insert(new Track(Uri.parse("file:///sample.ogg")));
-        long tagId = tagDao.insert(new Tag("key", "insertShouldFailOnInvalidTagId"));
+        Track track = trackDao.insert(new Track(Uri.parse("file:///sample.ogg")));
+        Tag tag = tagDao.insert(new Tag("key", "insertShouldFailOnInvalidTagId"));
 
-        dao.insert(new TrackTag(trackId, tagId + 1));
+        dao.insert(new TrackTag(track.getId(), tag.getId() + 1));
     }
 
 }

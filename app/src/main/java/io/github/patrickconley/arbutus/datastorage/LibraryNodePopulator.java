@@ -1,6 +1,7 @@
 package io.github.patrickconley.arbutus.datastorage;
 
 import android.util.Log;
+
 import io.github.patrickconley.arbutus.library.dao.LibraryNodeDao;
 import io.github.patrickconley.arbutus.library.model.LibraryContentType;
 import io.github.patrickconley.arbutus.library.model.LibraryNode;
@@ -19,9 +20,9 @@ class LibraryNodePopulator implements Runnable {
     @Override
     public void run() {
         LibraryNodeDao dao = db.libraryNodeDao();
-        long id = dao.insert(new LibraryNode(null, LibraryContentType.Type.Tag.getId(), "artist"));
-        id = dao.insert(new LibraryNode(id, LibraryContentType.Type.Tag.getId(), "album"));
-        dao.insert(new LibraryNode(id, LibraryContentType.Type.Track.getId(), "title"));
+        LibraryNode node = dao.insert(new LibraryNode(null, LibraryContentType.Type.Tag, "artist"));
+        node = dao.insert(new LibraryNode(node, LibraryContentType.Type.Tag, "album"));
+        dao.insert(new LibraryNode(node, LibraryContentType.Type.Track, "title"));
         Log.w(getClass().getName(), "Inserted default library nodes");
     }
 }

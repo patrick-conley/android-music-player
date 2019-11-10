@@ -7,12 +7,17 @@ import android.arch.persistence.room.Query;
 import io.github.patrickconley.arbutus.metadata.model.TrackTag;
 
 @Dao
-public interface TrackTagDao {
+public abstract class TrackTagDao {
 
     @Insert
-    long insert(TrackTag trackTag);
+    abstract long insertForId(TrackTag trackTag);
+
+    public TrackTag insert(TrackTag trackTag) {
+        trackTag.setId(insertForId(trackTag));
+        return trackTag;
+    }
 
     @Query("delete from tracktag")
-    void truncate();
+    public abstract void truncate();
 
 }

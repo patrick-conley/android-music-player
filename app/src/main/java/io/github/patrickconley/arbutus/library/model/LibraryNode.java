@@ -24,16 +24,17 @@ public class LibraryNode {
 
     private Long parentId;
     private long contentTypeId;
+    @NonNull
     private String name;
 
-    public LibraryNode(Long parentId, long contentTypeId, String name) {
+    public LibraryNode(Long parentId, long contentTypeId, @NonNull String name) {
         this.parentId = parentId;
         this.contentTypeId = contentTypeId;
         this.name = name;
     }
 
     public LibraryNode(
-            LibraryNode parent, @NonNull LibraryContentType.Type contentType, String name
+            LibraryNode parent, @NonNull LibraryContentType.Type contentType, @NonNull String name
     ) {
         this.parentId = parent == null ? null : parent.getId();
         this.contentTypeId = contentType.getId();
@@ -56,6 +57,7 @@ public class LibraryNode {
         return contentTypeId;
     }
 
+    @NonNull
     public String getName() {
         return name;
     }

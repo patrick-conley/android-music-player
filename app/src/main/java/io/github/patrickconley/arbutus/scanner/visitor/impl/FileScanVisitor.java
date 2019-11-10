@@ -105,14 +105,15 @@ public class FileScanVisitor implements MediaVisitorBase {
      * Store the track and its tags. Tags are updated with their IDs
      */
     private Track saveTrack(@NonNull MediaFile file, @NonNull Map<String, Tag> tags) {
-        Track track = new Track(Uri.fromFile(file.getFile()));
-        track.setId(trackDao.insert(track));
+        Track track = trackDao.insert(new Track(Uri.fromFile(file.getFile())));
 
         for (Tag tag : tags.values()) {
             Tag savedTag = tagDao.getTag(tag);
-            tag.setId(savedTag != null ? savedTag.getId() : tagDao.insert(tag));
+            if (savedTag == null) {
+                savedTag = tagDao.insert(tag);
+            }
 
-            trackTagDAO.insert(new TrackTag(track, tag));
+            trackTagDAO.insert(new TrackTag(track, savedTag));
         }
 
         return track;

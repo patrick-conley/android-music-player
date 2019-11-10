@@ -70,9 +70,8 @@ public class Library {
             return savedEntry;
         }
 
-        LibraryEntry entry = new LibraryEntry(parent, node, tags.get(node.getName()), track);
-        entry.setId(libraryEntryDao.insert(entry));
-        return entry;
+        return libraryEntryDao
+                .insert(new LibraryEntry(parent, node, tags.get(node.getName()), track));
     }
 
 }

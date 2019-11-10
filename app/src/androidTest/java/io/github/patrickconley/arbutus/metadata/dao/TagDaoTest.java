@@ -5,14 +5,16 @@ import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-import io.github.patrickconley.arbutus.datastorage.AppDatabase;
-import io.github.patrickconley.arbutus.metadata.model.Tag;
+
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import io.github.patrickconley.arbutus.datastorage.AppDatabase;
+import io.github.patrickconley.arbutus.metadata.model.Tag;
+
+import static com.google.common.truth.Truth.assertThat;
 import static junit.framework.Assert.assertNull;
-import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(AndroidJUnit4.class)
@@ -30,7 +32,8 @@ public class TagDaoTest {
 
     @Test
     public void insertShouldReturnValidId() {
-        assertTrue(0 < dao.insert(new Tag("key", "insertShouldReturnValidId")));
+        assertThat(dao.insert(new Tag("key", "insertShouldReturnValidId")).getId())
+                .isGreaterThan(0);
     }
 
     @Test(expected = SQLiteConstraintException.class)
@@ -41,7 +44,7 @@ public class TagDaoTest {
     }
 
     @SuppressWarnings("ConstantConditions")
-    @Test(expected = SQLiteConstraintException.class)
+    @Test(expected = NullPointerException.class)
     public void insertShouldFailWithMissingKey() {
         dao.insert(new Tag(null, "value"));
     }
@@ -54,9 +57,10 @@ public class TagDaoTest {
 
     @Test
     public void getShouldReturnNothingOnEmpty() {
-        dao.insert(new Tag("key", "getShouldReturnNothingAfterTruncate"));
+        Tag tag = new Tag("key", "getShouldReturnNothingAfterTruncate");
+        dao.insert(tag);
         dao.truncate();
-        assertNull(dao.getTag(new Tag("key", "getShouldReturnNothingAfterTruncate")));
+        assertNull(dao.getTag(tag));
     }
 
     @Test
@@ -67,9 +71,6 @@ public class TagDaoTest {
 
     @Test
     public void getTag() {
-        long id = dao.insert(new Tag("key", "getTag"));
-        Tag actual = dao.getTag(new Tag("key", "getTag"));
-
-        assertEquals(id, actual.getId());
+        assertEquals(dao.insert(new Tag("key", "getTag")), dao.getTag(new Tag("key", "getTag")));
     }
 }

@@ -10,7 +10,12 @@ import io.github.patrickconley.arbutus.metadata.model.Tag;
 public abstract class TagDao {
 
     @Insert
-    public abstract long insert(Tag tag);
+    abstract long insertForId(Tag tag);
+
+    public Tag insert(Tag tag) {
+        tag.setId(insertForId(tag));
+        return tag;
+    }
 
     @Query("delete from tag")
     public abstract void truncate();

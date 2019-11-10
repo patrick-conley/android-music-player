@@ -11,7 +11,12 @@ import java.util.List;
 public abstract class LibraryNodeDao {
 
     @Insert
-    public abstract long insert(LibraryNode node);
+    abstract long insertForId(LibraryNode node);
+
+    public LibraryNode insert(LibraryNode node) {
+        node.setId(insertForId(node));
+        return node;
+    }
 
     @Query("select * from LibraryNode where parentId is null")
     abstract List<LibraryNode> getRootNodes();
