@@ -1,4 +1,4 @@
-package io.github.patrickconley.arbutus.domain.dao;
+package io.github.patrickconley.arbutus.metadata.dao;
 
 import android.arch.persistence.room.TypeConverter;
 import android.net.Uri;

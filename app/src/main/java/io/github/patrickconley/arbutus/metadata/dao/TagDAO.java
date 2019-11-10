@@ -1,10 +1,10 @@
-package io.github.patrickconley.arbutus.domain.dao;
+package io.github.patrickconley.arbutus.metadata.dao;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 
-import io.github.patrickconley.arbutus.domain.model.Tag;
+import io.github.patrickconley.arbutus.metadata.model.Tag;
 
 @Dao
 public abstract class TagDAO {

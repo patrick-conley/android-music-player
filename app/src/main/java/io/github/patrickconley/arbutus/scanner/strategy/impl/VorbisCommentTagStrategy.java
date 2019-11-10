@@ -9,12 +9,9 @@ import org.jaudiotagger.tag.TagField;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
-import io.github.patrickconley.arbutus.domain.model.Tag;
+import io.github.patrickconley.arbutus.metadata.model.Tag;
 import io.github.patrickconley.arbutus.scanner.strategy.TagStrategy;
 
 public class VorbisCommentTagStrategy implements TagStrategy {
@@ -29,10 +26,10 @@ public class VorbisCommentTagStrategy implements TagStrategy {
      * @throws InvalidAudioFrameException
      */
     @Override
-    public List<Tag> getTags(File file)
+    public Set<Tag> readTags(File file)
             throws TagException, ReadOnlyFileException, CannotReadException,
             InvalidAudioFrameException, IOException {
-        List<Tag> comments = new LinkedList<>();
+        Set<Tag> comments = new HashSet<>();
 
         Iterator<TagField> tags = AudioFileIO.read(file).getTag().getFields();
         while (tags.hasNext()) {
