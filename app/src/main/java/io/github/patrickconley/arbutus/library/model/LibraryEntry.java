@@ -24,10 +24,10 @@ public class LibraryEntry {
     @PrimaryKey(autoGenerate = true)
     private long id;
 
-    private Long parentId;
-    private long nodeId;
-    private Long tagId;
-    private Long trackId;
+    private final Long parentId;
+    private final long nodeId;
+    private final Long tagId;
+    private final Long trackId;
 
     public LibraryEntry(Long parentId, long nodeId, Long tagId, Long trackId) {
         this.parentId = parentId;

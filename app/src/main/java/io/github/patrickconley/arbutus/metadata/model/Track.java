@@ -1,6 +1,5 @@
 package io.github.patrickconley.arbutus.metadata.model;
 
-import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.net.Uri;
@@ -33,5 +32,10 @@ public class Track {
 
     public void setUri(@NonNull Uri uri) {
         this.uri = uri;
+    }
+
+    @Override
+    public String toString() {
+        return uri.toString();
     }
 }

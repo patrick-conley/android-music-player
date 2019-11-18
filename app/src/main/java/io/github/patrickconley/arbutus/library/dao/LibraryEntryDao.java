@@ -5,6 +5,8 @@ import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.database.sqlite.SQLiteConstraintException;
 
+import java.util.List;
+
 import io.github.patrickconley.arbutus.library.model.LibraryEntry;
 import io.github.patrickconley.arbutus.metadata.model.Tag;
 import io.github.patrickconley.arbutus.metadata.model.Track;
@@ -99,6 +101,20 @@ public abstract class LibraryEntryDao {
         } else {
             return getTrackWithNullTagBelowRoot(parentId, trackId);
         }
+    }
+
+    @Query("select * from LibraryEntry where parentId is null")
+    abstract List<LibraryEntry> getRootEntries();
+
+    @Query("select * from LibraryEntry where parentId = :parentId")
+    abstract List<LibraryEntry> getByParent(long parentId);
+
+    public List<LibraryEntry> getChildrenOf(LibraryEntry parent) {
+        if (parent == null) {
+            return getRootEntries();
+        }
+
+        return getByParent(parent.getId());
     }
 
 }

@@ -8,14 +8,9 @@ import android.util.Log;
 
 import java.util.Map;
 
-import io.github.patrickconley.arbutus.datastorage.AppDatabase;
 import io.github.patrickconley.arbutus.library.Library;
-import io.github.patrickconley.arbutus.metadata.dao.TagDao;
-import io.github.patrickconley.arbutus.metadata.dao.TrackDao;
-import io.github.patrickconley.arbutus.metadata.dao.TrackTagDao;
 import io.github.patrickconley.arbutus.metadata.model.Tag;
 import io.github.patrickconley.arbutus.metadata.model.Track;
-import io.github.patrickconley.arbutus.metadata.model.TrackTag;
 import io.github.patrickconley.arbutus.scanner.model.impl.MediaFile;
 import io.github.patrickconley.arbutus.scanner.model.impl.MediaFolder;
 import io.github.patrickconley.arbutus.scanner.strategy.StrategyFactory;
@@ -29,11 +24,7 @@ import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
 public class FileScanVisitor implements MediaVisitorBase {
     private final String tag = getClass().getName();
 
-    private AppDatabase db;
     private Library library;
-    private TagDao tagDao;
-    private TrackDao trackDao;
-    private TrackTagDao trackTagDAO;
 
     /**
      * Create an instance of the visitor.
@@ -42,11 +33,7 @@ public class FileScanVisitor implements MediaVisitorBase {
      *         The context running the visitor.
      */
     public FileScanVisitor(Context context) {
-        this.db = AppDatabase.getInstance(context);
-        this.library = new Library(context);
-        this.tagDao = db.tagDao();
-        this.trackDao = db.trackDao();
-        this.trackTagDAO = db.trackTagDao();
+        library = new Library(context);
     }
 
     /**
@@ -72,17 +59,7 @@ public class FileScanVisitor implements MediaVisitorBase {
         }
 
         // Save track
-        try {
-            db.beginTransaction();
-            Track track = saveTrack(file, tags);
-            library.addTrack(track, tags);
-            db.setTransactionSuccessful();
-        } catch (Exception e) {
-            // TODO: broadcast failures
-            Log.e(tag, "Failed to save " + file, e);
-        } finally {
-            db.endTransaction();
-        }
+        library.addTrack(new Track(Uri.fromFile(file.getFile())), tags);
     }
 
     /*
@@ -99,24 +76,6 @@ public class FileScanVisitor implements MediaVisitorBase {
             Log.e(tag, "Failed to read tags from " + file, e);
             return null;
         }
-    }
-
-    /*
-     * Store the track and its tags. Tags are updated with their IDs
-     */
-    private Track saveTrack(@NonNull MediaFile file, @NonNull Map<String, Tag> tags) {
-        Track track = trackDao.insert(new Track(Uri.fromFile(file.getFile())));
-
-        for (Tag tag : tags.values()) {
-            Tag savedTag = tagDao.getTag(tag);
-            if (savedTag == null) {
-                savedTag = tagDao.insert(tag);
-            }
-
-            trackTagDAO.insert(new TrackTag(track, savedTag));
-        }
-
-        return track;
     }
 
 }
