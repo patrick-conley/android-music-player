@@ -34,7 +34,7 @@ public class TrackDaoTest {
     }
 
     @SuppressWarnings("ConstantConditions")
-    @Test(expected = Exception.class)
+    @Test(expected = NullPointerException.class)
     public void insertShouldFailWithMissingUri() {
         dao.insert(new Track(null));
     }

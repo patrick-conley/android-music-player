@@ -37,31 +37,31 @@ public class LibraryNodeDaoTest {
 
     @Before
     public void before() {
-        contentTypeDao.insert(new LibraryContentType(LibraryContentType.Type.Tag));
+        contentTypeDao.insert(new LibraryContentType(LibraryContentType.Type.TAG));
     }
 
     @Test(expected = SQLiteConstraintException.class)
     public void insertShouldFailWithInvalidParentId() {
-        LibraryNode parent = new LibraryNode(null, LibraryContentType.Type.Tag, "parent");
-        parent.setId(-1);
-        dao.insert(new LibraryNode(parent, LibraryContentType.Type.Tag, "foo"));
+        LibraryNode parent = new LibraryNode(null, LibraryContentType.Type.TAG, "parent");
+        parent.setId(-1L);
+        dao.insert(new LibraryNode(parent, LibraryContentType.Type.TAG, "foo"));
     }
 
     @Test
     public void insertShouldAllowEmptyParentId() {
-        dao.insert(new LibraryNode(null, LibraryContentType.Type.Tag, "foo"));
+        dao.insert(new LibraryNode(null, LibraryContentType.Type.TAG, "foo"));
 
     }
 
     @Test(expected = SQLiteConstraintException.class)
     public void insertShouldFailWithInvalidContentType() {
-        dao.insert(new LibraryNode(null, -1, "foo"));
+        dao.insert(new LibraryNode(null, -1L, "foo"));
     }
 
     @SuppressWarnings("ConstantConditions")
     @Test(expected = SQLiteConstraintException.class)
     public void insertShouldFailWithMissingName() {
-        dao.insert(new LibraryNode(null, LibraryContentType.Type.Tag, null));
+        dao.insert(new LibraryNode(null, LibraryContentType.Type.TAG, null));
     }
 
     /*
@@ -77,7 +77,7 @@ public class LibraryNodeDaoTest {
      */
     @Test
     public void getRootNodesWithOneNode() {
-        LibraryNode node = dao.insert(new LibraryNode(null, LibraryContentType.Type.Tag, "foo"));
+        LibraryNode node = dao.insert(new LibraryNode(null, LibraryContentType.Type.TAG, "foo"));
 
         assertEquals(Collections.singletonList(node), dao.getChildrenOf(null));
     }
@@ -88,9 +88,9 @@ public class LibraryNodeDaoTest {
     @Test
     public void getRootNodesWithMultipleNodes() {
         List<LibraryNode> nodes =
-                Arrays.asList(dao.insert(new LibraryNode(null, LibraryContentType.Type.Tag, "foo")),
+                Arrays.asList(dao.insert(new LibraryNode(null, LibraryContentType.Type.TAG, "foo")),
                               dao.insert(
-                                      new LibraryNode(null, LibraryContentType.Type.Tag, "bar")));
+                                      new LibraryNode(null, LibraryContentType.Type.TAG, "bar")));
 
         assertEquals(nodes, dao.getChildrenOf(null));
     }
@@ -100,8 +100,8 @@ public class LibraryNodeDaoTest {
      */
     @Test
     public void getRootNodeWithChildNodes() {
-        LibraryNode parent = dao.insert(new LibraryNode(null, LibraryContentType.Type.Tag, "foo"));
-        dao.insert(new LibraryNode(parent, LibraryContentType.Type.Tag, "bar"));
+        LibraryNode parent = dao.insert(new LibraryNode(null, LibraryContentType.Type.TAG, "foo"));
+        dao.insert(new LibraryNode(parent, LibraryContentType.Type.TAG, "bar"));
 
         assertEquals(Collections.singletonList(parent), dao.getChildrenOf(null));
     }
@@ -111,8 +111,8 @@ public class LibraryNodeDaoTest {
      */
     @Test
     public void getChildNodesFromLibraryWithRoots() {
-        LibraryNode node = dao.insert(new LibraryNode(null, LibraryContentType.Type.Tag, "foo"));
-        dao.insert(new LibraryNode(null, LibraryContentType.Type.Tag, "bar"));
+        LibraryNode node = dao.insert(new LibraryNode(null, LibraryContentType.Type.TAG, "foo"));
+        dao.insert(new LibraryNode(null, LibraryContentType.Type.TAG, "bar"));
 
         assertEquals(Collections.emptyList(), dao.getChildrenOf(node));
     }
@@ -122,10 +122,10 @@ public class LibraryNodeDaoTest {
      */
     @Test
     public void getChildNode() {
-        LibraryNode root = dao.insert(new LibraryNode(null, LibraryContentType.Type.Tag, "foo"));
-        dao.insert(new LibraryNode(null, LibraryContentType.Type.Tag, "bar"));
+        LibraryNode root = dao.insert(new LibraryNode(null, LibraryContentType.Type.TAG, "foo"));
+        dao.insert(new LibraryNode(null, LibraryContentType.Type.TAG, "bar"));
 
-        LibraryNode child = dao.insert(new LibraryNode(root, LibraryContentType.Type.Tag, "child"));
+        LibraryNode child = dao.insert(new LibraryNode(root, LibraryContentType.Type.TAG, "child"));
 
         assertEquals(Collections.singletonList(child), dao.getChildrenOf(root));
     }
@@ -135,10 +135,10 @@ public class LibraryNodeDaoTest {
      */
     @Test
     public void getChildNodeByWrongParent() {
-        LibraryNode root = dao.insert(new LibraryNode(null, LibraryContentType.Type.Tag, "foo"));
-        dao.insert(new LibraryNode(root, LibraryContentType.Type.Tag, "child"));
+        LibraryNode root = dao.insert(new LibraryNode(null, LibraryContentType.Type.TAG, "foo"));
+        dao.insert(new LibraryNode(root, LibraryContentType.Type.TAG, "child"));
 
-        LibraryNode node = dao.insert(new LibraryNode(null, LibraryContentType.Type.Tag, "bar"));
+        LibraryNode node = dao.insert(new LibraryNode(null, LibraryContentType.Type.TAG, "bar"));
 
         assertEquals(Collections.emptyList(), dao.getChildrenOf(node));
     }

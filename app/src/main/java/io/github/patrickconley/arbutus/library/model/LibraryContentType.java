@@ -7,7 +7,7 @@ import android.arch.persistence.room.PrimaryKey;
 public class LibraryContentType {
 
     public enum Type {
-        Tag(1), Track(2);
+        TAG(1L), TRACK(2L);
 
         private long id;
 

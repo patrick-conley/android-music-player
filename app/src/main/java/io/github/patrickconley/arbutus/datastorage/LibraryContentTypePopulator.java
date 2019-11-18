@@ -16,8 +16,8 @@ class LibraryContentTypePopulator implements Runnable {
 
     @Override
     public void run() {
-        db.libraryContentTypeDao().insert(new LibraryContentType(LibraryContentType.Type.Tag),
-                                          new LibraryContentType(LibraryContentType.Type.Track));
+        db.libraryContentTypeDao().insert(new LibraryContentType(LibraryContentType.Type.TAG),
+                                          new LibraryContentType(LibraryContentType.Type.TRACK));
         Log.w(getClass().getName(), "Inserted library content types");
     }
 }

@@ -20,9 +20,9 @@ class LibraryNodePopulator implements Runnable {
     @Override
     public void run() {
         LibraryNodeDao dao = db.libraryNodeDao();
-        LibraryNode node = dao.insert(new LibraryNode(null, LibraryContentType.Type.Tag, "artist"));
-        node = dao.insert(new LibraryNode(node, LibraryContentType.Type.Tag, "album"));
-        dao.insert(new LibraryNode(node, LibraryContentType.Type.Track, "title"));
+        LibraryNode node = dao.insert(new LibraryNode(null, LibraryContentType.Type.TAG, "artist"));
+        node = dao.insert(new LibraryNode(node, LibraryContentType.Type.TAG, "album"));
+        dao.insert(new LibraryNode(node, LibraryContentType.Type.TRACK, "title"));
         Log.w(getClass().getName(), "Inserted default library nodes");
     }
 }

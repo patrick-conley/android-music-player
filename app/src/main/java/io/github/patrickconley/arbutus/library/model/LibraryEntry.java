@@ -2,6 +2,7 @@ package io.github.patrickconley.arbutus.library.model;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
+import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
@@ -18,7 +19,7 @@ import io.github.patrickconley.arbutus.metadata.model.Track;
         @ForeignKey(entity = LibraryNode.class, parentColumns = "id", childColumns = "nodeId"),
         // @ForeignKey(entity = Tag.class, parentColumns = "id", childColumns = "tagId"),
         //        @ForeignKey(entity = Track.class, parentColumns = "id", childColumns = "trackId")
-})
+}, indices = { @Index("parentId"), @Index("nodeId") })
 public class LibraryEntry {
 
     @PrimaryKey(autoGenerate = true)
@@ -68,19 +69,19 @@ public class LibraryEntry {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
 
-        if (o == null || getClass() != o.getClass()) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
 
-        LibraryEntry that = (LibraryEntry) o;
+        LibraryEntry other = (LibraryEntry) obj;
 
-        return new EqualsBuilder().append(nodeId, that.nodeId).append(parentId, that.parentId)
-                                  .append(tagId, that.tagId).append(trackId, that.trackId)
+        return new EqualsBuilder().append(nodeId, other.nodeId).append(parentId, other.parentId)
+                                  .append(tagId, other.tagId).append(trackId, other.trackId)
                                   .isEquals();
     }
 

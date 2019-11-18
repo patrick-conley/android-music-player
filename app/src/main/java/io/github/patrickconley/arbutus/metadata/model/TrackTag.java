@@ -2,14 +2,16 @@ package io.github.patrickconley.arbutus.metadata.model;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
+import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 
 import static android.arch.persistence.room.ForeignKey.CASCADE;
 
 @Entity(foreignKeys = {
-        @ForeignKey(entity = Track.class, parentColumns = "id", childColumns = "trackId", onDelete = CASCADE),
+        @ForeignKey(entity = Track.class, parentColumns = "id", childColumns = "trackId",
+                    onDelete = CASCADE),
         @ForeignKey(entity = Tag.class, parentColumns = "id", childColumns = "tagId")
-})
+}, indices = { @Index("trackId"), @Index("tagId") })
 public class TrackTag {
 
     @PrimaryKey(autoGenerate = true)

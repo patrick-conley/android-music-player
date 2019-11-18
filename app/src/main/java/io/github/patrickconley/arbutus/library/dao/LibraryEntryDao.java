@@ -20,11 +20,11 @@ public abstract class LibraryEntryDao {
     abstract long insertForId(LibraryEntry entry);
 
     public LibraryEntry insert(LibraryEntry entry) {
-        if (entry.getParentId() != null && entry.getParentId() <= 0) {
+        if (entry.getParentId() != null && entry.getParentId() <= 0L) {
             throw new SQLiteConstraintException("invalid parent entry " + entry.getParentId());
-        } else if (entry.getTagId() != null && entry.getTagId() <= 0) {
+        } else if (entry.getTagId() != null && entry.getTagId() <= 0L) {
             throw new SQLiteConstraintException("invalid tag " + entry.getTagId());
-        } else if (entry.getTrackId() != null && entry.getTrackId() <= 0) {
+        } else if (entry.getTrackId() != null && entry.getTrackId() <= 0L) {
             throw new SQLiteConstraintException("invalid track " + entry.getTrackId());
         }
         entry.setId(insertForId(entry));
@@ -94,7 +94,7 @@ public abstract class LibraryEntryDao {
             return getTrackAtRoot(tagId, trackId);
         } else if (tag != null && track == null) {
             return getTagBelowRoot(parentId, tagId);
-        } else if (tag != null) {
+        } else if (tagId != null) {
             return getTrackBelowRoot(parentId, tagId, trackId);
         } else if (track == null) {
             return getNullTagBelowRoot(parentId);

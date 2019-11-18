@@ -46,7 +46,7 @@ public class TrackTagDaoTest {
         Track track = trackDao.insert(new Track(Uri.parse("file:///sample.ogg")));
         Tag tag = tagDao.insert(new Tag("key", "insertShouldFailOnInvalidTrackId"));
 
-        dao.insert(new TrackTag(track.getId() + 1, tag.getId()));
+        dao.insert(new TrackTag(track.getId() + 1L, tag.getId()));
     }
 
     @Test(expected = SQLiteConstraintException.class)
@@ -54,7 +54,7 @@ public class TrackTagDaoTest {
         Track track = trackDao.insert(new Track(Uri.parse("file:///sample.ogg")));
         Tag tag = tagDao.insert(new Tag("key", "insertShouldFailOnInvalidTagId"));
 
-        dao.insert(new TrackTag(track.getId(), tag.getId() + 1));
+        dao.insert(new TrackTag(track.getId(), tag.getId() + 1L));
     }
 
 }

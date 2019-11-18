@@ -1,5 +1,6 @@
 package io.github.patrickconley.arbutus.scanner.visitor;
 
+import io.github.patrickconley.arbutus.scanner.model.MediaFileBase;
 import io.github.patrickconley.arbutus.scanner.model.impl.MediaFile;
 import io.github.patrickconley.arbutus.scanner.model.impl.MediaFolder;
 
@@ -21,14 +22,14 @@ public interface MediaVisitorBase {
      * children - {@link MediaFolder#accept(MediaVisitorBase)} does that itself
      * after this method returns.
      *
-     * @param dir
+     * @param dir to visit
      */
     void visit(MediaFolder dir);
 
     /**
      * Do some work on a file. The file is guaranteed to be readable.
      *
-     * @param file
+     * @param file to visit
      */
     void visit(MediaFile file);
 

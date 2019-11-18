@@ -81,7 +81,7 @@ public abstract class AppDatabase extends RoomDatabase {
             executorService.execute(new LibraryContentTypePopulator(appDb));
             executorService.execute(new LibraryNodePopulator(appDb));
             try {
-                executorService.awaitTermination(10, TimeUnit.SECONDS);
+                executorService.awaitTermination(10L, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Log.e(AppDatabase.class.getName(), "Interrupted", e);
             }

@@ -15,17 +15,17 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
                     childColumns = "contentTypeId"),
         @ForeignKey(entity = LibraryNode.class, parentColumns = "id", childColumns = "parentId")
 }, indices = {
-        @Index(value = "parentId")
+        @Index("parentId"), @Index("contentTypeId")
 })
 public class LibraryNode {
 
     @PrimaryKey(autoGenerate = true)
     private long id;
 
-    private Long parentId;
-    private long contentTypeId;
+    private final Long parentId;
+    private final long contentTypeId;
     @NonNull
-    private String name;
+    private final String name;
 
     public LibraryNode(Long parentId, long contentTypeId, @NonNull String name) {
         this.parentId = parentId;
@@ -63,19 +63,19 @@ public class LibraryNode {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
 
-        if (o == null || getClass() != o.getClass()) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
 
-        LibraryNode that = (LibraryNode) o;
+        LibraryNode other = (LibraryNode) obj;
 
-        return new EqualsBuilder().append(contentTypeId, that.contentTypeId)
-                                  .append(parentId, that.parentId).append(name, that.name)
+        return new EqualsBuilder().append(contentTypeId, other.contentTypeId)
+                                  .append(parentId, other.parentId).append(name, other.name)
                                   .isEquals();
     }
 

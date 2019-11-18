@@ -7,12 +7,9 @@ import io.github.patrickconley.arbutus.scanner.strategy.impl.VorbisCommentTagStr
 
 public class StrategyFactory {
 
-    private static TagStrategy defaultVorbisStrategy;
-    private static TagStrategy defaultGenericStrategy;
-    private static TagStrategy defaultMp4Strategy;
-
-    private StrategyFactory() {
-    }
+    private TagStrategy vorbisStrategy;
+    private TagStrategy genericStrategy;
+    private TagStrategy mp4Strategy;
 
     /**
      * Identify the appropriate tag-reading strategy using the media file's
@@ -20,7 +17,7 @@ public class StrategyFactory {
      *
      * @param file File to read
      */
-    public static TagStrategy getStrategy(MediaFile file) {
+    public TagStrategy getStrategy(MediaFile file) {
         int index = file.toString().lastIndexOf('.');
         String extension = index >= 0 ? file.toString().substring(index) : "";
 
@@ -28,55 +25,55 @@ public class StrategyFactory {
             case ".ogg":
             case ".mkv":
             case ".flac":
-                return getDefaultVorbisCommentTagStrategy();
+                return getVorbisCommentTagStrategy();
             case ".mp4":
             case ".m4a":
-                return getDefaultMp4TagStrategy();
+                return getMp4TagStrategy();
             default:
-                return getDefaultGenericTagStrategy();
+                return getGenericTagStrategy();
         }
     }
 
     /**
      * Release native resources. Call this when finished.
      */
-    public static void release() {
-        if (defaultGenericStrategy != null) {
-            defaultGenericStrategy.release();
-            defaultGenericStrategy = null;
+    public void release() {
+        if (genericStrategy != null) {
+            genericStrategy.release();
+            genericStrategy = null;
         }
-        if (defaultVorbisStrategy != null) {
-            defaultVorbisStrategy.release();
-            defaultVorbisStrategy = null;
+        if (vorbisStrategy != null) {
+            vorbisStrategy.release();
+            vorbisStrategy = null;
         }
-        if (defaultMp4Strategy != null) {
-            defaultMp4Strategy.release();
-            defaultMp4Strategy = null;
+        if (mp4Strategy != null) {
+            mp4Strategy.release();
+            mp4Strategy = null;
         }
     }
 
-    private static TagStrategy getDefaultVorbisCommentTagStrategy() {
-        if (defaultVorbisStrategy == null) {
-            defaultVorbisStrategy = new VorbisCommentTagStrategy();
+    private TagStrategy getVorbisCommentTagStrategy() {
+        if (vorbisStrategy == null) {
+            vorbisStrategy = new VorbisCommentTagStrategy();
         }
 
-        return defaultVorbisStrategy;
+        return vorbisStrategy;
     }
 
-    private static TagStrategy getDefaultGenericTagStrategy() {
-        if (defaultGenericStrategy == null) {
-            defaultGenericStrategy = new GenericTagStrategy();
+    private TagStrategy getGenericTagStrategy() {
+        if (genericStrategy == null) {
+            genericStrategy = new GenericTagStrategy();
         }
 
-        return defaultGenericStrategy;
+        return genericStrategy;
     }
 
-    private static TagStrategy getDefaultMp4TagStrategy() {
-        if (defaultMp4Strategy == null) {
-            defaultMp4Strategy = new Mp4TagStrategy();
+    private TagStrategy getMp4TagStrategy() {
+        if (mp4Strategy == null) {
+            mp4Strategy = new Mp4TagStrategy();
         }
 
-        return defaultMp4Strategy;
+        return mp4Strategy;
     }
 
 }

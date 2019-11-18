@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Map;
 
 import io.github.patrickconley.arbutus.metadata.model.Tag;
+import io.github.patrickconley.arbutus.scanner.ScannerException;
 
 /**
  * Read the metadata from a file.
@@ -20,7 +21,7 @@ public interface TagStrategy {
      *
      * @return Key/value pairs.
      */
-    Map<String, Tag> readTags(File file) throws Exception;
+    Map<String, Tag> readTags(File file) throws ScannerException;
 
     /**
      * Release any native resources

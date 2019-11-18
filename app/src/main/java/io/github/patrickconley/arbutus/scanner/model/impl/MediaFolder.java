@@ -30,7 +30,7 @@ public class MediaFolder extends MediaFileBase {
         // Check the directory is readable
         if (!getFile().exists() || !getFile().isDirectory() || !getFile().canExecute()) {
             Log.w(tag, "Directory is invalid");
-            return 0;
+            return 0L;
         }
 
         Log.d(tag, "Scanning directory " + getFile().toString());
@@ -38,13 +38,13 @@ public class MediaFolder extends MediaFileBase {
         // Check the directory allows media scanning
         if (new File(getFile(), ".nomedia").exists() || new File(getFile(), ".NOMEDIA").exists()) {
             Log.d(tag, "Skipping directory (.nomedia)");
-            return 0;
+            return 0L;
         }
 
         visitor.visit(this);
 
         File[] contents = getFile().listFiles();
-        long count = 0;
+        long count = 0L;
         for (File file : contents) {
             if (file.isDirectory()) {
                 count += new MediaFolder(file).accept(visitor);

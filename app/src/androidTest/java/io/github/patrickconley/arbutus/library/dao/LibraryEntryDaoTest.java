@@ -38,7 +38,7 @@ public class LibraryEntryDaoTest {
     private TagDao tagDao = db.tagDao();
     private TrackDao trackDao = db.trackDao();
 
-    private LibraryNode node = new LibraryNode(null, LibraryContentType.Type.Tag, "foo");
+    private LibraryNode node = new LibraryNode(null, LibraryContentType.Type.TAG, "foo");
     private final Tag tag = new Tag("key", "value");
     private final Track track = new Track(Uri.parse("file:///sample.ogg"));
 
@@ -49,7 +49,7 @@ public class LibraryEntryDaoTest {
 
     @Before
     public void before() {
-        contentTypeDao.insert(new LibraryContentType(LibraryContentType.Type.Tag));
+        contentTypeDao.insert(new LibraryContentType(LibraryContentType.Type.TAG));
         nodeDao.insert(node);
         tagDao.insert(tag);
         trackDao.insert(track);
@@ -63,7 +63,7 @@ public class LibraryEntryDaoTest {
     @Test(expected = SQLiteConstraintException.class)
     public void insertWithInvalidNode() {
         LibraryEntry root = dao.insert(new LibraryEntry(null, node, tag, null));
-        dao.insert(new LibraryEntry(root.getId(), -1, tag.getId(), track.getId()));
+        dao.insert(new LibraryEntry(root.getId(), -1L, tag.getId(), track.getId()));
     }
 
     @Test(expected = SQLiteConstraintException.class)

@@ -2,6 +2,7 @@ package io.github.patrickconley.arbutus.scanner.strategy.impl;
 
 import android.media.MediaMetadataRetriever;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -33,6 +34,7 @@ public class GenericTagStrategy implements TagStrategy {
         metadataRetriever.release();
     }
 
+    @Nullable
     @Override
     public Map<String, Tag> readTags(File file) {
 
@@ -54,7 +56,7 @@ public class GenericTagStrategy implements TagStrategy {
     private boolean setRetrieverDataSource(File file) {
         try {
             metadataRetriever.setDataSource(file.getAbsolutePath());
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException e) {
             if (e.getMessage().endsWith("0xFFFFFFEA")) {
                 Log.w(tag, "Skipping non-media file " + file);
                 return false;

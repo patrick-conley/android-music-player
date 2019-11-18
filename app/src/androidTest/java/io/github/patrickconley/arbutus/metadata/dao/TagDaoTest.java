@@ -14,8 +14,8 @@ import io.github.patrickconley.arbutus.datastorage.AppDatabase;
 import io.github.patrickconley.arbutus.metadata.model.Tag;
 
 import static com.google.common.truth.Truth.assertThat;
-import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 @RunWith(AndroidJUnit4.class)
 public class TagDaoTest {

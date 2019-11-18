@@ -14,14 +14,12 @@ public abstract class MediaFileBase {
 
     private File file;
 
-    public MediaFileBase(File file) {
+    protected MediaFileBase(File file) {
         this.file = file;
     }
 
     /**
      * Validate, then visit the file.
-     *
-     * @param visitor
      *
      * @return Number of files (not folders) visited
      */

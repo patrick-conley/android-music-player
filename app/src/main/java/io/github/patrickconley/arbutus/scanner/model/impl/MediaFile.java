@@ -10,7 +10,7 @@ import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
 public class MediaFile extends MediaFileBase {
     private final String tag = getClass().getName();
 
-    public MediaFile(File file) {
+    MediaFile(File file) {
         super(file);
     }
 
@@ -23,12 +23,12 @@ public class MediaFile extends MediaFileBase {
         Log.d(tag, "Scanning file " + getFile().toString());
 
         if (!getFile().exists() || !getFile().canRead()) {
-            return 0;
+            return 0L;
         }
 
         visitor.visit(this);
 
-        return 1;
+        return 1L;
     }
 
 }

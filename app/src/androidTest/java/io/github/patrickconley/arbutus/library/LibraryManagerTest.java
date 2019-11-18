@@ -35,7 +35,7 @@ import static com.google.common.truth.Truth.assertThat;
  * Feature: populate a library which has the default artist -> album -> track structure
  */
 @RunWith(AndroidJUnit4.class)
-public class LibraryTest {
+public class LibraryManagerTest {
 
     private Context context = InstrumentationRegistry.getTargetContext();
 
@@ -44,7 +44,7 @@ public class LibraryTest {
     private LibraryContentTypeDao contentTypeDao = db.libraryContentTypeDao();
     private LibraryNodeDao nodeDao = db.libraryNodeDao();
     private LibraryEntryDao entryDao = db.libraryEntryDao();
-    private Library library = new Library(db);
+    private LibraryManager library = new LibraryManager(db);
 
     private LibraryNode artists;
     private LibraryNode albums;
@@ -54,12 +54,12 @@ public class LibraryTest {
 
     @Before
     public void setupLibraryNodes() {
-        contentTypeDao.insert(new LibraryContentType(LibraryContentType.Type.Tag));
-        contentTypeDao.insert(new LibraryContentType(LibraryContentType.Type.Track));
+        contentTypeDao.insert(new LibraryContentType(LibraryContentType.Type.TAG));
+        contentTypeDao.insert(new LibraryContentType(LibraryContentType.Type.TRACK));
 
-        artists = nodeDao.insert(new LibraryNode(null, LibraryContentType.Type.Tag, "artist"));
-        albums = nodeDao.insert(new LibraryNode(artists, LibraryContentType.Type.Tag, "album"));
-        titles = nodeDao.insert(new LibraryNode(albums, LibraryContentType.Type.Track, "title"));
+        artists = nodeDao.insert(new LibraryNode(null, LibraryContentType.Type.TAG, "artist"));
+        albums = nodeDao.insert(new LibraryNode(artists, LibraryContentType.Type.TAG, "album"));
+        titles = nodeDao.insert(new LibraryNode(albums, LibraryContentType.Type.TRACK, "title"));
     }
 
     @After
@@ -295,7 +295,7 @@ public class LibraryTest {
         assertThat(getAllEntries()).containsExactly(artist, album1, album2, title1, title2);
     }
 
-    private long id = 0;
+    private long id = 0L;
 
     private LibraryEntry buildLibraryEntry(
             LibraryEntry parent, LibraryNode node, Tag tag, Track track

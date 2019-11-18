@@ -1,13 +1,16 @@
 package io.github.patrickconley.arbutus.scanner.strategy.impl;
 
-import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.TagField;
 import org.jaudiotagger.tag.mp4.Mp4FieldKey;
 
 import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
 
 import io.github.patrickconley.arbutus.metadata.model.Tag;
+import io.github.patrickconley.arbutus.scanner.ScannerException;
 import io.github.patrickconley.arbutus.scanner.strategy.TagStrategy;
 
 public class Mp4TagStrategy implements TagStrategy {
@@ -19,10 +22,10 @@ public class Mp4TagStrategy implements TagStrategy {
     }
 
     @Override
-    public Map<String, Tag> readTags(File file) throws Exception {
+    public Map<String, Tag> readTags(File file) throws ScannerException {
         Map<String, Tag> tags = new HashMap<>();
 
-        Iterator<TagField> tagIterator = AudioFileIO.read(file).getTag().getFields();
+        Iterator<TagField> tagIterator = new AudioFileReader().getTagFieldIterator(file);
         while (tagIterator.hasNext()) {
             TagField tag = tagIterator.next();
 

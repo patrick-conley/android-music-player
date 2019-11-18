@@ -22,7 +22,7 @@ import io.github.patrickconley.arbutus.metadata.model.TrackTag;
 /**
  * Build the library graph.
  */
-public class Library {
+public class LibraryManager {
     private final String log = getClass().getName();
 
     private final AppDatabase db;
@@ -32,11 +32,11 @@ public class Library {
     private final LibraryNodeDao libraryNodeDao;
     private final LibraryEntryDao libraryEntryDao;
 
-    public Library(Context context) {
+    public LibraryManager(Context context) {
         this(AppDatabase.getInstance(context));
     }
 
-    Library(AppDatabase db) {
+    LibraryManager(AppDatabase db) {
         this.db = db;
         trackDao = db.trackDao();
         tagDao = db.tagDao();
@@ -67,7 +67,7 @@ public class Library {
             addEntryAtNode(null, libraryNodeDao.getChildrenOf(null).get(0), track, tags);
 
             db.setTransactionSuccessful();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             // TODO: broadcast failures
             Log.e(log, "Failed to save " + track, e);
         } finally {
@@ -81,7 +81,7 @@ public class Library {
     ) {
         // base case: current node is a track node
         // get or insert a LibraryEntries for this track by node/parent
-        if (currentNode.getContentTypeId() == LibraryContentType.Type.Track.getId()) {
+        if (currentNode.getContentTypeId() == LibraryContentType.Type.TRACK.getId()) {
             insertEntry(parentEntry, currentNode, tags, track);
             return;
         }
