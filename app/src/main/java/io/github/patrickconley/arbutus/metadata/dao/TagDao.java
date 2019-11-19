@@ -4,6 +4,8 @@ import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 
+import java.util.List;
+
 import io.github.patrickconley.arbutus.metadata.model.Tag;
 
 @Dao
@@ -26,4 +28,8 @@ public abstract class TagDao {
     public Tag getTag(Tag tag) {
         return getTagByKeyValue(tag.getKey(), tag.getValue());
     }
+
+    @Query("select * from tag")
+    @Deprecated // Only use this in unit tests
+    public abstract List<Tag> getAll();
 }

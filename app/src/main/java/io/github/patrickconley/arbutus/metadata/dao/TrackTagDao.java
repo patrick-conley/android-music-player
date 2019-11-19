@@ -4,6 +4,8 @@ import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 
+import java.util.List;
+
 import io.github.patrickconley.arbutus.metadata.model.TrackTag;
 
 @Dao
@@ -20,4 +22,7 @@ public abstract class TrackTagDao {
     @Query("delete from tracktag")
     public abstract void truncate();
 
+    @Query("select * from tracktag")
+    @Deprecated // Only use this in unit tests
+    public abstract List<TrackTag> getAll();
 }

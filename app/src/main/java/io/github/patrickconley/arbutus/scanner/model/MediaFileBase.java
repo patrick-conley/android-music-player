@@ -1,5 +1,7 @@
 package io.github.patrickconley.arbutus.scanner.model;
 
+import android.net.Uri;
+
 import java.io.File;
 
 import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
@@ -30,6 +32,13 @@ public abstract class MediaFileBase {
      */
     public File getFile() {
         return file;
+    }
+
+    /**
+     * @return The Uri of the file underlying this object.
+     */
+    public Uri getUri() {
+        return Uri.fromFile(file);
     }
 
     /**

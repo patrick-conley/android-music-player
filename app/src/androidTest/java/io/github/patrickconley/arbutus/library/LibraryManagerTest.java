@@ -11,14 +11,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
+import io.github.patrickconley.arbutus.MetadataTestUtil;
 import io.github.patrickconley.arbutus.datastorage.AppDatabase;
 import io.github.patrickconley.arbutus.library.dao.LibraryContentTypeDao;
 import io.github.patrickconley.arbutus.library.dao.LibraryEntryDao;
@@ -46,11 +43,13 @@ public class LibraryManagerTest {
     private LibraryEntryDao entryDao = db.libraryEntryDao();
     private LibraryManager library = new LibraryManager(db);
 
+    private MetadataTestUtil metadata = new MetadataTestUtil();
+
     private LibraryNode artists;
     private LibraryNode albums;
     private LibraryNode titles;
 
-    private Uri uri = Uri.parse("file://sample.ogg");
+    private static final Uri DEFAULT_URI = Uri.parse("file://sample.ogg");
 
     @Before
     public void setupLibraryNodes() {
@@ -72,8 +71,8 @@ public class LibraryManagerTest {
      *  at No Artist -> No Album -> No title.
      */
     @Test
-    public void insertTrackWithoutTags() {
-        Track track = new Track(uri);
+    public void addTrackWithoutTags() {
+        Track track = buildTrack(DEFAULT_URI);
         library.addTrack(track, Collections.<String, Tag>emptyMap());
 
         LibraryEntry artist = buildLibraryEntry(null, artists, null, null);
@@ -88,9 +87,9 @@ public class LibraryManagerTest {
      *  at No Artist -> No Album -> Title.
      */
     @Test
-    public void insertTrackWithLeafTag() {
-        Track track = new Track(uri);
-        Tag tag = new Tag("title", "foo");
+    public void addTrackWithLeafTag() {
+        Track track = buildTrack(DEFAULT_URI);
+        Tag tag = buildTag("title", "foo");
         library.addTrack(track, Collections.singletonMap("title", tag));
 
         LibraryEntry artist = buildLibraryEntry(null, artists, null, null);
@@ -105,9 +104,9 @@ public class LibraryManagerTest {
      * inserted at No Artist -> Album -> No Title.
      */
     @Test
-    public void insertTrackWithInnerTag() {
-        Track track = new Track(uri);
-        Tag tag = new Tag("album", "foo");
+    public void addTrackWithInnerTag() {
+        Track track = buildTrack(DEFAULT_URI);
+        Tag tag = buildTag("album", "foo");
         library.addTrack(track, Collections.singletonMap("album", tag));
 
         LibraryEntry artist = buildLibraryEntry(null, artists, null, null);
@@ -122,9 +121,9 @@ public class LibraryManagerTest {
      * inserted at Artist -> No Album -> No Title.
      */
     @Test
-    public void insertTrackWithRootTag() {
-        Track track = new Track(uri);
-        Tag tag = new Tag("artist", "foo");
+    public void addTrackWithRootTag() {
+        Track track = buildTrack(DEFAULT_URI);
+        Tag tag = buildTag("artist", "foo");
         library.addTrack(track, Collections.singletonMap("artist", tag));
 
         LibraryEntry artist = buildLibraryEntry(null, artists, tag, null);
@@ -138,11 +137,11 @@ public class LibraryManagerTest {
      * Given the library is empty, when I insert a track with an artist and title, then the track is inserted at Artist -> No Album -> Title.
      */
     @Test
-    public void insertTrackWithTwoTags() {
-        Track track = new Track(uri);
-        Tag artistTag = new Tag("artist", "foo");
-        Tag titleTag = new Tag("title", "foo");
-        library.addTrack(track, buildTagMap(Arrays.asList(artistTag, titleTag)));
+    public void addTrackWithTwoTags() {
+        Track track = buildTrack(DEFAULT_URI);
+        Tag artistTag = buildTag("artist", "foo");
+        Tag titleTag = buildTag("title", "foo");
+        library.addTrack(track, metadata.buildTagMap(artistTag, titleTag));
 
         LibraryEntry artist = buildLibraryEntry(null, artists, artistTag, null);
         LibraryEntry album = buildLibraryEntry(artist, albums, null, null);
@@ -156,14 +155,14 @@ public class LibraryManagerTest {
      * then the track is inserted at Artist -> Album -> Title
      */
     @Test
-    public void insertTrackWithExtraTag() {
-        Track track = new Track(uri);
-        Tag genreTag = new Tag("genre", "foo");
-        Tag artistTag = new Tag("artist", "bar");
-        Tag albumTag = new Tag("album", "baz");
-        Tag titleTag = new Tag("title", "ham");
+    public void addTrackWithExtraTag() {
+        Track track = buildTrack(DEFAULT_URI);
+        Tag genreTag = buildTag("genre", "foo");
+        Tag artistTag = buildTag("artist", "bar");
+        Tag albumTag = buildTag("album", "baz");
+        Tag titleTag = buildTag("title", "ham");
         library.addTrack(track,
-                         buildTagMap(Arrays.asList(genreTag, artistTag, albumTag, titleTag)));
+                         metadata.buildTagMap(genreTag, artistTag, albumTag, titleTag));
 
         LibraryEntry artist = buildLibraryEntry(null, artists, artistTag, null);
         LibraryEntry album = buildLibraryEntry(artist, albums, albumTag, null);
@@ -192,12 +191,12 @@ public class LibraryManagerTest {
      */
     @Test
     public void insertDistinctTrack() {
-        Tag artist1Tag = new Tag("artist", "foo");
-        Tag album1Tag = new Tag("album", "bar");
-        Tag title1Tag = new Tag("title", "baz");
+        Tag artist1Tag = buildTag("artist", "foo");
+        Tag album1Tag = buildTag("album", "bar");
+        Tag title1Tag = buildTag("title", "baz");
 
-        Track track1 = new Track(uri);
-        library.addTrack(track1, buildTagMap(Arrays.asList(artist1Tag, album1Tag, title1Tag)));
+        Track track1 = buildTrack(DEFAULT_URI);
+        library.addTrack(track1, metadata.buildTagMap(artist1Tag, album1Tag, title1Tag));
 
         LibraryEntry artist1 = buildLibraryEntry(null, artists, artist1Tag, null);
         LibraryEntry album1 = buildLibraryEntry(artist1, albums, album1Tag, null);
@@ -205,18 +204,19 @@ public class LibraryManagerTest {
 
         assertThat(getAllEntries()).containsExactly(artist1, album1, title1);
 
-        Tag artist2Tag = new Tag("artist", "ham");
-        Tag album2Tag = new Tag("album", "spam");
-        Tag title2Tag = new Tag("title", "eggs");
+        Tag artist2Tag = buildTag("artist", "ham");
+        Tag album2Tag = buildTag("album", "spam");
+        Tag title2Tag = buildTag("title", "eggs");
 
-        Track track2 = new Track(Uri.parse("file://sample.mp3"));
-        library.addTrack(track2, buildTagMap(Arrays.asList(artist2Tag, album2Tag, title2Tag)));
+        Track track2 = buildTrack(Uri.parse("file://sample.mp3"));
+        library.addTrack(track2, metadata.buildTagMap(artist2Tag, album2Tag, title2Tag));
 
         LibraryEntry artist2 = buildLibraryEntry(null, artists, artist2Tag, null);
         LibraryEntry album2 = buildLibraryEntry(artist2, albums, album2Tag, null);
         LibraryEntry title2 = buildLibraryEntry(album2, titles, title2Tag, track2);
 
-        assertThat(getAllEntries()).containsExactly(artist1, album1, title1, artist2, album2, title2);
+        assertThat(getAllEntries())
+                .containsExactly(artist1, album1, title1, artist2, album2, title2);
     }
 
     /**
@@ -225,15 +225,15 @@ public class LibraryManagerTest {
      */
     @Test
     public void insertIdenticalTrack() {
-        Tag artistTag = new Tag("artist", "foo");
-        Tag albumTag = new Tag("album", "bar");
-        Tag titleTag = new Tag("title", "ham");
+        Tag artistTag = buildTag("artist", "foo");
+        Tag albumTag = buildTag("album", "bar");
+        Tag titleTag = buildTag("title", "ham");
 
-        Track track1 = new Track(uri);
-        Track track2 = new Track(Uri.parse("file://sample.mp3"));
+        Track track1 = buildTrack(DEFAULT_URI);
+        Track track2 = buildTrack(Uri.parse("file://sample.mp3"));
 
-        library.addTrack(track1, buildTagMap(Arrays.asList(artistTag, albumTag, titleTag)));
-        library.addTrack(track2, buildTagMap(Arrays.asList(artistTag, albumTag, titleTag)));
+        library.addTrack(track1, metadata.buildTagMap(artistTag, albumTag, titleTag));
+        library.addTrack(track2, metadata.buildTagMap(artistTag, albumTag, titleTag));
 
         LibraryEntry artist = buildLibraryEntry(null, artists, artistTag, null);
         LibraryEntry album = buildLibraryEntry(artist, albums, albumTag, null);
@@ -248,17 +248,17 @@ public class LibraryManagerTest {
      * then the track is inserted and a new title entry is created.
      */
     @Test
-    public void insertTrackWithNewLeaf() {
-        Tag artistTag = new Tag("artist", "foo");
-        Tag albumTag = new Tag("album", "bar");
-        Tag title1Tag = new Tag("title", "baz");
-        Tag title2Tag = new Tag("title", "qux");
+    public void addTrackWithNewLeaf() {
+        Tag artistTag = buildTag("artist", "foo");
+        Tag albumTag = buildTag("album", "bar");
+        Tag title1Tag = buildTag("title", "baz");
+        Tag title2Tag = buildTag("title", "qux");
 
-        Track track1 = new Track(uri);
-        Track track2 = new Track(Uri.parse("file://sample.mp3"));
+        Track track1 = buildTrack(DEFAULT_URI);
+        Track track2 = buildTrack(Uri.parse("file://sample.mp3"));
 
-        library.addTrack(track1, buildTagMap(Arrays.asList(artistTag, albumTag, title1Tag)));
-        library.addTrack(track2, buildTagMap(Arrays.asList(artistTag, albumTag, title2Tag)));
+        library.addTrack(track1, metadata.buildTagMap(artistTag, albumTag, title1Tag));
+        library.addTrack(track2, metadata.buildTagMap(artistTag, albumTag, title2Tag));
 
         LibraryEntry artist = buildLibraryEntry(null, artists, artistTag, null);
         LibraryEntry album = buildLibraryEntry(artist, albums, albumTag, null);
@@ -273,17 +273,17 @@ public class LibraryManagerTest {
      * then the track is inserted and a new album and title entries are created.
      */
     @Test
-    public void insertTrackWithNewAlbum() {
-        Tag artistTag = new Tag("artist", "foo");
-        Tag album1Tag = new Tag("album", "bar");
-        Tag album2Tag = new Tag("album", "ham");
-        Tag titleTag = new Tag("title", "baz");
+    public void addTrackWithNewAlbum() {
+        Tag artistTag = buildTag("artist", "foo");
+        Tag album1Tag = buildTag("album", "bar");
+        Tag album2Tag = buildTag("album", "ham");
+        Tag titleTag = buildTag("title", "baz");
 
-        Track track1 = new Track(uri);
-        Track track2 = new Track(Uri.parse("file://sample.mp3"));
+        Track track1 = buildTrack(DEFAULT_URI);
+        Track track2 = buildTrack(Uri.parse("file://sample.mp3"));
 
-        library.addTrack(track1, buildTagMap(Arrays.asList(artistTag, album1Tag, titleTag)));
-        library.addTrack(track2, buildTagMap(Arrays.asList(artistTag, album2Tag, titleTag)));
+        library.addTrack(track1, metadata.buildTagMap(artistTag, album1Tag, titleTag));
+        library.addTrack(track2, metadata.buildTagMap(artistTag, album2Tag, titleTag));
 
         LibraryEntry artist = buildLibraryEntry(null, artists, artistTag, null);
         LibraryEntry album1 = buildLibraryEntry(artist, albums, album1Tag, null);
@@ -295,23 +295,28 @@ public class LibraryManagerTest {
         assertThat(getAllEntries()).containsExactly(artist, album1, album2, title1, title2);
     }
 
-    private long id = 0L;
+    private long trackId = 0L;
+    private long tagId = 0L;
+    private long entryId = 0L;
+
+    private Track buildTrack(Uri uri) {
+        Track track = new Track(uri);
+        track.setId(++trackId);
+        return track;
+    }
+
+    private Tag buildTag(String key, String value) {
+        Tag tag = new Tag(key, value);
+        tag.setId(++tagId);
+        return tag;
+    }
 
     private LibraryEntry buildLibraryEntry(
             LibraryEntry parent, LibraryNode node, Tag tag, Track track
     ) {
         LibraryEntry entry = new LibraryEntry(parent, node, tag, track);
-        entry.setId(++id);
+        entry.setId(++entryId);
         return entry;
-    }
-
-    private Map<String, Tag> buildTagMap(Collection<Tag> tags) {
-        Map<String, Tag> map = new HashMap<>();
-        for (Tag tag : tags) {
-            map.put(tag.getKey(), tag);
-        }
-
-        return map;
     }
 
     private Set<LibraryEntry> getAllEntries() {

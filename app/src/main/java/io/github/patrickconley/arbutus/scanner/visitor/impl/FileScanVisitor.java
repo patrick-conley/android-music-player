@@ -1,7 +1,6 @@
 package io.github.patrickconley.arbutus.scanner.visitor.impl;
 
 import android.content.Context;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -9,7 +8,9 @@ import android.util.Log;
 import java.io.File;
 import java.util.Map;
 
+import io.github.patrickconley.arbutus.datastorage.AppDatabase;
 import io.github.patrickconley.arbutus.library.LibraryManager;
+import io.github.patrickconley.arbutus.metadata.TrackManager;
 import io.github.patrickconley.arbutus.metadata.model.Tag;
 import io.github.patrickconley.arbutus.metadata.model.Track;
 import io.github.patrickconley.arbutus.scanner.ScannerException;
@@ -26,7 +27,9 @@ import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
 public class FileScanVisitor implements MediaVisitorBase {
     private final String tag = getClass().getName();
 
-    private LibraryManager library;
+    private AppDatabase db;
+    private TrackManager trackManager;
+    private LibraryManager libraryManager;
     private StrategyFactory strategyFactory = new StrategyFactory();
 
     /**
@@ -36,7 +39,9 @@ public class FileScanVisitor implements MediaVisitorBase {
      *         The context running the visitor.
      */
     public FileScanVisitor(Context context) {
-        library = new LibraryManager(context);
+        db = AppDatabase.getInstance(context);
+        trackManager = new TrackManager(db);
+        libraryManager = new LibraryManager(db);
     }
 
     public long execute(File file, Method method) {
@@ -47,6 +52,7 @@ public class FileScanVisitor implements MediaVisitorBase {
 
     @Override
     public void visit(MediaFolder dir) {
+        // nothing to do
     }
 
     /**
@@ -55,13 +61,27 @@ public class FileScanVisitor implements MediaVisitorBase {
      */
     @Override
     public void visit(MediaFile file) {
+        Track track = new Track(file.getUri());
+
         Map<String, Tag> tags = readTags(file);
         if (tags == null) {
             return;
         }
 
         // Save track
-        library.addTrack(new Track(Uri.fromFile(file.getFile())), tags);
+        try {
+            db.beginTransaction();
+
+            trackManager.addTrack(track, tags);
+            libraryManager.addTrack(track, tags);
+
+            db.setTransactionSuccessful();
+        } catch (RuntimeException e) {
+            // TODO: broadcast failures
+            Log.e(tag, "Failed to save " + track, e);
+        } finally {
+            db.endTransaction();
+        }
     }
 
     /*
