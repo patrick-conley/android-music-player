@@ -31,6 +31,9 @@ public abstract class LibraryEntryDao {
         return entry;
     }
 
+    @Query("delete from LibraryEntry")
+    public abstract void truncate();
+
     @Query("select * from LibraryEntry " + //
            "where parentId is null " + //
            "and tagId is null " + //

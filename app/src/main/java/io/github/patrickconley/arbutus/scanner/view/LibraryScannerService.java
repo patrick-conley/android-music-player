@@ -51,6 +51,7 @@ public class LibraryScannerService extends IntentService {
 
     private void truncateDatabase() {
         AppDatabase db = AppDatabase.getInstance(this);
+        db.libraryEntryDao().truncate();
         db.tagInTrackDao().truncate();
         db.tagDao().truncate();
         db.trackDao().truncate();

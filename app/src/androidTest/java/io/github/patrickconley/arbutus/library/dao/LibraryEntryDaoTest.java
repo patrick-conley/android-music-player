@@ -55,8 +55,16 @@ public class LibraryEntryDaoTest {
         trackDao.insert(track);
     }
 
+    @Test
+    public void truncate() {
+        LibraryEntry entry = dao.insert(new LibraryEntry(null, node, tag, track));
+        dao.insert(entry);
+        dao.truncate();
+        assertNull(dao.getEntry(null, tag, track));
+    }
+
     @Test(expected = SQLiteConstraintException.class)
-    public void invalidParent() {
+    public void insertInvalidParent() {
         dao.insert(new LibraryEntry(-1L, node.getId(), tag.getId(), track.getId()));
     }
 
@@ -67,13 +75,13 @@ public class LibraryEntryDaoTest {
     }
 
     @Test(expected = SQLiteConstraintException.class)
-    public void invalidTag() {
+    public void insertWithInvalidTag() {
         LibraryEntry root = dao.insert(new LibraryEntry(null, node, tag, null));
         dao.insert(new LibraryEntry(root.getId(), node.getId(), -1L, track.getId()));
     }
 
     @Test(expected = SQLiteConstraintException.class)
-    public void invalidTrack() {
+    public void insertWithInvalidTrack() {
         LibraryEntry root = dao.insert(new LibraryEntry(null, node, tag, null));
         dao.insert(new LibraryEntry(root.getId(), node.getId(), tag.getId(), -1L));
     }
@@ -95,7 +103,7 @@ public class LibraryEntryDaoTest {
     @Test
     public void nullTagAtRoot() {
         LibraryEntry entry = dao.insert(new LibraryEntry(null, node, null, null));
-        assertEquals(entry, dao.getEntry( null, null, null));
+        assertEquals(entry, dao.getEntry(null, null, null));
         assertThat(dao.getChildrenOf(null)).containsExactly(entry);
     }
 
