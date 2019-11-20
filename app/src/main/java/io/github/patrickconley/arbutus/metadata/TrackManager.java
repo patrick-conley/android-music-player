@@ -7,21 +7,21 @@ import java.util.Map;
 import io.github.patrickconley.arbutus.datastorage.AppDatabase;
 import io.github.patrickconley.arbutus.metadata.dao.TagDao;
 import io.github.patrickconley.arbutus.metadata.dao.TrackDao;
-import io.github.patrickconley.arbutus.metadata.dao.TrackTagDao;
+import io.github.patrickconley.arbutus.metadata.dao.TagInTrackDao;
 import io.github.patrickconley.arbutus.metadata.model.Tag;
 import io.github.patrickconley.arbutus.metadata.model.Track;
-import io.github.patrickconley.arbutus.metadata.model.TrackTag;
+import io.github.patrickconley.arbutus.metadata.model.TagInTrack;
 
 public class TrackManager {
 
     private final TrackDao trackDao;
     private final TagDao tagDao;
-    private final TrackTagDao trackTagDao;
+    private final TagInTrackDao tagInTrackDao;
 
     public TrackManager(AppDatabase db) {
         trackDao = db.trackDao();
         tagDao = db.tagDao();
-        trackTagDao = db.trackTagDao();
+        tagInTrackDao = db.tagInTrackDao();
     }
 
     public void addTrack(@NonNull Track track, @NonNull Map<String, Tag> tags) {
@@ -34,7 +34,7 @@ public class TrackManager {
                 savedTag = tagDao.insert(tag);
             }
 
-            trackTagDao.insert(new TrackTag(track, savedTag));
+            tagInTrackDao.insert(new TagInTrack(track, savedTag));
         }
 
     }

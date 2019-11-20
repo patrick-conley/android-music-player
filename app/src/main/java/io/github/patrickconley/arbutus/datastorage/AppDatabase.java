@@ -22,14 +22,14 @@ import io.github.patrickconley.arbutus.library.model.LibraryNode;
 import io.github.patrickconley.arbutus.metadata.dao.Converters;
 import io.github.patrickconley.arbutus.metadata.dao.TagDao;
 import io.github.patrickconley.arbutus.metadata.dao.TrackDao;
-import io.github.patrickconley.arbutus.metadata.dao.TrackTagDao;
+import io.github.patrickconley.arbutus.metadata.dao.TagInTrackDao;
 import io.github.patrickconley.arbutus.metadata.model.Tag;
+import io.github.patrickconley.arbutus.metadata.model.TagInTrack;
 import io.github.patrickconley.arbutus.metadata.model.Track;
-import io.github.patrickconley.arbutus.metadata.model.TrackTag;
 
 @Database(entities = {
         LibraryContentType.class, LibraryEntry.class, LibraryNode.class, Tag.class, Track.class,
-        TrackTag.class
+        TagInTrack.class
 }, version = 1)
 @TypeConverters({ Converters.class })
 public abstract class AppDatabase extends RoomDatabase {
@@ -62,7 +62,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
     public abstract TrackDao trackDao();
 
-    public abstract TrackTagDao trackTagDao();
+    public abstract TagInTrackDao tagInTrackDao();
 
     // TODO test this by extracting the callback and adding that to the test framework's in-memory DB
     private static class HandlePopulateDatabase extends Callback {

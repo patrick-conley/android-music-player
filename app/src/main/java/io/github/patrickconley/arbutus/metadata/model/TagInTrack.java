@@ -15,7 +15,7 @@ import static android.arch.persistence.room.ForeignKey.CASCADE;
                     onDelete = CASCADE),
         @ForeignKey(entity = Tag.class, parentColumns = "id", childColumns = "tagId")
 }, indices = { @Index("trackId"), @Index("tagId") })
-public class TrackTag {
+public class TagInTrack {
 
     @PrimaryKey(autoGenerate = true)
     private long id;
@@ -23,12 +23,12 @@ public class TrackTag {
     private final long trackId;
     private final long tagId;
 
-    public TrackTag(long trackId, long tagId) {
+    public TagInTrack(long trackId, long tagId) {
         this.trackId = trackId;
         this.tagId = tagId;
     }
 
-    public TrackTag(Track track, Tag tag) {
+    public TagInTrack(Track track, Tag tag) {
         this.trackId = track.getId();
         this.tagId = tag.getId();
     }
@@ -59,7 +59,7 @@ public class TrackTag {
             return false;
         }
 
-        TrackTag trackTag = (TrackTag) obj;
+        TagInTrack trackTag = (TagInTrack) obj;
 
         return new EqualsBuilder().append(trackId, trackTag.trackId).append(tagId, trackTag.tagId)
                                   .isEquals();

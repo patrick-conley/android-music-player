@@ -13,20 +13,20 @@ import org.junit.runner.RunWith;
 
 import io.github.patrickconley.arbutus.datastorage.AppDatabase;
 import io.github.patrickconley.arbutus.metadata.model.Tag;
+import io.github.patrickconley.arbutus.metadata.model.TagInTrack;
 import io.github.patrickconley.arbutus.metadata.model.Track;
-import io.github.patrickconley.arbutus.metadata.model.TrackTag;
 
 import static com.google.common.truth.Truth.assertThat;
 
 @RunWith(AndroidJUnit4.class)
-public class TrackTagDaoTest {
+public class TagInTrackDaoTest {
 
     private Context context = InstrumentationRegistry.getTargetContext();
 
     private AppDatabase db = Room.inMemoryDatabaseBuilder(context, AppDatabase.class).build();
     private TagDao tagDao = db.tagDao();
     private TrackDao trackDao = db.trackDao();
-    private TrackTagDao dao = db.trackTagDao();
+    private TagInTrackDao dao = db.tagInTrackDao();
 
     @After
     public void after() {
@@ -38,7 +38,7 @@ public class TrackTagDaoTest {
         Track track = trackDao.insert(new Track(Uri.parse("file:///sample.ogg")));
         Tag tag = tagDao.insert(new Tag("key", "insertShouldReturnValidId"));
 
-        assertThat(dao.insert(new TrackTag(track, tag)).getId()).isGreaterThan(0);
+        assertThat(dao.insert(new TagInTrack(track, tag)).getId()).isGreaterThan(0);
     }
 
     @Test(expected = SQLiteConstraintException.class)
@@ -46,7 +46,7 @@ public class TrackTagDaoTest {
         Track track = trackDao.insert(new Track(Uri.parse("file:///sample.ogg")));
         Tag tag = tagDao.insert(new Tag("key", "insertShouldFailOnInvalidTrackId"));
 
-        dao.insert(new TrackTag(track.getId() + 1L, tag.getId()));
+        dao.insert(new TagInTrack(track.getId() + 1L, tag.getId()));
     }
 
     @Test(expected = SQLiteConstraintException.class)
@@ -54,7 +54,7 @@ public class TrackTagDaoTest {
         Track track = trackDao.insert(new Track(Uri.parse("file:///sample.ogg")));
         Tag tag = tagDao.insert(new Tag("key", "insertShouldFailOnInvalidTagId"));
 
-        dao.insert(new TrackTag(track.getId(), tag.getId() + 1L));
+        dao.insert(new TagInTrack(track.getId(), tag.getId() + 1L));
     }
 
 }
