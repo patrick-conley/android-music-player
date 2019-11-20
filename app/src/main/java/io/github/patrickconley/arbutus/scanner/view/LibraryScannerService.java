@@ -3,12 +3,10 @@ package io.github.patrickconley.arbutus.scanner.view;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import java.io.File;
 
 import io.github.patrickconley.arbutus.datastorage.AppDatabase;
-import io.github.patrickconley.arbutus.scanner.model.impl.MediaFolder;
 import io.github.patrickconley.arbutus.scanner.visitor.impl.FileScanVisitor;
 
 /**
@@ -16,7 +14,6 @@ import io.github.patrickconley.arbutus.scanner.visitor.impl.FileScanVisitor;
  * separate handler thread.
  */
 public class LibraryScannerService extends IntentService {
-    private final String tag = getClass().getName();
 
     // I might eventually add another action to refresh the library
     private static final String ACTION_SCAN_LIBRARY =
@@ -47,7 +44,7 @@ public class LibraryScannerService extends IntentService {
             final String action = intent.getAction();
             if (ACTION_SCAN_LIBRARY.equals(action)) {
                 truncateDatabase();
-                handleScanLibrary(intent.getStringExtra(LIBRARY_PATH));
+                FileScanVisitor.execute(this, new File(intent.getStringExtra(LIBRARY_PATH)));
             }
         }
     }
@@ -59,23 +56,4 @@ public class LibraryScannerService extends IntentService {
         db.trackDao().truncate();
     }
 
-    /**
-     * Handle action ACTION_SCAN_LIBRARY in the provided background thread with the provided
-     * parameters.
-     */
-    private void handleScanLibrary(String libraryPath) {
-        Log.i(tag, "Scanning " + libraryPath);
-
-        long fileCount =
-                new FileScanVisitor(this).execute(new File(libraryPath), new ScannerMethod());
-
-        Log.i(tag, "Scanned " + fileCount + " files");
-    }
-
-    private static class ScannerMethod implements FileScanVisitor.Method {
-        @Override
-        public long execute(File file, FileScanVisitor visitor) {
-            return new MediaFolder(file).accept(visitor);
-        }
-    }
 }

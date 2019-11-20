@@ -25,7 +25,7 @@ import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
  * @author pconley
  */
 public class FileScanVisitor implements MediaVisitorBase {
-    private final String tag = getClass().getName();
+    private static final String TAG = FileScanVisitor.class.getName();
 
     private AppDatabase db;
     private TrackManager trackManager;
@@ -33,21 +33,32 @@ public class FileScanVisitor implements MediaVisitorBase {
     private StrategyFactory strategyFactory = new StrategyFactory();
 
     /**
+     * Scan the provided directory tree, then clean up.
+     */
+    public static void execute(Context context, File file) {
+        Log.i(TAG, "Scanning " + file);
+
+        FileScanVisitor visitor = new FileScanVisitor(context);
+        long fileCount = new MediaFolder(file).accept(visitor);
+        visitor.release();
+
+        Log.i(TAG, "Scanned " + fileCount + " files");
+    }
+
+    /**
      * Create an instance of the visitor.
      *
      * @param context
      *         The context running the visitor.
      */
-    public FileScanVisitor(Context context) {
+    private FileScanVisitor(Context context) {
         db = AppDatabase.getInstance(context);
         trackManager = new TrackManager(db);
         libraryManager = new LibraryManager(db);
     }
 
-    public long execute(File file, Method method) {
-        long result = method.execute(file, this);
+    private void release() {
         strategyFactory.release();
-        return result;
     }
 
     @Override
@@ -78,7 +89,7 @@ public class FileScanVisitor implements MediaVisitorBase {
             db.setTransactionSuccessful();
         } catch (RuntimeException e) {
             // TODO: broadcast failures
-            Log.e(tag, "Failed to save " + track, e);
+            Log.e(TAG, "Failed to save " + track, e);
         } finally {
             db.endTransaction();
         }
@@ -95,12 +106,9 @@ public class FileScanVisitor implements MediaVisitorBase {
         try {
             return strategyFactory.getStrategy(file).readTags(file.getFile());
         } catch (ScannerException e) {
-            Log.e(tag, "Failed to read tags from " + file, e);
+            Log.e(TAG, "Failed to read tags from " + file, e);
             return null;
         }
     }
 
-    public interface Method {
-        long execute(File file, FileScanVisitor visitor);
-    }
 }
