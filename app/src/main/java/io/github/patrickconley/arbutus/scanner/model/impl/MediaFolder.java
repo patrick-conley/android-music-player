@@ -3,6 +3,7 @@ package io.github.patrickconley.arbutus.scanner.model.impl;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FilenameFilter;
 
 import io.github.patrickconley.arbutus.scanner.model.MediaFileBase;
 import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
@@ -36,7 +37,7 @@ public class MediaFolder extends MediaFileBase {
         Log.d(tag, "Scanning directory " + getFile().toString());
 
         // Check the directory allows media scanning
-        if (new File(getFile(), ".nomedia").exists() || new File(getFile(), ".NOMEDIA").exists()) {
+        if (getFile().listFiles(new NoMediaFilter()).length > 0) {
             Log.d(tag, "Skipping directory (.nomedia)");
             return 0L;
         }
@@ -56,4 +57,10 @@ public class MediaFolder extends MediaFileBase {
         return count;
     }
 
+    private static class NoMediaFilter implements FilenameFilter {
+        @Override
+        public boolean accept(File file, String name) {
+            return name.equalsIgnoreCase(".nomedia");
+        }
+    }
 }
