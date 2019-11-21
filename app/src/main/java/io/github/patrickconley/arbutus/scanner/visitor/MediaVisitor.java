@@ -6,20 +6,20 @@ import io.github.patrickconley.arbutus.scanner.model.impl.MediaFolder;
 
 /**
  * Traverse a hierarchical filesystem. Methods in subclasses of
- * {@link MediaVisitorBase} should only be called from {@link MediaFolder} and
+ * {@link MediaVisitor} should only be called from {@link MediaFolder} and
  * {@link MediaFile}.
  *
  * @author pconley
  */
-public interface MediaVisitorBase {
+public interface MediaVisitor {
 
     /**
      * Do some work on a directory. The directory is guaranteed to exist and to
      * not contain a .nomedia file.
      * <p/>
      * This method should *not* call
-     * {@link MediaFileBase#accept(MediaVisitorBase)} on the directory's
-     * children - {@link MediaFolder#accept(MediaVisitorBase)} does that itself
+     * {@link MediaFileBase#accept(MediaVisitor)} on the directory's
+     * children - {@link MediaFolder#accept(MediaVisitor)} does that itself
      * after this method returns.
      *
      * @param dir to visit

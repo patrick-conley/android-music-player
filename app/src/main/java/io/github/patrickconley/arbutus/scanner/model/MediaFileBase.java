@@ -4,11 +4,11 @@ import android.net.Uri;
 
 import java.io.File;
 
-import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
+import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitor;
 
 /**
  * Representation of a file to be used as part of a hierarchical visitor pattern
- * with {@link MediaVisitorBase}.
+ * with {@link MediaVisitor}.
  *
  * @author pconley
  */
@@ -25,7 +25,7 @@ public abstract class MediaFileBase {
      *
      * @return Number of files (not folders) visited
      */
-    public abstract long accept(MediaVisitorBase visitor);
+    public abstract long accept(MediaVisitor visitor);
 
     /**
      * @return The File underlying this object.

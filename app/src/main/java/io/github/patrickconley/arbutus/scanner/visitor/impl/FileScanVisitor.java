@@ -17,14 +17,14 @@ import io.github.patrickconley.arbutus.scanner.ScannerException;
 import io.github.patrickconley.arbutus.scanner.model.impl.MediaFile;
 import io.github.patrickconley.arbutus.scanner.model.impl.MediaFolder;
 import io.github.patrickconley.arbutus.scanner.strategy.StrategyFactory;
-import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
+import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitor;
 
 /**
  * Visit part of a filesystem, scanning its files for audio metadata.
  *
  * @author pconley
  */
-public class FileScanVisitor implements MediaVisitorBase {
+public class FileScanVisitor implements MediaVisitor {
     private static final String TAG = FileScanVisitor.class.getName();
 
     private AppDatabase db;

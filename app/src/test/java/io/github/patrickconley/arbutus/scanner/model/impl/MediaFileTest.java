@@ -11,7 +11,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.io.File;
 import java.io.IOException;
 
-import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
+import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -25,7 +25,7 @@ public class MediaFileTest {
     public TemporaryFolder folder = new TemporaryFolder();
 
     @Mock
-    private MediaVisitorBase visitor;
+    private MediaVisitor visitor;
 
     /**
      * Given a media file that doesn't exist, when I read the media file, then its visitor isn't

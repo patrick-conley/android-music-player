@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 import io.github.patrickconley.arbutus.scanner.model.MediaFileBase;
-import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
+import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitor;
 
 /**
  * A visitable directory.
@@ -26,7 +26,7 @@ public class MediaFolder extends MediaFileBase {
      * appropriate accept methods.
      */
     @Override
-    public long accept(MediaVisitorBase visitor) {
+    public long accept(MediaVisitor visitor) {
 
         // Check the directory is readable
         if (!getFile().exists() || !getFile().isDirectory() || !getFile().canExecute()) {

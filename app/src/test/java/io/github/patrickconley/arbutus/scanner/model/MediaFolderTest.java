@@ -13,7 +13,7 @@ import java.io.IOException;
 
 import io.github.patrickconley.arbutus.scanner.model.impl.MediaFile;
 import io.github.patrickconley.arbutus.scanner.model.impl.MediaFolder;
-import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
+import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -28,7 +28,7 @@ public class MediaFolderTest {
     public TemporaryFolder folder = new TemporaryFolder();
 
     @Mock
-    private MediaVisitorBase visitor;
+    private MediaVisitor visitor;
 
     /**
      * Given a media folder that doesn't exist, when I read the media folder, then its visitor isn't
