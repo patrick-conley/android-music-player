@@ -1,8 +1,8 @@
 package io.github.patrickconley.arbutus.library.dao;
 
-import android.arch.persistence.room.Dao;
-import android.arch.persistence.room.Insert;
-import android.arch.persistence.room.Query;
+import androidx.room.Dao;
+import androidx.room.Insert;
+import androidx.room.Query;
 import android.database.sqlite.SQLiteConstraintException;
 
 import java.util.List;
@@ -11,7 +11,7 @@ import io.github.patrickconley.arbutus.library.model.LibraryEntry;
 import io.github.patrickconley.arbutus.metadata.model.Tag;
 import io.github.patrickconley.arbutus.metadata.model.Track;
 
-import static android.arch.persistence.room.OnConflictStrategy.IGNORE;
+import static androidx.room.OnConflictStrategy.IGNORE;
 
 @Dao
 public abstract class LibraryEntryDao {

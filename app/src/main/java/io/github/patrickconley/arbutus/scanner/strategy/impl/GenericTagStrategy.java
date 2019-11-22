@@ -1,7 +1,7 @@
 package io.github.patrickconley.arbutus.scanner.strategy.impl;
 
 import android.media.MediaMetadataRetriever;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.SparseArray;
 
 import java.io.File;
