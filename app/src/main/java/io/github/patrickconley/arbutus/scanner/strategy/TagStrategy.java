@@ -20,6 +20,7 @@ public interface TagStrategy {
      *         File to read
      *
      * @return Key/value pairs.
+     * @throws ScannerException If the file doesn't have audio or can't be read
      */
     Map<String, Tag> readTags(File file) throws ScannerException;
 

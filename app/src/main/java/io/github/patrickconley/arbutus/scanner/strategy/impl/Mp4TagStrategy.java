@@ -15,10 +15,22 @@ import io.github.patrickconley.arbutus.scanner.strategy.TagStrategy;
 
 public class Mp4TagStrategy implements TagStrategy {
 
-    private Map<String, String> keys = null;
+    private static final Map<String, String> METADATA_KEYS;
 
-    public Mp4TagStrategy() {
-        buildKeyMap();
+    /*
+     * Reverse JAudioTagger's mapping between field IDs and names.
+     */
+    static {
+        METADATA_KEYS = new HashMap<>();
+
+        for (Mp4FieldKey key : Mp4FieldKey.values()) {
+            METADATA_KEYS.put(key.getFieldName(), key.toString().toLowerCase(Locale.US));
+        }
+
+        // Replace some keys with my standard names
+        METADATA_KEYS.put(Mp4FieldKey.GENRE_CUSTOM.getFieldName(), "genre");
+        METADATA_KEYS.put(Mp4FieldKey.TRACK.getFieldName(), "tracknumber");
+        METADATA_KEYS.put(Mp4FieldKey.DAY.getFieldName(), "date");
     }
 
     @Override
@@ -28,39 +40,21 @@ public class Mp4TagStrategy implements TagStrategy {
         Iterator<TagField> tagIterator = new AudioFileReader().getTagFieldIterator(file);
         while (tagIterator.hasNext()) {
             TagField tag = tagIterator.next();
-
-            String key;
-            if (keys.containsKey(tag.getId())) {
-                key = keys.get(tag.getId());
-            } else {
-                key = tag.getId();
-            }
-
+            String key = getKey(tag);
             tags.put(key, new Tag(key, tag.toString()));
         }
 
         return tags;
     }
 
+    private String getKey(TagField tag) {
+        String tagId = tag.getId();
+        return METADATA_KEYS.containsKey(tagId) ? METADATA_KEYS.get(tagId) : tagId;
+    }
+
     @Override
     public void release() {
         // nothing to do
-    }
-
-    /*
-     * Reverse JAudioTagger's mapping between field IDs and names.
-     */
-    private void buildKeyMap() {
-        keys = new HashMap<>();
-
-        for (Mp4FieldKey key : Mp4FieldKey.values()) {
-            keys.put(key.getFieldName(), key.toString().toLowerCase(Locale.US));
-        }
-
-        // Replace some keys with my standard names
-        keys.put(Mp4FieldKey.GENRE_CUSTOM.getFieldName(), "genre");
-        keys.put(Mp4FieldKey.TRACK.getFieldName(), "tracknumber");
-        keys.put(Mp4FieldKey.DAY.getFieldName(), "date");
     }
 
 }
