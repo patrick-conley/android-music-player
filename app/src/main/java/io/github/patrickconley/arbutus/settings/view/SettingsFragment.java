@@ -7,8 +7,8 @@ import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
 
 import io.github.patrickconley.arbutus.R;
-import io.github.patrickconley.arbutus.scanner.view.LibraryScannerService;
 import io.github.patrickconley.arbutus.settings.Settings;
+import io.github.patrickconley.arbutus.settings.listener.ScanLibraryPreferenceClickListener;
 
 public class SettingsFragment extends PreferenceFragment
         implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -17,7 +17,7 @@ public class SettingsFragment extends PreferenceFragment
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        addPreferencesFromResource(R.xml.preferences);
+        setPreferencesFromResource(R.xml.preferences);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class SettingsFragment extends PreferenceFragment
     @Override
     public void onPause() {
         getPreferenceScreen().getSharedPreferences()
-                .unregisterOnSharedPreferenceChangeListener(this);
+                             .unregisterOnSharedPreferenceChangeListener(this);
         super.onPause();
     }
 
@@ -50,24 +50,19 @@ public class SettingsFragment extends PreferenceFragment
 
     private void initLibraryPath(SharedPreferences sharedPreferences) {
         String key = Settings.LIBRARY_PATH.getKey();
-        findPreference(key).setSummary(sharedPreferences.getString(key,
-                getString(R.string.setting_library_path_default_summary)));
+        findPreference(key).setSummary(sharedPreferences.getString(key, getString(
+                R.string.setting_library_path_default_summary)));
     }
 
     private void initScanLibrary(final SharedPreferences sharedPreferences) {
         Preference preference = findPreference(Settings.SCAN_NOW.getKey());
-        if (sharedPreferences.getString(Settings.LIBRARY_PATH.getKey(), null) == null) {
+        final String libraryPath =
+                sharedPreferences.getString(Settings.LIBRARY_PATH.getKey(), null);
+        if (libraryPath == null) {
             preference.setEnabled(false);
         } else {
-            preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    LibraryScannerService.startActionScanLibrary(SettingsFragment.this.getActivity(),
-                            sharedPreferences.getString(Settings.LIBRARY_PATH.getKey(), null));
-                    return true;
-                }
-            });
+            preference.setOnPreferenceClickListener(
+                    new ScanLibraryPreferenceClickListener(getActivity(), libraryPath));
         }
 
     }
