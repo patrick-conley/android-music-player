@@ -10,7 +10,7 @@ import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitor;
 public class MediaFile extends MediaFileBase {
     private final String tag = getClass().getName();
 
-    MediaFile(File file) {
+    public MediaFile(File file) {
         super(file);
     }
 

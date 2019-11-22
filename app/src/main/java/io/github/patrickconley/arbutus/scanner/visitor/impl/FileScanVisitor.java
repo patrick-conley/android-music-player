@@ -1,8 +1,6 @@
 package io.github.patrickconley.arbutus.scanner.visitor.impl;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.io.File;
@@ -24,13 +22,13 @@ import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitor;
  *
  * @author pconley
  */
-public class FileScanVisitor implements MediaVisitor {
+public final class FileScanVisitor implements MediaVisitor {
     private static final String TAG = FileScanVisitor.class.getName();
 
     private AppDatabase db;
     private TrackManager trackManager;
     private LibraryManager libraryManager;
-    private StrategyFactory strategyFactory = new StrategyFactory();
+    private StrategyFactory strategyFactory;
 
     /**
      * Scan the provided directory tree, then clean up.
@@ -38,23 +36,22 @@ public class FileScanVisitor implements MediaVisitor {
     public static void execute(Context context, File file) {
         Log.i(TAG, "Scanning " + file);
 
-        FileScanVisitor visitor = new FileScanVisitor(context);
+        FileScanVisitor visitor = new FileScanVisitor(AppDatabase.getInstance(context));
         long fileCount = new MediaFolder(file).accept(visitor);
         visitor.release();
 
         Log.i(TAG, "Scanned " + fileCount + " files");
     }
 
-    /**
-     * Create an instance of the visitor.
-     *
-     * @param context
-     *         The context running the visitor.
-     */
-    private FileScanVisitor(Context context) {
-        db = AppDatabase.getInstance(context);
-        trackManager = new TrackManager(db);
-        libraryManager = new LibraryManager(db);
+    @Deprecated //Used by unit tests
+    FileScanVisitor() {
+    }
+
+    private FileScanVisitor(AppDatabase db) {
+        this.db = db;
+        this.trackManager = new TrackManager(db);
+        this.libraryManager = new LibraryManager(db);
+        this.strategyFactory = new StrategyFactory();
     }
 
     private void release() {
@@ -72,14 +69,19 @@ public class FileScanVisitor implements MediaVisitor {
      */
     @Override
     public void visit(MediaFile file) {
-        Track track = new Track(file.getUri());
 
-        Map<String, Tag> tags = readTags(file);
-        if (tags == null) {
+        Map<String, Tag> tags;
+        try {
+            tags = strategyFactory.getStrategy(file).readTags(file.getFile());
+        } catch (ScannerException e) {
+            Log.e(TAG, "Failed to read tags from " + file, e);
             return;
         }
 
-        // Save track
+        saveTrack(new Track(file.getUri()), tags);
+    }
+
+    private void saveTrack(Track track, Map<String, Tag> tags) {
         try {
             db.beginTransaction();
 
@@ -92,22 +94,6 @@ public class FileScanVisitor implements MediaVisitor {
             Log.e(TAG, "Failed to save " + track, e);
         } finally {
             db.endTransaction();
-        }
-    }
-
-    /*
-     * Read tags
-     *
-     * Note that GenericTagStrategy will return null if the file isn't a media file (other strategies have already
-     * verified the file is a media file)
-     */
-    @Nullable
-    private Map<String, Tag> readTags(@NonNull MediaFile file) {
-        try {
-            return strategyFactory.getStrategy(file).readTags(file.getFile());
-        } catch (ScannerException e) {
-            Log.e(TAG, "Failed to read tags from " + file, e);
-            return null;
         }
     }
 
