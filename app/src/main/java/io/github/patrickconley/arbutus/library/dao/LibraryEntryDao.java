@@ -1,9 +1,10 @@
 package io.github.patrickconley.arbutus.library.dao;
 
+import android.database.sqlite.SQLiteConstraintException;
+
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
-import android.database.sqlite.SQLiteConstraintException;
 
 import java.util.List;
 
