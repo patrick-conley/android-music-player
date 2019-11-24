@@ -1,9 +1,10 @@
 package io.github.patrickconley.arbutus.library.dao;
 
-import androidx.room.Room;
 import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
-import androidx.test.platform.app.InstrumentationRegistry;
+
+import androidx.room.Room;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.After;
@@ -24,7 +25,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(AndroidJUnit4.class)
 public class LibraryNodeDaoTest {
 
-    private Context context = InstrumentationRegistry.getTargetContext();
+    private Context context = ApplicationProvider.getApplicationContext();
 
     private AppDatabase db = Room.inMemoryDatabaseBuilder(context, AppDatabase.class).build();
     private LibraryNodeDao dao = db.libraryNodeDao();

@@ -1,9 +1,10 @@
 package io.github.patrickconley.arbutus.metadata;
 
-import androidx.room.Room;
 import android.content.Context;
 import android.net.Uri;
-import androidx.test.platform.app.InstrumentationRegistry;
+
+import androidx.room.Room;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.After;
@@ -15,13 +16,14 @@ import java.util.Collections;
 import io.github.patrickconley.arbutus.MetadataTestUtil;
 import io.github.patrickconley.arbutus.datastorage.AppDatabase;
 import io.github.patrickconley.arbutus.metadata.dao.TagDao;
-import io.github.patrickconley.arbutus.metadata.dao.TrackDao;
 import io.github.patrickconley.arbutus.metadata.dao.TagInTrackDao;
+import io.github.patrickconley.arbutus.metadata.dao.TrackDao;
 import io.github.patrickconley.arbutus.metadata.model.Tag;
-import io.github.patrickconley.arbutus.metadata.model.Track;
 import io.github.patrickconley.arbutus.metadata.model.TagInTrack;
+import io.github.patrickconley.arbutus.metadata.model.Track;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Feature: populate the database with new tracks.
@@ -33,7 +35,7 @@ public class TrackManagerTest {
     private static final Uri DEFAULT_URI = Uri.parse("file://sample.ogg");
     private static final Uri ALTERNATE_URI = Uri.parse("file://sample.mp3");
 
-    private Context context = InstrumentationRegistry.getTargetContext();
+    private Context context = ApplicationProvider.getApplicationContext();
     private AppDatabase db = Room.inMemoryDatabaseBuilder(context, AppDatabase.class).build();
 
     private TrackDao trackDao = db.trackDao();
@@ -58,9 +60,9 @@ public class TrackManagerTest {
 
         trackManager.addTrack(track, Collections.<String, Tag>emptyMap());
 
-        assertThat(trackDao.getAll()).containsExactly(track);
-        assertThat(tagDao.getAll()).isEmpty();
-        assertThat(tagInTrackDao.getAll()).isEmpty();
+        assertTrack(track);
+        assertTag();
+        assertTagInTrack();
     }
 
     /**
@@ -75,10 +77,9 @@ public class TrackManagerTest {
 
         trackManager.addTrack(track, metadata.buildTagMap(foo, bar));
 
-        assertThat(trackDao.getAll()).containsExactly(track);
-        assertThat(tagDao.getAll()).containsExactly(foo, bar);
-        assertThat(tagInTrackDao.getAll())
-                .containsExactly(new TagInTrack(track, foo), new TagInTrack(track, bar));
+        assertTrack(track);
+        assertTag(foo, bar);
+        assertTagInTrack(new TagInTrack(track, foo), new TagInTrack(track, bar));
     }
 
     /**
@@ -93,9 +94,9 @@ public class TrackManagerTest {
         trackManager.addTrack(track1, Collections.<String, Tag>emptyMap());
         trackManager.addTrack(track2, Collections.<String, Tag>emptyMap());
 
-        assertThat(trackDao.getAll()).containsExactly(track1, track2);
-        assertThat(tagDao.getAll()).isEmpty();
-        assertThat(tagInTrackDao.getAll()).isEmpty();
+        assertTrack(track1, track2);
+        assertTag();
+        assertTagInTrack();
     }
 
     /**
@@ -113,10 +114,9 @@ public class TrackManagerTest {
         trackManager.addTrack(track1, metadata.buildTagMap(foo, bar));
         trackManager.addTrack(track2, Collections.<String, Tag>emptyMap());
 
-        assertThat(trackDao.getAll()).containsExactly(track1, track2);
-        assertThat(tagDao.getAll()).containsExactly(foo, bar);
-        assertThat(tagInTrackDao.getAll())
-                .containsExactly(new TagInTrack(track1, foo), new TagInTrack(track1, bar));
+        assertTrack(track1, track2);
+        assertTag(foo, bar);
+        assertTagInTrack(new TagInTrack(track1, foo), new TagInTrack(track1, bar));
     }
 
     /**
@@ -134,10 +134,9 @@ public class TrackManagerTest {
         trackManager.addTrack(track1, Collections.<String, Tag>emptyMap());
         trackManager.addTrack(track2, metadata.buildTagMap(foo, bar));
 
-        assertThat(trackDao.getAll()).containsExactly(track1, track2);
-        assertThat(tagDao.getAll()).containsExactly(foo, bar);
-        assertThat(tagInTrackDao.getAll())
-                .containsExactly(new TagInTrack(track2, foo), new TagInTrack(track2, bar));
+        assertTrack(track1, track2);
+        assertTag(foo, bar);
+        assertTagInTrack(new TagInTrack(track2, foo), new TagInTrack(track2, bar));
     }
 
     /**
@@ -157,11 +156,10 @@ public class TrackManagerTest {
         trackManager.addTrack(track1, metadata.buildTagMap(foo, bar));
         trackManager.addTrack(track2, metadata.buildTagMap(baz, qux));
 
-        assertThat(trackDao.getAll()).containsExactly(track1, track2);
-        assertThat(tagDao.getAll()).containsExactly(foo, bar, baz, qux);
-        assertThat(tagInTrackDao.getAll())
-                .containsExactly(new TagInTrack(track1, foo), new TagInTrack(track1, bar),
-                                 new TagInTrack(track2, baz), new TagInTrack(track2, qux));
+        assertTrack(track1, track2);
+        assertTag(foo, bar, baz, qux);
+        assertTagInTrack(new TagInTrack(track1, foo), new TagInTrack(track1, bar),
+                         new TagInTrack(track2, baz), new TagInTrack(track2, qux));
     }
 
     /**
@@ -174,18 +172,22 @@ public class TrackManagerTest {
         Track track1 = new Track(DEFAULT_URI);
         Track track2 = new Track(ALTERNATE_URI);
 
-        Tag foo = new Tag("foo", "foo");
-        Tag bar = new Tag("bar", "bar");
+        Tag foo1 = new Tag("foo", "foo");
+        Tag bar1 = new Tag("bar", "bar");
+        Tag foo2 = new Tag("foo", "foo");
+        Tag bar2 = new Tag("bar", "bar");
 
-        trackManager.addTrack(track1, metadata.buildTagMap(foo, bar));
-        trackManager.addTrack(track2,
-                              metadata.buildTagMap(new Tag("foo", "foo"), new Tag("bar", "bar")));
+        trackManager.addTrack(track1, metadata.buildTagMap(foo1, bar1));
+        trackManager.addTrack(track2, metadata.buildTagMap(foo2, bar2));
 
-        assertThat(trackDao.getAll()).containsExactly(track1, track2);
-        assertThat(tagDao.getAll()).containsExactly(foo, bar);
-        assertThat(tagInTrackDao.getAll())
-                .containsExactly(new TagInTrack(track1, foo), new TagInTrack(track1, bar),
-                                 new TagInTrack(track2, foo), new TagInTrack(track2, bar));
+        assertTrack(track1, track2);
+        assertTag(foo1, bar1);
+        assertTagInTrack(new TagInTrack(track1, foo1), new TagInTrack(track1, bar1),
+                         new TagInTrack(track2, foo1), new TagInTrack(track2, bar1));
+
+        // Verify that tags that aren't inserted are nevertheless updated with their IDs
+        assertEquals(foo1.getId(), foo2.getId());
+        assertEquals(bar1.getId(), bar2.getId());
     }
 
     /**
@@ -199,17 +201,40 @@ public class TrackManagerTest {
         Track track2 = new Track(ALTERNATE_URI);
 
         Tag foo = new Tag("foo", "foo");
-        Tag bar = new Tag("bar", "bar");
+        Tag bar1 = new Tag("bar", "bar");
         Tag baz = new Tag("foo", "baz");
+        Tag bar2 = new Tag("bar", "bar");
 
-        trackManager.addTrack(track1, metadata.buildTagMap(foo, bar));
-        trackManager.addTrack(track2, metadata.buildTagMap(baz, new Tag("bar", "bar")));
+        trackManager.addTrack(track1, metadata.buildTagMap(foo, bar1));
+        trackManager.addTrack(track2, metadata.buildTagMap(baz, bar2));
 
-        assertThat(trackDao.getAll()).containsExactly(track1, track2);
-        assertThat(tagDao.getAll()).containsExactly(foo, bar, baz);
-        assertThat(tagInTrackDao.getAll())
-                .containsExactly(new TagInTrack(track1, foo), new TagInTrack(track1, bar),
-                                 new TagInTrack(track2, baz), new TagInTrack(track2, bar));
+        assertTrack(track1, track2);
+        assertTag(foo, bar1, baz);
+        assertTagInTrack(new TagInTrack(track1, foo), new TagInTrack(track1, bar1),
+                         new TagInTrack(track2, baz), new TagInTrack(track2, bar1));
+
+        // Verify that tags that aren't inserted are nevertheless updated with their IDs
+        assertEquals(bar1.getId(), bar2.getId());
+    }
+
+    private void assertTrack(Track... expected) {
+        for (Track track : expected) {
+            assertThat(track.getId()).isGreaterThan(0);
+        }
+
+        assertThat(trackDao.getAll()).containsExactly((Object[]) expected);
+    }
+
+    private void assertTag(Tag... expected) {
+        for (Tag tag : expected) {
+            assertThat(tag.getId()).isGreaterThan(0);
+        }
+
+        assertThat(tagDao.getAll()).containsExactly((Object[]) expected);
+    }
+
+    private void assertTagInTrack(TagInTrack... expected) {
+        assertThat(tagInTrackDao.getAll()).containsExactly((Object[]) expected);
     }
 
 }

@@ -6,11 +6,11 @@ import java.util.Map;
 
 import io.github.patrickconley.arbutus.datastorage.AppDatabase;
 import io.github.patrickconley.arbutus.metadata.dao.TagDao;
-import io.github.patrickconley.arbutus.metadata.dao.TrackDao;
 import io.github.patrickconley.arbutus.metadata.dao.TagInTrackDao;
+import io.github.patrickconley.arbutus.metadata.dao.TrackDao;
 import io.github.patrickconley.arbutus.metadata.model.Tag;
-import io.github.patrickconley.arbutus.metadata.model.Track;
 import io.github.patrickconley.arbutus.metadata.model.TagInTrack;
+import io.github.patrickconley.arbutus.metadata.model.Track;
 
 public class TrackManager {
 
@@ -29,13 +29,22 @@ public class TrackManager {
         trackDao.insert(track);
 
         for (final Tag tag : tags.values()) {
-            Tag savedTag = tagDao.getTag(tag);
-            if (savedTag == null) {
-                savedTag = tagDao.insert(tag);
-            }
-
-            tagInTrackDao.insert(new TagInTrack(track, savedTag));
+            insertTag(tag);
+            tagInTrackDao.insert(new TagInTrack(track, tag));
         }
 
     }
+
+    /*
+     * If the tag is new, insert it; if the tag exists, set its ID
+     */
+    private void insertTag(Tag tag) {
+        Tag savedTag = tagDao.getTag(tag);
+        if (savedTag != null) {
+            tag.setId(savedTag.getId());
+        } else {
+            tagDao.insert(tag);
+        }
+    }
+
 }

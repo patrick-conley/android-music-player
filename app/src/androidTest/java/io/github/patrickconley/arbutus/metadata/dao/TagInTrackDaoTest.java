@@ -1,10 +1,11 @@
 package io.github.patrickconley.arbutus.metadata.dao;
 
-import androidx.room.Room;
 import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
-import androidx.test.platform.app.InstrumentationRegistry;
+
+import androidx.room.Room;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.After;
@@ -21,7 +22,7 @@ import static com.google.common.truth.Truth.assertThat;
 @RunWith(AndroidJUnit4.class)
 public class TagInTrackDaoTest {
 
-    private Context context = InstrumentationRegistry.getTargetContext();
+    private Context context = ApplicationProvider.getApplicationContext();
 
     private AppDatabase db = Room.inMemoryDatabaseBuilder(context, AppDatabase.class).build();
     private TagDao tagDao = db.tagDao();
