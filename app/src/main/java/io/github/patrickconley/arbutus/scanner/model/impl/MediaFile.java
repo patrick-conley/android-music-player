@@ -5,7 +5,7 @@ import android.util.Log;
 import java.io.File;
 
 import io.github.patrickconley.arbutus.scanner.model.MediaFileBase;
-import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitorBase;
+import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitor;
 
 public class MediaFile extends MediaFileBase {
     private final String tag = getClass().getName();
@@ -18,17 +18,17 @@ public class MediaFile extends MediaFileBase {
      * Validate the file (it must be readable), then visit it.
      */
     @Override
-    public long accept(MediaVisitorBase visitor) {
+    public long accept(MediaVisitor visitor) {
 
         Log.d(tag, "Scanning file " + getFile().toString());
 
         if (!getFile().exists() || !getFile().canRead()) {
-            return 0;
+            return 0L;
         }
 
         visitor.visit(this);
 
-        return 1;
+        return 1L;
     }
 
 }

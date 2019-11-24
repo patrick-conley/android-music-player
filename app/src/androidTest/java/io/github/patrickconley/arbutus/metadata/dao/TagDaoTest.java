@@ -1,27 +1,30 @@
 package io.github.patrickconley.arbutus.metadata.dao;
 
-import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
-import io.github.patrickconley.arbutus.datastorage.AppDatabase;
-import io.github.patrickconley.arbutus.metadata.model.Tag;
+
+import androidx.room.Room;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static junit.framework.Assert.assertNull;
-import static junit.framework.TestCase.assertTrue;
+import io.github.patrickconley.arbutus.datastorage.AppDatabase;
+import io.github.patrickconley.arbutus.metadata.model.Tag;
+
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 @RunWith(AndroidJUnit4.class)
-public class TagDAOTest {
+public class TagDaoTest {
 
-    private Context context = InstrumentationRegistry.getTargetContext();
+    private Context context = ApplicationProvider.getApplicationContext();
 
     private AppDatabase db = Room.inMemoryDatabaseBuilder(context, AppDatabase.class).build();
-    private TagDAO dao = db.tagDao();
+    private TagDao dao = db.tagDao();
 
     @After
     public void after() {
@@ -30,7 +33,8 @@ public class TagDAOTest {
 
     @Test
     public void insertShouldReturnValidId() {
-        assertTrue(0 < dao.insert(new Tag("key", "insertShouldReturnValidId")));
+        assertThat(dao.insert(new Tag("key", "insertShouldReturnValidId")).getId())
+                .isGreaterThan(0);
     }
 
     @Test(expected = SQLiteConstraintException.class)
@@ -41,7 +45,7 @@ public class TagDAOTest {
     }
 
     @SuppressWarnings("ConstantConditions")
-    @Test(expected = SQLiteConstraintException.class)
+    @Test(expected = NullPointerException.class)
     public void insertShouldFailWithMissingKey() {
         dao.insert(new Tag(null, "value"));
     }
@@ -54,9 +58,10 @@ public class TagDAOTest {
 
     @Test
     public void getShouldReturnNothingOnEmpty() {
-        dao.insert(new Tag("key", "getShouldReturnNothingAfterTruncate"));
+        Tag tag = new Tag("key", "getShouldReturnNothingAfterTruncate");
+        dao.insert(tag);
         dao.truncate();
-        assertNull(dao.getTag(new Tag("key", "getShouldReturnNothingAfterTruncate")));
+        assertNull(dao.getTag(tag));
     }
 
     @Test
@@ -67,9 +72,6 @@ public class TagDAOTest {
 
     @Test
     public void getTag() {
-        long id = dao.insert(new Tag("key", "getTag"));
-        Tag actual = dao.getTag(new Tag("key", "getTag"));
-
-        assertEquals(id, actual.getId());
+        assertEquals(dao.insert(new Tag("key", "getTag")), dao.getTag(new Tag("key", "getTag")));
     }
 }

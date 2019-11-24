@@ -1,34 +1,36 @@
 package io.github.patrickconley.arbutus.datastorage;
 
-import android.arch.persistence.db.SupportSQLiteDatabase;
-import android.arch.persistence.room.Database;
-import android.arch.persistence.room.Room;
-import android.arch.persistence.room.RoomDatabase;
-import android.arch.persistence.room.TypeConverters;
+import androidx.sqlite.db.SupportSQLiteDatabase;
+import androidx.room.Database;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
+import androidx.room.TypeConverters;
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
-import io.github.patrickconley.arbutus.library.dao.LibraryContentTypeDAO;
-import io.github.patrickconley.arbutus.library.dao.LibraryItemDAO;
-import io.github.patrickconley.arbutus.library.dao.LibraryNodeDAO;
-import io.github.patrickconley.arbutus.library.model.LibraryContentType;
-import io.github.patrickconley.arbutus.library.model.LibraryItem;
-import io.github.patrickconley.arbutus.library.model.LibraryNode;
-import io.github.patrickconley.arbutus.metadata.dao.Converters;
-import io.github.patrickconley.arbutus.metadata.dao.TagDAO;
-import io.github.patrickconley.arbutus.metadata.dao.TrackDAO;
-import io.github.patrickconley.arbutus.metadata.dao.TrackTagDAO;
-import io.github.patrickconley.arbutus.metadata.model.Tag;
-import io.github.patrickconley.arbutus.metadata.model.Track;
-import io.github.patrickconley.arbutus.metadata.model.TrackTag;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-@Database(entities = { LibraryContentType.class, LibraryItem.class, LibraryNode.class, Tag.class, Track.class, TrackTag
-        .class },
-          version = 1)
+import io.github.patrickconley.arbutus.library.dao.LibraryContentTypeDao;
+import io.github.patrickconley.arbutus.library.dao.LibraryEntryDao;
+import io.github.patrickconley.arbutus.library.dao.LibraryNodeDao;
+import io.github.patrickconley.arbutus.library.model.LibraryContentType;
+import io.github.patrickconley.arbutus.library.model.LibraryEntry;
+import io.github.patrickconley.arbutus.library.model.LibraryNode;
+import io.github.patrickconley.arbutus.metadata.dao.Converters;
+import io.github.patrickconley.arbutus.metadata.dao.TagDao;
+import io.github.patrickconley.arbutus.metadata.dao.TrackDao;
+import io.github.patrickconley.arbutus.metadata.dao.TagInTrackDao;
+import io.github.patrickconley.arbutus.metadata.model.Tag;
+import io.github.patrickconley.arbutus.metadata.model.TagInTrack;
+import io.github.patrickconley.arbutus.metadata.model.Track;
+
+@Database(entities = {
+        LibraryContentType.class, LibraryEntry.class, LibraryNode.class, Tag.class, Track.class,
+        TagInTrack.class
+}, version = 1)
 @TypeConverters({ Converters.class })
 public abstract class AppDatabase extends RoomDatabase {
 
@@ -45,35 +47,44 @@ public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase buildDatabase(final Context context) {
 
-        return Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, DATABASE_NAME)
-                   .addCallback(new Callback() {
-                       @Override
-                       public void onCreate(@NonNull SupportSQLiteDatabase db) {
-                           super.onCreate(db);
-
-                           AppDatabase appDb = getInstance(context);
-                           ExecutorService executorService = Executors.newSingleThreadExecutor();
-                           executorService.execute(new LibraryContentTypePopulator(appDb));
-                           executorService.execute(new LibraryNodePopulator(appDb));
-                           try {
-                               executorService.awaitTermination(10, TimeUnit.SECONDS);
-                           } catch (InterruptedException e) {
-                               Log.e(AppDatabase.class.getName(), "Interrupted", e);
-                           }
-                       }
-                   }).build();
+        return Room
+                .databaseBuilder(context.getApplicationContext(), AppDatabase.class, DATABASE_NAME)
+                .addCallback(new HandlePopulateDatabase(context)).build();
     }
 
-    public abstract LibraryContentTypeDAO libraryContentTypeDao();
+    public abstract LibraryContentTypeDao libraryContentTypeDao();
 
-    public abstract LibraryItemDAO libraryItemDao();
+    public abstract LibraryEntryDao libraryEntryDao();
 
-    public abstract LibraryNodeDAO libraryNodeDao();
+    public abstract LibraryNodeDao libraryNodeDao();
 
-    public abstract TagDAO tagDao();
+    public abstract TagDao tagDao();
 
-    public abstract TrackDAO trackDao();
+    public abstract TrackDao trackDao();
 
-    public abstract TrackTagDAO trackTagDAO();
+    public abstract TagInTrackDao tagInTrackDao();
 
+    // TODO test this by extracting the callback and adding that to the test framework's in-memory DB
+    private static class HandlePopulateDatabase extends Callback {
+        private final Context context;
+
+        HandlePopulateDatabase(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        public void onCreate(@NonNull SupportSQLiteDatabase db) {
+            super.onCreate(db);
+
+            AppDatabase appDb = getInstance(context);
+            ExecutorService executorService = Executors.newSingleThreadExecutor();
+            executorService.execute(new LibraryContentTypePopulator(appDb));
+            executorService.execute(new LibraryNodePopulator(appDb));
+            try {
+                executorService.awaitTermination(10L, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Log.e(AppDatabase.class.getName(), "Interrupted", e);
+            }
+        }
+    }
 }

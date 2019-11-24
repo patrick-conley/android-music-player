@@ -2,40 +2,38 @@ package io.github.patrickconley.arbutus.settings.view;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.support.annotation.Nullable;
+
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
 
 import io.github.patrickconley.arbutus.R;
-import io.github.patrickconley.arbutus.scanner.view.LibraryScannerService;
 import io.github.patrickconley.arbutus.settings.Settings;
+import io.github.patrickconley.arbutus.settings.listener.ScanNowPreferenceClickListener;
 
-public class SettingsFragment extends PreferenceFragment
+import static java.util.Objects.requireNonNull;
+
+public class SettingsFragment extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        addPreferencesFromResource(R.xml.preferences);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        setPreferencesFromResource(R.xml.preferences, rootKey);
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 
-        SharedPreferences preferences = getPreferenceScreen().getSharedPreferences();
-        preferences.registerOnSharedPreferenceChangeListener(this);
+        getLibraryPathPreference().setSummaryProvider(new LibraryPathPreferenceSummaryProvider());
 
-        // Set value-dependent summaries
-        initLibraryPath(preferences);
-        initScanLibrary(preferences);
+        getScanNowPreference().setOnPreferenceClickListener(new ScanNowPreferenceClickListener());
+        onSharedPreferenceChanged(getSharedPreferences(), Settings.LIBRARY_PATH.getKey());
     }
 
     @Override
     public void onPause() {
-        getPreferenceScreen().getSharedPreferences()
-                .unregisterOnSharedPreferenceChangeListener(this);
+        getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         super.onPause();
     }
 
@@ -43,33 +41,22 @@ public class SettingsFragment extends PreferenceFragment
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 
         if (key.equals(Settings.LIBRARY_PATH.getKey())) {
-            initScanLibrary(sharedPreferences);
-            initLibraryPath(sharedPreferences);
-        }
-    }
-
-    private void initLibraryPath(SharedPreferences sharedPreferences) {
-        String key = Settings.LIBRARY_PATH.getKey();
-        findPreference(key).setSummary(sharedPreferences.getString(key,
-                getString(R.string.setting_library_path_default_summary)));
-    }
-
-    private void initScanLibrary(final SharedPreferences sharedPreferences) {
-        Preference preference = findPreference(Settings.SCAN_NOW.getKey());
-        if (sharedPreferences.getString(Settings.LIBRARY_PATH.getKey(), null) == null) {
-            preference.setEnabled(false);
-        } else {
-            preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    LibraryScannerService.startActionScanLibrary(SettingsFragment.this.getActivity(),
-                            sharedPreferences.getString(Settings.LIBRARY_PATH.getKey(), null));
-                    return true;
-                }
-            });
+            getScanNowPreference().setEnabled(
+                    sharedPreferences.getString(Settings.LIBRARY_PATH.getKey(), null) != null);
         }
 
+    }
+
+    private SharedPreferences getSharedPreferences() {
+        return getPreferenceManager().getSharedPreferences();
+    }
+
+    private Preference getLibraryPathPreference() {
+        return requireNonNull(findPreference(Settings.LIBRARY_PATH.getKey()));
+    }
+
+    private Preference getScanNowPreference() {
+        return requireNonNull(findPreference(Settings.SCAN_NOW.getKey()));
     }
 
 }

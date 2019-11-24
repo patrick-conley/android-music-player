@@ -1,9 +1,10 @@
 package io.github.patrickconley.arbutus.scanner.strategy;
 
-import io.github.patrickconley.arbutus.metadata.model.Tag;
-
 import java.io.File;
-import java.util.Set;
+import java.util.Map;
+
+import io.github.patrickconley.arbutus.metadata.model.Tag;
+import io.github.patrickconley.arbutus.scanner.ScannerException;
 
 /**
  * Read the metadata from a file.
@@ -19,8 +20,9 @@ public interface TagStrategy {
      *         File to read
      *
      * @return Key/value pairs.
+     * @throws ScannerException If the file doesn't have audio or can't be read
      */
-    Set<Tag> readTags(File file) throws Exception;
+    Map<String, Tag> readTags(File file) throws ScannerException;
 
     /**
      * Release any native resources

@@ -1,9 +1,9 @@
 package io.github.patrickconley.arbutus.metadata.model;
 
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.Index;
-import android.arch.persistence.room.PrimaryKey;
-import android.support.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.Index;
+import androidx.room.PrimaryKey;
+import androidx.annotation.NonNull;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -16,10 +16,10 @@ public class Tag {
     private long id;
 
     @NonNull
-    private String key;
+    private final String key;
 
     @NonNull
-    private String value;
+    private final String value;
 
     public Tag(@NonNull String key, @NonNull String value) {
         this.key = key.toLowerCase();
@@ -39,30 +39,22 @@ public class Tag {
         return key;
     }
 
-    public void setKey(@NonNull String key) {
-        this.key = key;
-    }
-
     @NonNull
     public String getValue() {
         return value;
     }
 
-    public void setValue(@NonNull String value) {
-        this.value = value;
-    }
-
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
 
-        if (o == null || getClass() != o.getClass()) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
 
-        Tag tag = (Tag) o;
+        Tag tag = (Tag) obj;
 
         return new EqualsBuilder().append(key, tag.key).append(value, tag.value).isEquals();
     }

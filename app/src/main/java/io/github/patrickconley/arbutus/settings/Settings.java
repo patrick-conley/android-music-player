@@ -4,7 +4,7 @@ package io.github.patrickconley.arbutus.settings;
 public enum Settings {
     LIBRARY_PATH("library path"), SCAN_NOW("scan library"),;
 
-    private String key;
+    private final String key;
 
     Settings(String key) {
         this.key = key;
