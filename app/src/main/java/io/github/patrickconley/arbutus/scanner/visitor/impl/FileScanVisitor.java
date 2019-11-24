@@ -43,7 +43,8 @@ public final class FileScanVisitor implements MediaVisitor {
         Log.i(TAG, "Scanned " + fileCount + " files");
     }
 
-    @Deprecated //Used by unit tests
+    @Deprecated
+    //Used by unit tests
     FileScanVisitor() {
     }
 
@@ -59,8 +60,9 @@ public final class FileScanVisitor implements MediaVisitor {
     }
 
     @Override
-    public void visit(MediaFolder dir) {
+    public boolean visit(MediaFolder dir) {
         // nothing to do
+        return true;
     }
 
     /**
@@ -68,33 +70,33 @@ public final class FileScanVisitor implements MediaVisitor {
      * isn't audio, return without writing anything.
      */
     @Override
-    public void visit(MediaFile file) {
+    public boolean visit(MediaFile file) {
 
-        Map<String, Tag> tags;
+        final Map<String, Tag> tags;
         try {
             tags = strategyFactory.getStrategy(file).readTags(file.getFile());
         } catch (ScannerException e) {
             Log.e(TAG, "Failed to read tags from " + file, e);
-            return;
+            return false;
         }
 
-        saveTrack(new Track(file.getUri()), tags);
-    }
+        final Track track = new Track(file.getUri());
 
-    private void saveTrack(Track track, Map<String, Tag> tags) {
         try {
-            db.beginTransaction();
-
-            trackManager.addTrack(track, tags);
-            libraryManager.addTrack(track, tags);
-
-            db.setTransactionSuccessful();
+            db.runInTransaction(new Runnable() {
+                @Override
+                public void run() {
+                    trackManager.addTrack(track, tags);
+                    libraryManager.addTrack(track, tags);
+                }
+            });
         } catch (RuntimeException e) {
             // TODO: broadcast failures
             Log.e(TAG, "Failed to save " + track, e);
-        } finally {
-            db.endTransaction();
+            return false;
         }
+
+        return true;
     }
 
 }

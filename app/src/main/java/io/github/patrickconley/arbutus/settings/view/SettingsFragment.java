@@ -2,7 +2,6 @@ package io.github.patrickconley.arbutus.settings.view;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -40,7 +39,6 @@ public class SettingsFragment extends PreferenceFragmentCompat
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        Log.w(getClass().getName(), "onSharedPreferenceChange");
 
         if (key.equals(Settings.LIBRARY_PATH.getKey())) {
             getScanNowPreference().setEnabled(

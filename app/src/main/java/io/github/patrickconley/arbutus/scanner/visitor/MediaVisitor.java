@@ -23,14 +23,16 @@ public interface MediaVisitor {
      * after this method returns.
      *
      * @param dir to visit
+     * @return
      */
-    void visit(MediaFolder dir);
+    boolean visit(MediaFolder dir);
 
     /**
      * Do some work on a file. The file is guaranteed to be readable.
      *
      * @param file to visit
+     * @return
      */
-    void visit(MediaFile file);
+    boolean visit(MediaFile file);
 
 }

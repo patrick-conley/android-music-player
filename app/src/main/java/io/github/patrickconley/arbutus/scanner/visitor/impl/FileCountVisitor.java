@@ -14,7 +14,7 @@ public class FileCountVisitor implements MediaVisitor {
     private int count = 0;
 
     @Override
-    public void visit(MediaFolder dir) {
+    public boolean visit(MediaFolder dir) {
         // TODO does this work? Is it much faster?
         //		count += dir.getFile().listFiles(new FileFilter() {
         //			@Override
@@ -22,11 +22,13 @@ public class FileCountVisitor implements MediaVisitor {
         //				return pathname.isFile();
         //			}
         //		}).length;
+        return true;
     }
 
     @Override
-    public void visit(MediaFile file) {
+    public boolean visit(MediaFile file) {
         count++;
+        return true;
     }
 
     /**
