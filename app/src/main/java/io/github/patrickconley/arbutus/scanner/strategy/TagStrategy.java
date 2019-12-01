@@ -3,7 +3,7 @@ package io.github.patrickconley.arbutus.scanner.strategy;
 import java.io.File;
 import java.util.Map;
 
-import io.github.patrickconley.arbutus.metadata.model.Tag;
+import io.github.patrickconley.arbutus.datastorage.metadata.model.Tag;
 import io.github.patrickconley.arbutus.scanner.ScannerException;
 
 /**

@@ -15,9 +15,9 @@ import java.io.File;
 import java.util.HashMap;
 
 import io.github.patrickconley.arbutus.datastorage.AppDatabase;
-import io.github.patrickconley.arbutus.library.LibraryManager;
-import io.github.patrickconley.arbutus.metadata.TrackManager;
-import io.github.patrickconley.arbutus.metadata.model.Tag;
+import io.github.patrickconley.arbutus.datastorage.library.LibraryManager;
+import io.github.patrickconley.arbutus.datastorage.metadata.TrackManager;
+import io.github.patrickconley.arbutus.datastorage.metadata.model.Tag;
 import io.github.patrickconley.arbutus.scanner.ScannerException;
 import io.github.patrickconley.arbutus.scanner.model.impl.MediaFile;
 import io.github.patrickconley.arbutus.scanner.model.impl.MediaFolder;
