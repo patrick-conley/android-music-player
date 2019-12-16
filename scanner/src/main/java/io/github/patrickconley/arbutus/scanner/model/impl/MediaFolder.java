@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.Objects;
 
 import io.github.patrickconley.arbutus.scanner.model.MediaFileBase;
 import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitor;
@@ -21,9 +22,8 @@ public class MediaFolder extends MediaFileBase {
     }
 
     /**
-     * Validate the directory (it must be a readable directory that
-     * does not contain a .nomedia file), then visit it and call its children's
-     * appropriate accept methods.
+     * Validate the directory (it must be a readable directory that does not contain a .nomedia
+     * file), then visit it and call its children's appropriate accept methods.
      */
     @Override
     public long accept(MediaVisitor visitor) {
@@ -37,14 +37,14 @@ public class MediaFolder extends MediaFileBase {
         Log.d(tag, "Scanning directory " + getFile().toString());
 
         // Check the directory allows media scanning
-        if (getFile().listFiles(new NoMediaFilter()).length > 0) {
+        if (Objects.requireNonNull(getFile().listFiles(new NoMediaFilter())).length > 0) {
             Log.d(tag, "Skipping directory (.nomedia)");
             return 0L;
         }
 
         visitor.visit(this);
 
-        File[] contents = getFile().listFiles();
+        File[] contents = Objects.requireNonNull(getFile().listFiles());
         long count = 0L;
         for (File file : contents) {
             if (file.isDirectory()) {
@@ -59,7 +59,7 @@ public class MediaFolder extends MediaFileBase {
 
     private static class NoMediaFilter implements FilenameFilter {
         @Override
-        public boolean accept(File file, String name) {
+        public boolean accept(File dir, String name) {
             return name.equalsIgnoreCase(".nomedia");
         }
     }

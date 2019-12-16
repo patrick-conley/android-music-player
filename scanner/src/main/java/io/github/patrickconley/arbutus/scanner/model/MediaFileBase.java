@@ -2,6 +2,8 @@ package io.github.patrickconley.arbutus.scanner.model;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import java.io.File;
 
 import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitor;
@@ -30,6 +32,7 @@ public abstract class MediaFileBase {
     /**
      * @return The File underlying this object.
      */
+    @NonNull
     public File getFile() {
         return file;
     }
@@ -44,6 +47,7 @@ public abstract class MediaFileBase {
     /**
      * @return The string representation of the underlying file.
      */
+    @NonNull
     public String toString() {
         return file.toString();
     }

@@ -1,1 +1,1 @@
-include ':app', ':datastorage'
+include ':app', ':datastorage', ':scanner'
