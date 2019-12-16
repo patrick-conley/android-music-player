@@ -1,4 +1,4 @@
-package io.github.patrickconley.arbutus.scanner.model;
+package io.github.patrickconley.arbutus.scanner.model.impl;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -11,8 +11,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.io.File;
 import java.io.IOException;
 
-import io.github.patrickconley.arbutus.scanner.model.impl.MediaFile;
-import io.github.patrickconley.arbutus.scanner.model.impl.MediaFolder;
 import io.github.patrickconley.arbutus.scanner.visitor.MediaVisitor;
 
 import static org.junit.Assert.assertEquals;

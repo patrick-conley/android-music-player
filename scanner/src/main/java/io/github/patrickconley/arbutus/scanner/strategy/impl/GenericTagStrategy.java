@@ -1,8 +1,9 @@
 package io.github.patrickconley.arbutus.scanner.strategy.impl;
 
 import android.media.MediaMetadataRetriever;
-import androidx.annotation.NonNull;
 import android.util.SparseArray;
+
+import androidx.annotation.NonNull;
 
 import java.io.File;
 import java.util.HashMap;
@@ -40,6 +41,7 @@ public class GenericTagStrategy implements TagStrategy {
         METADATA_KEYS.put(MediaMetadataRetriever.METADATA_KEY_YEAR, "year");
     }
 
+    @SuppressWarnings("resource")
     private MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
 
     public void release() {
@@ -64,7 +66,7 @@ public class GenericTagStrategy implements TagStrategy {
         try {
             metadataRetriever.setDataSource(file.getAbsolutePath());
         } catch (IllegalArgumentException e) {
-            if (e.getMessage().endsWith("0xFFFFFFEA")) {
+            if (e.getMessage() != null && e.getMessage().endsWith("0xFFFFFFEA")) {
                 throw new ScannerException("Skipping non-media file", e);
             } else {
                 throw new ScannerException(e);

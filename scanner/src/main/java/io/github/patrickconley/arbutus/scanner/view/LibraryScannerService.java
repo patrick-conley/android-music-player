@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import java.io.File;
+import java.util.Objects;
 
 import io.github.patrickconley.arbutus.datastorage.AppDatabase;
 import io.github.patrickconley.arbutus.scanner.visitor.impl.FileScanVisitor;
@@ -43,8 +44,10 @@ public class LibraryScannerService extends IntentService {
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_SCAN_LIBRARY.equals(action)) {
+                String libraryPath = Objects.requireNonNull(intent.getStringExtra(LIBRARY_PATH));
+
                 truncateDatabase();
-                FileScanVisitor.execute(this, new File(intent.getStringExtra(LIBRARY_PATH)));
+                FileScanVisitor.execute(this, new File(libraryPath));
             }
         }
     }

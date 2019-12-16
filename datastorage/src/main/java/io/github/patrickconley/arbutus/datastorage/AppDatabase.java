@@ -31,7 +31,7 @@ import io.github.patrickconley.arbutus.datastorage.metadata.model.Track;
 @Database(entities = {
         LibraryContentType.class, LibraryEntry.class, LibraryNode.class, Tag.class, Track.class,
         TagInTrack.class
-}, version = 1)
+}, version = 1, exportSchema = false)
 @TypeConverters({ Converters.class })
 public abstract class AppDatabase extends RoomDatabase {
 
