@@ -9,7 +9,7 @@ public class LibraryContentType {
     public enum Type {
         TAG(1L), TRACK(2L);
 
-        private long id;
+        private final long id;
 
         Type(long id) {
             this.id = id;
