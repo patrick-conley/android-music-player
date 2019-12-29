@@ -7,8 +7,6 @@ import androidx.room.Room;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.google.common.truth.Truth;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,8 +16,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import io.github.patrickconley.arbutus.datastorage.MetadataTestUtil;
 import io.github.patrickconley.arbutus.datastorage.AppDatabase;
+import io.github.patrickconley.arbutus.datastorage.MetadataTestUtil;
 import io.github.patrickconley.arbutus.datastorage.library.dao.LibraryContentTypeDao;
 import io.github.patrickconley.arbutus.datastorage.library.dao.LibraryEntryDao;
 import io.github.patrickconley.arbutus.datastorage.library.dao.LibraryNodeDao;
@@ -28,6 +26,8 @@ import io.github.patrickconley.arbutus.datastorage.library.model.LibraryEntry;
 import io.github.patrickconley.arbutus.datastorage.library.model.LibraryNode;
 import io.github.patrickconley.arbutus.datastorage.metadata.model.Tag;
 import io.github.patrickconley.arbutus.datastorage.metadata.model.Track;
+
+import static com.google.common.truth.Truth.assertThat;
 
 /**
  * Feature: populate a library which has the default artist -> album -> track structure
@@ -80,7 +80,7 @@ public class LibraryManagerTest {
         LibraryEntry album = buildLibraryEntry(artist, albums, null, null);
         LibraryEntry title = buildLibraryEntry(album, titles, null, track);
 
-        Truth.assertThat(getAllEntries()).containsExactly(artist, album, title);
+        assertThat(getAllEntries()).containsExactly(artist, album, title);
     }
 
     /*
@@ -97,7 +97,7 @@ public class LibraryManagerTest {
         LibraryEntry album = buildLibraryEntry(artist, albums, null, null);
         LibraryEntry title = buildLibraryEntry(album, titles, tag, track);
 
-        Truth.assertThat(getAllEntries()).containsExactly(artist, album, title);
+        assertThat(getAllEntries()).containsExactly(artist, album, title);
     }
 
     /*
@@ -114,7 +114,7 @@ public class LibraryManagerTest {
         LibraryEntry album = buildLibraryEntry(artist, albums, tag, null);
         LibraryEntry title = buildLibraryEntry(album, titles, null, track);
 
-        Truth.assertThat(getAllEntries()).containsExactly(artist, album, title);
+        assertThat(getAllEntries()).containsExactly(artist, album, title);
     }
 
     /*
@@ -131,7 +131,7 @@ public class LibraryManagerTest {
         LibraryEntry album = buildLibraryEntry(artist, albums, null, null);
         LibraryEntry title = buildLibraryEntry(album, titles, null, track);
 
-        Truth.assertThat(getAllEntries()).containsExactly(artist, album, title);
+        assertThat(getAllEntries()).containsExactly(artist, album, title);
     }
 
     /*
@@ -148,7 +148,7 @@ public class LibraryManagerTest {
         LibraryEntry album = buildLibraryEntry(artist, albums, null, null);
         LibraryEntry title = buildLibraryEntry(album, titles, titleTag, track);
 
-        Truth.assertThat(getAllEntries()).containsExactly(artist, album, title);
+        assertThat(getAllEntries()).containsExactly(artist, album, title);
     }
 
     /*
@@ -169,7 +169,7 @@ public class LibraryManagerTest {
         LibraryEntry album = buildLibraryEntry(artist, albums, albumTag, null);
         LibraryEntry title = buildLibraryEntry(album, titles, titleTag, track);
 
-        Truth.assertThat(getAllEntries()).containsExactly(artist, album, title);
+        assertThat(getAllEntries()).containsExactly(artist, album, title);
     }
 
     /**
@@ -203,7 +203,7 @@ public class LibraryManagerTest {
         LibraryEntry album1 = buildLibraryEntry(artist1, albums, album1Tag, null);
         LibraryEntry title1 = buildLibraryEntry(album1, titles, title1Tag, track1);
 
-        Truth.assertThat(getAllEntries()).containsExactly(artist1, album1, title1);
+        assertThat(getAllEntries()).containsExactly(artist1, album1, title1);
 
         Tag artist2Tag = buildTag("artist", "ham");
         Tag album2Tag = buildTag("album", "spam");
@@ -216,7 +216,7 @@ public class LibraryManagerTest {
         LibraryEntry album2 = buildLibraryEntry(artist2, albums, album2Tag, null);
         LibraryEntry title2 = buildLibraryEntry(album2, titles, title2Tag, track2);
 
-        Truth.assertThat(getAllEntries())
+        assertThat(getAllEntries())
              .containsExactly(artist1, album1, title1, artist2, album2, title2);
     }
 
@@ -241,7 +241,7 @@ public class LibraryManagerTest {
         LibraryEntry title1 = buildLibraryEntry(album, titles, titleTag, track1);
         LibraryEntry title2 = buildLibraryEntry(album, titles, titleTag, track2);
 
-        Truth.assertThat(getAllEntries()).containsExactly(artist, album, title1, title2);
+        assertThat(getAllEntries()).containsExactly(artist, album, title1, title2);
     }
 
     /*
@@ -266,7 +266,7 @@ public class LibraryManagerTest {
         LibraryEntry title1 = buildLibraryEntry(album, titles, title1Tag, track1);
         LibraryEntry title2 = buildLibraryEntry(album, titles, title2Tag, track2);
 
-        Truth.assertThat(getAllEntries()).containsExactly(artist, album, title1, title2);
+        assertThat(getAllEntries()).containsExactly(artist, album, title1, title2);
     }
 
     /**
@@ -293,7 +293,7 @@ public class LibraryManagerTest {
         LibraryEntry album2 = buildLibraryEntry(artist, albums, album2Tag, null);
         LibraryEntry title2 = buildLibraryEntry(album2, titles, titleTag, track2);
 
-        Truth.assertThat(getAllEntries()).containsExactly(artist, album1, album2, title1, title2);
+        assertThat(getAllEntries()).containsExactly(artist, album1, album2, title1, title2);
     }
 
     private long trackId = 0L;
