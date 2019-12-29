@@ -23,7 +23,7 @@ public interface MediaVisitor {
      * after this method returns.
      *
      * @param dir to visit
-     * @return
+     * @return whether the visit completed without errors
      */
     boolean visit(MediaFolder dir);
 
@@ -31,7 +31,7 @@ public interface MediaVisitor {
      * Do some work on a file. The file is guaranteed to be readable.
      *
      * @param file to visit
-     * @return
+     * @return whether the visit completed without errors
      */
     boolean visit(MediaFile file);
 

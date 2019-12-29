@@ -1,9 +1,10 @@
 package io.github.patrickconley.arbutus.datastorage.metadata.model;
 
+import android.net.Uri;
+
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
-import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -33,6 +34,7 @@ public class Track {
         return uri;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return uri.toString();

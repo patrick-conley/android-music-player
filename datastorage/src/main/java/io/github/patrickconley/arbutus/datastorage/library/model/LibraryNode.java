@@ -1,10 +1,10 @@
 package io.github.patrickconley.arbutus.datastorage.library.model;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
-import androidx.annotation.NonNull;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -85,6 +85,7 @@ public class LibraryNode {
                                           .toHashCode();
     }
 
+    @NonNull
     @Override
     public String toString() {
         return new ToStringBuilder(this).append("parentId", parentId)
