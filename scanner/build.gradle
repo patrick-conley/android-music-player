@@ -32,7 +32,7 @@ dependencies {
     implementation project(path:  ":datastorage")
 
     implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.room:room-runtime:2.2.2'
+    implementation 'androidx.room:room-runtime:2.2.3'
     implementation "org.bitbucket.ijabz:jaudiotagger:Version2_2_2"
 
     testImplementation 'com.google.truth:truth:1.0'
