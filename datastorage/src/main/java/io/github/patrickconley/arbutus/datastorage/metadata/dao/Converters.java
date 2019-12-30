@@ -7,12 +7,12 @@ import androidx.room.TypeConverter;
 public class Converters {
 
     @TypeConverter
-    Uri toUri(String uriString) {
+    public Uri toUri(String uriString) {
         return Uri.parse(uriString);
     }
 
     @TypeConverter
-    String fromUri(Uri uri) {
+    public String fromUri(Uri uri) {
         return uri.toString();
     }
 }
