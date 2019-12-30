@@ -1,11 +1,14 @@
 package io.github.patrickconley.arbutus.settings.view;
 
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import com.codekidlabs.storagechooser.StorageChooser;
+
+import io.github.patrickconley.arbutus.settings.Settings;
 
 public class LibraryPathChooserActivity extends AppCompatActivity
         implements StorageChooser.OnSelectListener, StorageChooser.OnCancelListener {
@@ -30,9 +33,9 @@ public class LibraryPathChooserActivity extends AppCompatActivity
     @Override
     public void onSelect(String path) {
         PreferenceManager.getDefaultSharedPreferences(this)
-                .edit()
-                .putString("library path", path)
-                .apply();
+                         .edit()
+                         .putString(Settings.LIBRARY_PATH.getKey(), path)
+                         .apply();
         finish();
     }
 

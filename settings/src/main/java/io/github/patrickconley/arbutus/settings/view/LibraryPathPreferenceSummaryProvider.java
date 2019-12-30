@@ -3,7 +3,7 @@ package io.github.patrickconley.arbutus.settings.view;
 import androidx.annotation.NonNull;
 import androidx.preference.Preference;
 
-import io.github.patrickconley.arbutus.R;
+import io.github.patrickconley.arbutus.settings.R;
 
 class LibraryPathPreferenceSummaryProvider implements Preference.SummaryProvider<Preference> {
 
