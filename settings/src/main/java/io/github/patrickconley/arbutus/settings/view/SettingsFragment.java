@@ -6,7 +6,7 @@ import android.os.Bundle;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
-import io.github.patrickconley.arbutus.R;
+import io.github.patrickconley.arbutus.settings.R;
 import io.github.patrickconley.arbutus.settings.Settings;
 import io.github.patrickconley.arbutus.settings.listener.ScanNowPreferenceClickListener;
 
