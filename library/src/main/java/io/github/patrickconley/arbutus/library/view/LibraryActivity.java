@@ -10,9 +10,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.preference.PreferenceManager;
 
 import io.github.patrickconley.arbutus.library.R;
+import io.github.patrickconley.arbutus.library.view.dummy.DummyContent;
 import io.github.patrickconley.arbutus.settings.view.SettingsActivity;
 
-public class LibraryActivity extends AppCompatActivity {
+public class LibraryActivity extends AppCompatActivity
+        implements LibraryEntryFragment.OnListFragmentInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,4 +41,10 @@ public class LibraryActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onListFragmentInteraction(
+            DummyContent.DummyItem item
+    ) {
+        // TODO: something
+    }
 }
