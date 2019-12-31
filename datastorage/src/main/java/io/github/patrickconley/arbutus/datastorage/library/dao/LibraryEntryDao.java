@@ -9,6 +9,7 @@ import androidx.room.Query;
 import java.util.List;
 
 import io.github.patrickconley.arbutus.datastorage.library.model.LibraryEntry;
+import io.github.patrickconley.arbutus.datastorage.library.model.LibraryEntryText;
 import io.github.patrickconley.arbutus.datastorage.metadata.model.Tag;
 import io.github.patrickconley.arbutus.datastorage.metadata.model.Track;
 
@@ -120,5 +121,20 @@ public abstract class LibraryEntryDao {
 
         return getByParent(parent.getId());
     }
+
+    @Query("select * from LibraryEntryText where parentId is null")
+    abstract List<LibraryEntryText> getRootEntryText();
+
+    @Query("select * from LibraryEntryText where parentId = :parentId")
+    abstract List<LibraryEntryText> getEntryTextByParent(long parentId);
+
+    public List<LibraryEntryText> getChildrenOf(LibraryEntryText parent) {
+        if (parent != null) {
+            return getEntryTextByParent(parent.getEntryId());
+        } else {
+            return getRootEntryText();
+        }
+    }
+
 
 }

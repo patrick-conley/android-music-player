@@ -19,6 +19,7 @@ import io.github.patrickconley.arbutus.datastorage.library.dao.LibraryEntryDao;
 import io.github.patrickconley.arbutus.datastorage.library.dao.LibraryNodeDao;
 import io.github.patrickconley.arbutus.datastorage.library.model.LibraryContentType;
 import io.github.patrickconley.arbutus.datastorage.library.model.LibraryEntry;
+import io.github.patrickconley.arbutus.datastorage.library.model.LibraryEntryText;
 import io.github.patrickconley.arbutus.datastorage.library.model.LibraryNode;
 import io.github.patrickconley.arbutus.datastorage.metadata.dao.Converters;
 import io.github.patrickconley.arbutus.datastorage.metadata.dao.TagDao;
@@ -31,7 +32,7 @@ import io.github.patrickconley.arbutus.datastorage.metadata.model.Track;
 @Database(entities = {
         LibraryContentType.class, LibraryEntry.class, LibraryNode.class, Tag.class, Track.class,
         TagInTrack.class
-}, version = 1, exportSchema = false)
+}, views = { LibraryEntryText.class }, version = 1, exportSchema = false)
 @TypeConverters({ Converters.class })
 public abstract class AppDatabase extends RoomDatabase {
 

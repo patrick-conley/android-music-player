@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import io.github.patrickconley.arbutus.datastorage.AppDatabase;
 import io.github.patrickconley.arbutus.datastorage.library.model.LibraryContentType;
 import io.github.patrickconley.arbutus.datastorage.library.model.LibraryEntry;
+import io.github.patrickconley.arbutus.datastorage.library.model.LibraryEntryText;
 import io.github.patrickconley.arbutus.datastorage.library.model.LibraryNode;
 import io.github.patrickconley.arbutus.datastorage.metadata.dao.TagDao;
 import io.github.patrickconley.arbutus.datastorage.metadata.dao.TrackDao;
@@ -91,28 +92,36 @@ public class LibraryEntryDaoTest {
     public void trackAtRoot() {
         LibraryEntry entry = dao.insert(new LibraryEntry(null, node, tag, track));
         assertEquals(entry, dao.getEntry(null, tag, track));
-        assertThat(dao.getChildrenOf(null)).containsExactly(entry);
+        assertThat(dao.getChildrenOf((LibraryEntry) null)).containsExactly(entry);
+        assertThat(dao.getChildrenOf((LibraryEntryText) null))
+                .containsExactly(new LibraryEntryText(entry.getId(), null, tag.getValue()));
     }
 
     @Test
     public void tagAtRoot() {
         LibraryEntry entry = dao.insert(new LibraryEntry(null, node, tag, null));
         assertEquals(entry, dao.getEntry(null, tag, null));
-        assertThat(dao.getChildrenOf(null)).containsExactly(entry);
+        assertThat(dao.getChildrenOf((LibraryEntry) null)).containsExactly(entry);
+        assertThat(dao.getChildrenOf((LibraryEntryText) null))
+                .containsExactly(new LibraryEntryText(entry.getId(), null, tag.getValue()));
     }
 
     @Test
     public void nullTagAtRoot() {
         LibraryEntry entry = dao.insert(new LibraryEntry(null, node, null, null));
         assertEquals(entry, dao.getEntry(null, null, null));
-        assertThat(dao.getChildrenOf(null)).containsExactly(entry);
+        assertThat(dao.getChildrenOf((LibraryEntry) null)).containsExactly(entry);
+        assertThat(dao.getChildrenOf((LibraryEntryText) null))
+                .containsExactly(new LibraryEntryText(entry.getId(), null, null));
     }
 
     @Test
     public void trackWithNullTagAtRoot() {
         LibraryEntry entry = dao.insert(new LibraryEntry(null, node, null, track));
         assertEquals(entry, dao.getEntry(null, null, track));
-        assertThat(dao.getChildrenOf(null)).containsExactly(entry);
+        assertThat(dao.getChildrenOf((LibraryEntry) null)).containsExactly(entry);
+        assertThat(dao.getChildrenOf((LibraryEntryText) null))
+                .containsExactly(new LibraryEntryText(entry.getId(), null, null));
     }
 
     @Test
@@ -122,6 +131,9 @@ public class LibraryEntryDaoTest {
 
         assertEquals(entry, dao.getEntry(parent, tag, null));
         assertThat(dao.getChildrenOf(parent)).containsExactly(entry);
+        assertThat(dao.getChildrenOf(new LibraryEntryText(parent.getId(), null, tag.getValue())))
+                .containsExactly(
+                        new LibraryEntryText(entry.getId(), entry.getParentId(), tag.getValue()));
     }
 
     @Test
@@ -131,6 +143,8 @@ public class LibraryEntryDaoTest {
 
         assertEquals(entry, dao.getEntry(parent, null, null));
         assertThat(dao.getChildrenOf(parent)).containsExactly(entry);
+        assertThat(dao.getChildrenOf(new LibraryEntryText(parent.getId(), null, tag.getValue())))
+                .containsExactly(new LibraryEntryText(entry.getId(), entry.getParentId(), null));
     }
 
     @Test
@@ -139,6 +153,9 @@ public class LibraryEntryDaoTest {
         LibraryEntry entry = dao.insert(new LibraryEntry(parent, node, tag, track));
         assertEquals(entry, dao.getEntry(parent, tag, track));
         assertThat(dao.getChildrenOf(parent)).containsExactly(entry);
+        assertThat(dao.getChildrenOf(new LibraryEntryText(parent.getId(), null, tag.getValue())))
+                .containsExactly(
+                        new LibraryEntryText(entry.getId(), entry.getParentId(), tag.getValue()));
     }
 
     @Test
@@ -148,6 +165,8 @@ public class LibraryEntryDaoTest {
 
         assertEquals(entry, dao.getEntry(parent, null, track));
         assertThat(dao.getChildrenOf(parent)).containsExactly(entry);
+        assertThat(dao.getChildrenOf(new LibraryEntryText(parent.getId(), null, tag.getValue())))
+                .containsExactly(new LibraryEntryText(entry.getId(), entry.getParentId(), null));
     }
 
     @Test
@@ -167,6 +186,10 @@ public class LibraryEntryDaoTest {
         assertEquals(child2, dao.getEntry(parent, tag, track2));
 
         assertThat(dao.getChildrenOf(parent)).containsExactly(child1, child2);
+        assertThat(dao.getChildrenOf(new LibraryEntryText(parent.getId(), null, tag.getValue())))
+                .containsExactly(
+                        new LibraryEntryText(child1.getId(), child1.getParentId(), tag.getValue()),
+                        new LibraryEntryText(child2.getId(), child2.getParentId(), tag.getValue()));
     }
 
     @Test
