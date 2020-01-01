@@ -9,8 +9,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.preference.PreferenceManager;
 
+import io.github.patrickconley.arbutus.datastorage.library.model.LibraryEntryText;
 import io.github.patrickconley.arbutus.library.R;
-import io.github.patrickconley.arbutus.library.view.dummy.DummyContent;
 import io.github.patrickconley.arbutus.settings.view.SettingsActivity;
 
 public class LibraryActivity extends AppCompatActivity
@@ -42,9 +42,7 @@ public class LibraryActivity extends AppCompatActivity
     }
 
     @Override
-    public void onListFragmentInteraction(
-            DummyContent.DummyItem item
-    ) {
+    public void onListFragmentInteraction(LibraryEntryText item) {
         // TODO: something
     }
 }

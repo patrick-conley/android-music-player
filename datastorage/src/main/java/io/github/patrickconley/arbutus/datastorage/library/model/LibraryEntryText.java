@@ -7,6 +7,9 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import io.github.patrickconley.arbutus.datastorage.metadata.model.Tag;
+
+// FIXME should this be implemented in the 'library' module instead of 'datastorage'?
 @DatabaseView("select LibraryEntry.id as entryId, " //
               + "LibraryEntry.parentId as parentId, " //
               + "Tag.value as text " //
@@ -22,6 +25,12 @@ public class LibraryEntryText {
         this.entryId = entryId;
         this.parentId = parentId;
         this.text = text;
+    }
+
+    public LibraryEntryText(@NonNull LibraryEntry entry, Tag tag) {
+        this.entryId = entry.getId();
+        this.parentId = entry.getParentId();
+        this.text = tag == null ? null : tag.getValue();
     }
 
     public long getEntryId() {

@@ -8,12 +8,13 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import io.github.patrickconley.arbutus.datastorage.library.model.LibraryEntryText;
 import io.github.patrickconley.arbutus.library.R;
-import io.github.patrickconley.arbutus.library.view.dummy.DummyContent;
-import io.github.patrickconley.arbutus.library.view.dummy.DummyContent.DummyItem;
+import io.github.patrickconley.arbutus.library.model.LibraryEntryViewModel;
 
 /**
  * A fragment representing a list of Items.
@@ -45,13 +46,17 @@ public class LibraryEntryFragment extends Fragment {
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState
     ) {
-        RecyclerView view =
-                (RecyclerView) inflater.inflate(R.layout.library_entry_list, container, false);
+        final LibraryEntryViewAdapter adapter = new LibraryEntryViewAdapter(interactionListener);
 
-        Context viewContext = view.getContext();
+        final RecyclerView view =
+                (RecyclerView) inflater.inflate(R.layout.library_entry_list, container, false);
         view.setHasFixedSize(true);
-        view.setLayoutManager(new LinearLayoutManager(viewContext));
-        view.setAdapter(new LibraryEntryViewAdapter(DummyContent.ITEMS, interactionListener));
+        view.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        view.setAdapter(adapter);
+
+        LibraryEntryViewModel model = ViewModelProviders.of(this).get(LibraryEntryViewModel.class);
+        model.getEntries(getContext()).observe(this, adapter);
+
         return view;
     }
 
@@ -65,12 +70,9 @@ public class LibraryEntryFragment extends Fragment {
      * This interface must be implemented by activities that contain this fragment to allow an
      * interaction in this fragment to be communicated to the activity and potentially other
      * fragments contained in that activity.
-     * <p/>
-     * See the Android Training lesson <a href= "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteraction(LibraryEntryText item);
     }
+
 }

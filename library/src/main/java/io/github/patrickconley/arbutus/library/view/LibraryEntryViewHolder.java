@@ -6,39 +6,36 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import io.github.patrickconley.arbutus.datastorage.library.model.LibraryEntryText;
 import io.github.patrickconley.arbutus.library.R;
-import io.github.patrickconley.arbutus.library.view.dummy.DummyContent;
 
 public class LibraryEntryViewHolder extends RecyclerView.ViewHolder {
     private final View view;
-    private final TextView idView;
-    private final TextView contentView;
-    private DummyContent.DummyItem item;
+    private final TextView entryTextView;
+    private LibraryEntryText entry;
 
     LibraryEntryViewHolder(View view) {
         super(view);
         this.view = view;
-        idView = view.findViewById(R.id.item_number);
-        contentView = view.findViewById(R.id.content);
+        entryTextView = view.findViewById(R.id.content);
     }
 
     @NonNull
     @Override
     public String toString() {
-        return super.toString() + " '" + contentView.getText() + "'";
+        return super.toString() + " '" + entryTextView.getText() + "'";
     }
 
     View getView() {
         return view;
     }
 
-    DummyContent.DummyItem getItem() {
-        return item;
+    LibraryEntryText getEntry() {
+        return entry;
     }
 
-    void setItem(DummyContent.DummyItem item) {
-        this.item = item;
-        idView.setText(item.id);
-        contentView.setText(item.content);
+    void setEntry(LibraryEntryText entry) {
+        this.entry = entry;
+        entryTextView.setText(entry.getText());
     }
 }
