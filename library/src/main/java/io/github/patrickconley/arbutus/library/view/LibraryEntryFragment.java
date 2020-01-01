@@ -29,12 +29,12 @@ public class LibraryEntryFragment extends Fragment {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        if (context instanceof OnListFragmentInteractionListener) {
-            interactionListener = (OnListFragmentInteractionListener) context;
-        } else {
+        if (!(context instanceof OnListFragmentInteractionListener)) {
             throw new IllegalStateException(
                     context.toString() + " must implement OnListFragmentInteractionListener");
         }
+
+        interactionListener = (OnListFragmentInteractionListener) context;
     }
 
     @Override
