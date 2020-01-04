@@ -2,6 +2,7 @@ package io.github.patrickconley.arbutus.datastorage.library.dao;
 
 import android.database.sqlite.SQLiteConstraintException;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
@@ -9,6 +10,7 @@ import androidx.room.Query;
 import java.util.List;
 
 import io.github.patrickconley.arbutus.datastorage.library.model.LibraryEntry;
+import io.github.patrickconley.arbutus.datastorage.library.model.LibraryEntryText;
 import io.github.patrickconley.arbutus.datastorage.metadata.model.Tag;
 import io.github.patrickconley.arbutus.datastorage.metadata.model.Track;
 
@@ -120,5 +122,20 @@ public abstract class LibraryEntryDao {
 
         return getByParent(parent.getId());
     }
+
+    @Query("select * from LibraryEntryText where parentId is null")
+    abstract LiveData<List<LibraryEntryText>> getRootEntryText();
+
+    @Query("select * from LibraryEntryText where parentId = :parentId")
+    abstract LiveData<List<LibraryEntryText>> getEntryTextByParent(long parentId);
+
+    public LiveData<List<LibraryEntryText>> getChildrenOf(LibraryEntryText parent) {
+        if (parent != null) {
+            return getEntryTextByParent(parent.getEntryId());
+        } else {
+            return getRootEntryText();
+        }
+    }
+
 
 }

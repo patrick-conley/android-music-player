@@ -4,18 +4,22 @@ import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.room.Room;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import io.github.patrickconley.arbutus.datastorage.AppDatabase;
 import io.github.patrickconley.arbutus.datastorage.library.model.LibraryContentType;
 import io.github.patrickconley.arbutus.datastorage.library.model.LibraryEntry;
+import io.github.patrickconley.arbutus.datastorage.library.model.LibraryEntryText;
 import io.github.patrickconley.arbutus.datastorage.library.model.LibraryNode;
 import io.github.patrickconley.arbutus.datastorage.metadata.dao.TagDao;
 import io.github.patrickconley.arbutus.datastorage.metadata.dao.TrackDao;
@@ -23,12 +27,16 @@ import io.github.patrickconley.arbutus.datastorage.metadata.model.Tag;
 import io.github.patrickconley.arbutus.datastorage.metadata.model.Track;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.github.patrickconley.arbutus.datastorage.LiveDataTestUtil.getOrAwaitValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
 @RunWith(AndroidJUnit4.class)
 public class LibraryEntryDaoTest {
+
+    @Rule
+    public TestRule rule = new InstantTaskExecutorRule();
 
     private Context context = ApplicationProvider.getApplicationContext();
 
@@ -88,70 +96,86 @@ public class LibraryEntryDaoTest {
     }
 
     @Test
-    public void trackAtRoot() {
+    public void trackAtRoot() throws InterruptedException {
         LibraryEntry entry = dao.insert(new LibraryEntry(null, node, tag, track));
         assertEquals(entry, dao.getEntry(null, tag, track));
-        assertThat(dao.getChildrenOf(null)).containsExactly(entry);
+        assertThat(dao.getChildrenOf((LibraryEntry) null)).containsExactly(entry);
+        assertThat(getOrAwaitValue(dao.getChildrenOf((LibraryEntryText) null)))
+                .containsExactly(new LibraryEntryText(entry, tag));
     }
 
     @Test
-    public void tagAtRoot() {
+    public void tagAtRoot() throws InterruptedException {
         LibraryEntry entry = dao.insert(new LibraryEntry(null, node, tag, null));
         assertEquals(entry, dao.getEntry(null, tag, null));
-        assertThat(dao.getChildrenOf(null)).containsExactly(entry);
+        assertThat(dao.getChildrenOf((LibraryEntry) null)).containsExactly(entry);
+        assertThat(getOrAwaitValue(dao.getChildrenOf((LibraryEntryText) null)))
+                .containsExactly(new LibraryEntryText(entry, tag));
     }
 
     @Test
-    public void nullTagAtRoot() {
+    public void nullTagAtRoot() throws InterruptedException {
         LibraryEntry entry = dao.insert(new LibraryEntry(null, node, null, null));
         assertEquals(entry, dao.getEntry(null, null, null));
-        assertThat(dao.getChildrenOf(null)).containsExactly(entry);
+        assertThat(dao.getChildrenOf((LibraryEntry) null)).containsExactly(entry);
+        assertThat(getOrAwaitValue(dao.getChildrenOf((LibraryEntryText) null)))
+                .containsExactly(new LibraryEntryText(entry, null));
     }
 
     @Test
-    public void trackWithNullTagAtRoot() {
+    public void trackWithNullTagAtRoot() throws InterruptedException {
         LibraryEntry entry = dao.insert(new LibraryEntry(null, node, null, track));
         assertEquals(entry, dao.getEntry(null, null, track));
-        assertThat(dao.getChildrenOf(null)).containsExactly(entry);
+        assertThat(dao.getChildrenOf((LibraryEntry) null)).containsExactly(entry);
+        assertThat(getOrAwaitValue(dao.getChildrenOf((LibraryEntryText) null)))
+                .containsExactly(new LibraryEntryText(entry, null));
     }
 
     @Test
-    public void tagBelowRoot() {
+    public void tagBelowRoot() throws InterruptedException {
         LibraryEntry parent = dao.insert(new LibraryEntry(null, node, tag, null));
         LibraryEntry entry = dao.insert(new LibraryEntry(parent, node, tag, null));
 
         assertEquals(entry, dao.getEntry(parent, tag, null));
         assertThat(dao.getChildrenOf(parent)).containsExactly(entry);
+        assertThat(getOrAwaitValue(dao.getChildrenOf(new LibraryEntryText(parent, tag))))
+                .containsExactly(new LibraryEntryText(entry, tag));
     }
 
     @Test
-    public void nullTagBelowRoot() {
+    public void nullTagBelowRoot() throws InterruptedException {
         LibraryEntry parent = dao.insert(new LibraryEntry(null, node, tag, null));
         LibraryEntry entry = dao.insert(new LibraryEntry(parent, node, null, null));
 
         assertEquals(entry, dao.getEntry(parent, null, null));
         assertThat(dao.getChildrenOf(parent)).containsExactly(entry);
+        assertThat(getOrAwaitValue(dao.getChildrenOf(new LibraryEntryText(parent, tag))))
+                .containsExactly(new LibraryEntryText(entry, null));
     }
 
     @Test
-    public void trackBelowRoot() {
+    public void trackBelowRoot() throws InterruptedException {
         LibraryEntry parent = dao.insert(new LibraryEntry(null, node, tag, null));
         LibraryEntry entry = dao.insert(new LibraryEntry(parent, node, tag, track));
         assertEquals(entry, dao.getEntry(parent, tag, track));
         assertThat(dao.getChildrenOf(parent)).containsExactly(entry);
+        assertThat(getOrAwaitValue(dao.getChildrenOf(new LibraryEntryText(parent, tag))))
+                .containsExactly(new LibraryEntryText(entry, tag));
     }
 
     @Test
-    public void trackWithNullTagBelowRoot() {
+    public void trackWithNullTagBelowRoot() throws InterruptedException {
         LibraryEntry parent = dao.insert(new LibraryEntry(null, node, tag, null));
         LibraryEntry entry = dao.insert(new LibraryEntry(parent, node, null, track));
 
         assertEquals(entry, dao.getEntry(parent, null, track));
         assertThat(dao.getChildrenOf(parent)).containsExactly(entry);
+        assertThat(getOrAwaitValue(dao.getChildrenOf(new LibraryEntryText(parent, tag))))
+                .containsExactly(new LibraryEntryText(entry, null));
     }
 
     @Test
-    public void insertTracksWithSameParent() {
+    public void insertTracksWithSameParent() throws InterruptedException {
         LibraryEntry parent = dao.insert(new LibraryEntry(null, node, tag, null));
 
         Track track1 = trackDao.insert(new Track(Uri.parse("file://sample.ogg")));
@@ -167,6 +191,9 @@ public class LibraryEntryDaoTest {
         assertEquals(child2, dao.getEntry(parent, tag, track2));
 
         assertThat(dao.getChildrenOf(parent)).containsExactly(child1, child2);
+        assertThat(getOrAwaitValue(dao.getChildrenOf(new LibraryEntryText(parent, tag))))
+                .containsExactly(new LibraryEntryText(child1, tag),
+                                 new LibraryEntryText(child2, tag));
     }
 
     @Test
